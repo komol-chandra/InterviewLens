@@ -1,6 +1,10 @@
 > Tracker ID: FN-20 · Generated: 2026-09-28 · Source: `_memory/story-bank.md`, `04-behavioral/01-pitch-why-fieldnation.md`, `04-behavioral/02-hr-answers.md`, `03-system-design/01-work-order-dispatch.md`, `03-system-design/02-php-to-node-migration.md`, backend-system-design-study-plan.md Phase 12 Case 2
 
-# Mock ২ — Full Loop (৯০ মিনিট)
+> 📌 2026-09-29: Renamed from `mock-02-full-loop.md` → this is now **Mock 2 of 5 (System Design)** in the new series (D8). The behavioral part moved to `mock-01-cv-behavioral.md`; focus on §২–৩ here.
+>
+> Mock 2 prompt: "Let's begin **Mock Interview 2: System Design & Architecture**. Focus on distributed systems, microservices, caching (Redis), message queues (RabbitMQ), database scaling (MySQL/MongoDB aggregations), and cloud deployment (AWS/Docker). Challenge my architectural choices and ask follow-ups on performance bottlenecks and high availability. Ask one question at a time."
+
+# Mock 2 — System Design (was Full Loop, ৯০ মিনিট)
 
 > এটাও একটা **টেমপ্লেট** (Day 13-এ চালানোর জন্য), ফলাফল আগে থেকে বানানো না। রেকর্ড করো, স্কোর দাও, নিচের Fix list ভরাট করো।
 

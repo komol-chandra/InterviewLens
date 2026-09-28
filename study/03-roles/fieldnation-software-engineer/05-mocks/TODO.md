@@ -1,9 +1,13 @@
 # 05-mocks/ — TODO
 
-প্রতিটা মক একটা ফাইল: `mock-NN-<type>.md`। ভেতরে: ফরম্যাট, প্রশ্ন, কেমন হলো (✅/🟡/❌), **fix list**। Fix list-এর প্রতিটা আইটেম `../../../_memory/weak-areas.md`-এর নিচের টেবিলেও যায়।
+৫-মক সিরিজ (D8): বিস্তারিত `00-series-overview.md`। প্রতিটা মকের ভেতরে: ফরম্যাট, প্রশ্ন, মডেল উত্তর, **Fix list**। Fix list-এর প্রতিটা আইটেম (স্কোর ≤৬) `../../../_memory/weak-areas.md`-এও যায়।
 
-মক কীভাবে: Claude-কে বলো *"FN SE টেকনিক্যাল ইন্টারভিউয়ার হিসেবে আমার মক নাও, একটা করে প্রশ্ন"*, নিজেকে রেকর্ড করো, তারপর শুনে দেখো।
-
-- [x] **FN-19** `mock-01-technical.md` — টেমপ্লেট/প্রশ্ন ব্যাংক জেনারেটেড ২০২৬-০৯-২৮। Day 12-এ আসল মক চালানো + fix list ভরাট বাকি
-- [x] **FN-20** `mock-02-full-loop.md` — টেমপ্লেট জেনারেটেড ২০২৬-০৯-২৮। S10 (disagreement story) Day 13-এর আগে story-bank-এ যোগ করা দরকার। Day 13-এ আসল মক বাকি
-- [ ] দুই মকের fix list-এর সব আইটেম বন্ধ (Day 14)
+- [x] **FN-22** `mock-01-cv-behavioral.md` — prep file (full English) generated 2026-09-29
+- [x] **FN-25** `mock-01-part-c-deep-dive.md` — Part C full answer guide (সব drill-এর বিস্তারিত উত্তর, 🔀 option, ২৪টা [FILL] চেকলিস্ট) 2026-09-29
+- [ ] Mock 1: সব `[FILL]` ভরাট (CV Risk Check টেবিল + S10/S11 আগে; Part C-র জন্য FN-25-এর master checklist)
+- [ ] Mock 1: live mock চালানো (Claude = US interviewer) + Fix list ভরাট
+- [ ] **FN-20** `mock-02-system-design.md` — টেমপ্লেট আছে; live mock বাকি
+- [ ] **FN-23** `mock-03-fullstack.md` — stub; পুরো কনটেন্ট জেনারেট + live mock বাকি
+- [ ] **FN-19** `mock-04-db-api.md` — টেমপ্লেট আছে; live mock বাকি
+- [ ] **FN-24** `mock-05-rapid-fire.md` — stub; পুরো কনটেন্ট জেনারেট + live mock বাকি
+- [ ] সব মকের fix list-এর আইটেম বন্ধ

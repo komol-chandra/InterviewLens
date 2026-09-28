@@ -1,6 +1,10 @@
 > Tracker ID: FN-19 · Generated: 2026-09-28 · Source: `02-topics/01-javascript-es6.md`, `02-topics/02-typescript.md`, `02-topics/04-mysql-advanced.md`, `02-topics/05-rest-api-webhooks.md`
 
-# Mock ১ — Technical (৬০ মিনিট)
+> 📌 2026-09-29: Renamed from `mock-01-technical.md` → this is now **Mock 4 of 5 (DB + API)** in the new series (D8). See `00-series-overview.md`.
+>
+> Mock 4 prompt: "Let's begin **Mock Interview 4: Database Optimization & API Engineering**. Ask 5 scenario-based questions about schema design, slow query optimization, indexing strategies, RESTful API design, background processing pipelines, and data synchronization between systems. Ask one question at a time."
+
+# Mock 4 — DB + API (৬০ মিনিট)
 
 > এটা একটা **টেমপ্লেট**, রেকর্ডেড ট্রান্সক্রিপ্ট না। Day 12-এ আসলে চালাও (টাইমার নিয়ে, জোরে বলে), তারপর নিচের "Fix list" ভরাট করো।
 

@@ -40,9 +40,14 @@ Path বেস: `03-roles/fieldnation-software-engineer/`
 | FN-16 | Pitch + "Why Field Nation" | `04-behavioral/01-pitch-why-fieldnation.md` | behavioral | 1 | 🟡 | 2026-09-28 | | |
 | FN-17 | HR উত্তর (শিফট, স্যালারি, notice) | `04-behavioral/02-hr-answers.md` | behavioral | 13 | 🟡 | 2026-09-28 | | |
 | FN-18 | Questions to ask them | `04-behavioral/03-questions-to-ask.md` | behavioral | 13 | 🟡 | 2026-09-28 | | |
-| FN-19 | Mock 1 — technical | `05-mocks/mock-01-technical.md` | mock | 12 | 🟡 | 2026-09-28 | | |
-| FN-20 | Mock 2 — full loop | `05-mocks/mock-02-full-loop.md` | mock | 13 | 🟡 | 2026-09-28 | | |
+| FN-19 | Mock 4 — DB + API (was Mock 1 technical) | `05-mocks/mock-04-db-api.md` | mock | 12 | 🟡 | 2026-09-28 | | |
+| FN-20 | Mock 2 — system design (was full loop) | `05-mocks/mock-02-system-design.md` | mock | 13 | 🟡 | 2026-09-28 | | |
 | FN-21 | Final cram sheet | `99-final-cram.md` | cheatsheet | 14 | 🟡 | 2026-09-28 | | |
+| FN-22 | Mock 1 — CV deep dive + behavioral (EN) | `05-mocks/mock-01-cv-behavioral.md` | mock | — | 🟡 | 2026-09-29 | | |
+| FN-23 | Mock 3 — full-stack (stub) | `05-mocks/mock-03-fullstack.md` | mock | — | ⬜ | 2026-09-29 | | |
+| FN-24 | Mock 5 — rapid-fire fluency (stub) | `05-mocks/mock-05-rapid-fire.md` | mock | — | ⬜ | 2026-09-29 | | |
+| FN-25 | Mock 1 Part C — CV deep dive full answer guide (EN) | `05-mocks/mock-01-part-c-deep-dive.md` | mock | — | 🟡 | 2026-09-29 | | |
+| — | 5-mock series overview | `05-mocks/00-series-overview.md` | notes | — | 🟡 | 2026-09-29 | | |
 
 ---
 

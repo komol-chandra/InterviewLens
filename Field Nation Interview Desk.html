@@ -1,0 +1,563 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Field Nation Interview Desk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#EEF2F1; --surface:#FFFFFF; --surface-2:#F6F8F8; --ink:#14262C; --ink-2:#4A5D63; --line:#D5DEDD;
+  --accent:#1F5FB8; --accent-soft:#E3ECF8; --must:#B5441F; --must-soft:#F7E5DD;
+  --ok:#23775A; --ok-soft:#DDF0E7; --warn:#9A6A0B; --warn-soft:#F6ECD3;
+  --code-bg:#E7EDEC;
+  --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"Source Sans 3",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#0F1719; --surface:#172225; --surface-2:#1C292C; --ink:#E4ECEB; --ink-2:#9DB0B3; --line:#2A3A3E;
+    --accent:#6FA3EE; --accent-soft:#1B2D45; --must:#EB8A63; --must-soft:#3A2219;
+    --ok:#5CC49A; --ok-soft:#153428; --warn:#E0B454; --warn-soft:#352A12; --code-bg:#22312F;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0F1719; --surface:#172225; --surface-2:#1C292C; --ink:#E4ECEB; --ink-2:#9DB0B3; --line:#2A3A3E;
+  --accent:#6FA3EE; --accent-soft:#1B2D45; --must:#EB8A63; --must-soft:#3A2219;
+  --ok:#5CC49A; --ok-soft:#153428; --warn:#E0B454; --warn-soft:#352A12; --code-bg:#22312F;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55;padding-inline:16px;padding-block:0 64px}
+.wrap{max-width:1040px;margin:0 auto}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;line-height:1.1;margin:0}
+h1{font-size:clamp(34px,6vw,52px);font-weight:700;letter-spacing:.2px}
+h2{font-size:30px;font-weight:600}
+h3{font-size:21px;font-weight:600}
+p{margin:0}
+code,.mono{font-family:var(--mono);font-size:.86em}
+code{background:var(--code-bg);padding:1px 5px;border-radius:4px}
+a{color:var(--accent)}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+header.top{padding-block:36px 20px;display:grid;gap:14px}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2)}
+.lede{max-width:66ch;color:var(--ink-2);font-size:17px}
+.facts{display:flex;flex-wrap:wrap;gap:8px}
+.fact{font-size:13px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:3px 11px;color:var(--ink-2)}
+.fact b{color:var(--ink);font-weight:600}
+
+nav.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;gap:4px;overflow-x:auto;border-bottom:1px solid var(--line);padding-block:8px 0;margin-bottom:24px}
+nav.tabs button{background:none;border:0;border-bottom:3px solid transparent;padding:8px 12px 10px;font-weight:600;color:var(--ink-2);white-space:nowrap;font-size:15px}
+nav.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+nav.tabs .count{font-family:var(--mono);font-size:11px;color:var(--ink-2);margin-left:4px}
+
+section.panel{display:grid;gap:22px}
+.note{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px;display:grid;gap:8px}
+.note.pitch{border-left:4px solid var(--accent)}
+.muted{color:var(--ink-2)}
+.small{font-size:14px}
+
+/* progress */
+.progress-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.pcard{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:grid;gap:8px}
+.pcard .label{font-weight:600}
+.bar{height:8px;border-radius:99px;background:var(--surface-2);overflow:hidden;display:flex;border:1px solid var(--line)}
+.bar i{display:block;height:100%}
+.bar .s{background:var(--ok)} .bar .h{background:var(--warn)}
+.pcard .nums{font-family:var(--mono);font-size:12px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+
+/* plan */
+.weeks{display:grid;gap:18px}
+.week{display:grid;gap:10px}
+.week h3 span{font-family:var(--body);font-size:14px;font-weight:500;color:var(--ink-2);margin-left:8px}
+.table-wrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;min-width:640px;font-size:15px}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);font-weight:500;background:var(--surface-2)}
+tr:last-child td{border-bottom:0}
+td.day{font-family:var(--mono);font-size:13px;white-space:nowrap;color:var(--ink-2);font-variant-numeric:tabular-nums}
+td .out{display:block;font-size:13px;color:var(--ink-2);margin-top:3px}
+.tag{display:inline-block;font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;padding:1px 7px;border-radius:4px;vertical-align:1px}
+.tag.must{background:var(--must-soft);color:var(--must)}
+.tag.high{background:var(--warn-soft);color:var(--warn)}
+.tag.rev{background:var(--accent-soft);color:var(--accent)}
+
+/* toolbar */
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.chip{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:14px;font-weight:500}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn{background:var(--accent);color:#fff;border:0;border-radius:8px;padding:8px 14px;font-weight:600;font-size:14px}
+:root[data-theme="dark"] .btn{color:#0F1719}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .btn{color:#0F1719}}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.spacer{flex:1}
+
+/* question cards */
+.qlist{display:grid;gap:12px}
+.q{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px;display:grid;gap:10px}
+.q.flash{outline:2px solid var(--accent)}
+.qhead{display:flex;gap:12px;align-items:flex-start}
+.qid{font-family:var(--mono);font-size:12px;color:var(--ink-2);padding-top:3px;min-width:54px;font-variant-numeric:tabular-nums}
+.qtext{font-weight:600;font-size:17px;flex:1}
+.why{font-size:14px;color:var(--ink-2)}
+.why b{color:var(--ink);font-weight:600}
+.cvline{font-size:13.5px;background:var(--surface-2);border:1px dashed var(--line);border-radius:6px;padding:6px 10px;color:var(--ink-2)}
+.cvline::before{content:"Your CV says: ";font-weight:600;color:var(--ink)}
+.qfoot{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.status button{background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:3px 10px;font-size:13px;font-weight:500;color:var(--ink-2)}
+.status button[aria-pressed="true"][data-v="h"]{background:var(--warn-soft);color:var(--warn);border-color:var(--warn)}
+.status button[aria-pressed="true"][data-v="s"]{background:var(--ok-soft);color:var(--ok);border-color:var(--ok)}
+.reveal{background:none;border:0;color:var(--accent);font-weight:600;font-size:14px;padding:3px 0}
+.answer{border-top:1px solid var(--line);padding-top:10px;display:grid;gap:10px}
+.answer h4{margin:0;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);font-weight:500}
+.answer ul{margin:0;padding-left:20px;display:grid;gap:4px}
+.answer .hook{background:var(--accent-soft);border-radius:6px;padding:8px 12px;font-size:15px}
+.answer .hook b{color:var(--accent)}
+
+/* design cases */
+.framework{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.step{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:grid;gap:4px}
+.step .min{font-family:var(--mono);font-size:12px;color:var(--accent);font-variant-numeric:tabular-nums}
+.step b{font-size:15px}
+.step span{font-size:13.5px;color:var(--ink-2)}
+.case{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px;display:grid;gap:12px}
+.case .prompt{font-size:17px;font-weight:600}
+.case-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.case-grid div{display:grid;gap:6px;align-content:start}
+.case ul{margin:0;padding-left:20px;display:grid;gap:3px;font-size:15px}
+.case h4{margin:0;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);font-weight:500}
+.chain{font-size:14px;line-height:2.2}.chain span{background:var(--surface-2);border:1px solid var(--line);border-radius:5px;padding:2px 8px;display:inline-block;line-height:1.4}.chain i{font-style:normal;color:var(--ink-2);margin:0 6px}
+.nums-table td:first-child{font-family:var(--mono);font-size:13px;white-space:nowrap}
+
+.drill{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:6;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+@media (max-width:560px){.qid{display:none}.drill{right:12px}}
+@media (prefers-reduced-motion:no-preference){.q{transition:outline-color .3s}}
+</style>
+
+<div class="wrap">
+<header class="top">
+  <div class="eyebrow">Prep desk · Software Engineer · Field Nation Dhaka</div>
+  <h1>Field Nation Interview Desk</h1>
+  <p class="lede">A backend and system design prep kit built around your CV. Interviewers ask about what you wrote, so the first question bank goes through every claim on your CV. Then come the backend fundamentals and six system design cases taken from Field Nation's own work-order domain. Answers stay hidden until you try, and your self-ratings are saved in this browser.</p>
+  <div class="facts">
+    <span class="fact"><b>Stack</b> PHP + MySQL → Node.js microservices</span>
+    <span class="fact"><b>Infra</b> Docker, Kubernetes, AWS</span>
+    <span class="fact"><b>Plus</b> RabbitMQ/Kafka, APM, SLI/SLO</span>
+    <span class="fact"><b>Band</b> BDT 80k–120k</span>
+    <span class="fact"><b>Hours</b> 1–10 PM BD</span>
+  </div>
+</header>
+
+<nav class="tabs" role="tablist" id="tabs"></nav>
+<main id="main"></main>
+</div>
+<button class="btn drill" id="drill" type="button">Drill me: random question</button>
+
+<script>
+const PLAN = [
+ {week:"Week 1", sub:"Defend the CV, then the core backend", days:[
+  ["D1","Domain + CV defense","Learn the work-order lifecycle and marketplace roles. Answer every question in <b>Defend your CV</b> out loud, and write one 90-second story per bullet.","must","cv-stories.md with 10 stories"],
+  ["D2","HTTP, REST and webhooks","Status codes, idempotency keys, cursor pagination, versioning, HMAC-signed webhooks and retries.","must","OpenAPI sketch for 4 work-order endpoints"],
+  ["D3","Node.js runtime + TypeScript","Event-loop phases, microtasks vs nextTick, blocking the loop, streams, Promise combinators. TS generics, unknown, discriminated unions.","must","10 answers in your own words"],
+  ["D4","NestJS by building","Build a small <code>work-order-service</code>: module, controller, service, DTO validation, guard, TypeORM + MySQL, global exception filter.","must","GitHub repo you can show"],
+  ["D5","MySQL indexing","Composite index order, leftmost prefix, covering indexes, reading EXPLAIN (type, key, rows, Extra), keyset pagination.","must","5 slow queries fixed with a before/after EXPLAIN"],
+  ["D6","MySQL transactions + concurrency","Isolation levels, REPEATABLE READ and next-key locks, SELECT … FOR UPDATE vs optimistic versioning, deadlocks, zero-downtime migrations.","must","Race-safe 'assign technician' query"],
+  ["D7","Review + mock 1","Mock round on the CV and REST questions. Redo every card marked shaky.","rev","List of weak cards"]
+ ]},
+ {week:"Week 2", sub:"Distributed backend", days:[
+  ["D8","Caching with Redis","Cache-aside, TTLs, invalidation, stampede protection, tenant-scoped keys, what never to cache.","high","Cache layer added to the repo"],
+  ["D9","Queues + event-driven","RabbitMQ exchanges/queues/acks, DLQ, at-least-once delivery, idempotent consumers, the outbox pattern, RabbitMQ vs Kafka.","must","WorkOrderAssigned event → notification consumer"],
+  ["D10","Microservices","Service boundaries, sync vs async calls, sagas, the strangler fig pattern, API gateway, data ownership.","must","Diagram of your Sokrio migration, redrawn cleanly"],
+  ["D11","Docker, Kubernetes, AWS","Multi-stage Dockerfile, Pod/Deployment/Service/Ingress, probes, SIGTERM handling, HPA, ConfigMap/Secret. Map these to ECS/EKS, RDS, SQS.","high","Repo running on minikube or kind"],
+  ["D12","Observability + SLOs","SLI vs SLO vs SLA, error budgets, the four golden signals, RED/USE, tracing with correlation IDs, alerting on burn rate.","high","One written SLO for the work-order API"],
+  ["D13","Testing + TDD","Red-green-refactor, test pyramid, Jest unit and supertest e2e, mocking repositories, contract tests between services.","high","One endpoint rebuilt test-first"],
+  ["D14","Mock 2","Full backend round: 10 random cards with a 3-minute limit each.","rev","Scores in this page"]
+ ]},
+ {week:"Week 3", sub:"System design", days:[
+  ["D15","Framework + estimation","Practise the 45-minute framework below. Do back-of-envelope estimates from Field Nation's real scale.","must","One-page cheat sheet"],
+  ["D16","Case: dispatch + matching","Design routing a work order to technicians. Cover the assignment race and geo search.","must","Diagram + trade-off list"],
+  ["D17","Case: notifications + webhooks","Multi-channel notifications, and outbound webhooks to buyer systems.","must","Diagram"],
+  ["D18","Case: check-in and offline mobile","GPS check-in/out, offline sync, photo deliverables, anti-spoofing.","high","Diagram"],
+  ["D19","Case: approval + payouts","Ledger, idempotent payouts, reconciliation, the state machine.","high","Diagram"],
+  ["D20","Case: monolith → Node service","Strangler migration of one PHP module with zero downtime.","must","Cutover runbook"],
+  ["D21","Final mock","One design case plus 8 random cards. Rest in the evening.","rev","Ready"]
+ ]}
+];
+
+const SECTIONS = {cv:"Defend your CV", be:"Backend", sd:"System design"};
+
+const Q = [
+/* ---------------- CV DEFENSE ---------------- */
+{id:"CV-01",s:"cv",q:"You say 'zero cross-tenant data leakage across 100+ tenants.' How did you enforce that, and how do you know it is true?",
+ cv:"Built landlord/tenant database isolation, tenant-scoped queries and territory-scoped RBAC … zero cross-tenant data leakage",
+ why:"<b>They want:</b> mechanism, not a slogan. 'Zero' claims always get a 'how do you know?' follow-up.",
+ a:["Isolation model: landlord DB for platform data, one DB per tenant. The tenant is resolved from the request (domain/header), and the connection is switched in middleware before any controller runs.","Defence in depth: switch back to the landlord connection in a finally block, include the tenant ID in every cache key, and scope queue jobs to carry the tenant ID and reconnect on the worker.","Territory RBAC sits on top: the permission check says what you may do, and the territory scope limits which rows you may see.","How you know: feature tests that create two tenants and assert that tenant A's token cannot read B's data; no incident reports; audit of cache keys and jobs. Say 'no leak reported or found in audits', which is more defensible than 'zero'."],
+ f:["What happens to a queued job if the tenant context is lost?","DB-per-tenant vs shared schema with tenant_id: what are the trade-offs at 10,000 tenants?","How do you run a migration across 100+ tenant DBs?"],
+ hook:"Bring up the job and cache scoping. Most candidates only mention the DB layer, so it shows you thought about every path data takes."},
+{id:"CV-02",s:"cv",q:"Walk me through the monolith to microservices migration. Why split, what did you split, and how was it zero-downtime?",
+ cv:"Led the migration of a Laravel 8/Vue.js 2 monolith to an event-driven microservices platform … zero-downtime cutover, cutting server load by about 20%",
+ why:"<b>This is your headline story.</b> Field Nation is doing the same move (PHP → Node), so expect 15+ minutes on it.",
+ a:["Why: reports and notifications were slowing the core API. They had different scaling needs and release cycles.","What: kept the Laravel core REST API, and extracted Report, Notification and SOP services. They communicate over RabbitMQ, use MongoDB for heavy read models and Redis for cache, with separate React tenant and admin apps.","How (strangler fig): new services consumed events published by the core. You ran old and new paths in parallel and compared outputs, then moved traffic tenant by tenant or route by route with a rollback switch.","Result: about 20% lower server load, because heavy reads moved off the core DB.","What you would do differently: an outbox table from day one, contract tests between services, and tracing IDs across the queue."],
+ f:["How did you keep data consistent while both systems ran?","What if an event was published but the DB transaction rolled back?","Which service did you decide NOT to extract, and why?"],
+ hook:"Say 'I would do this differently next time.' Interviewers trust a candidate who names a mistake."},
+{id:"CV-03",s:"cv",q:"How did RabbitMQ fit in? Explain your exchanges, queues, retries and dead-letter setup.",
+ cv:"Report, Notification and SOP services communicating over RabbitMQ … Laravel queue jobs (retries, dead-letter queues, priority jobs)",
+ why:"<b>They want:</b> proof you used it, not just read about it. Know the vocabulary exactly.",
+ a:["Producer → exchange (direct/topic/fanout) → binding → queue → consumer. Topic exchange with routing keys like <code>order.created</code> lets several services subscribe.","Manual acks: ack only after processing succeeds. nack or requeue on failure, and cap retries with a retry count header or a delayed retry queue (TTL + dead-letter back to the main queue).","DLQ: set <code>x-dead-letter-exchange</code> on the queue. Messages that fail N times land there, you get an alert, and you can replay them after a fix.","Prefetch (QoS) limits in-flight messages per consumer so one slow worker is not flooded.","Delivery is at-least-once, so consumers must be idempotent: store processed message IDs with a unique key."],
+ f:["How do you guarantee ordering for one order's events?","When would you pick Kafka instead?","What happens if a consumer crashes after doing the work but before the ack?"],
+ hook:"Be clear which parts used Laravel queues (Redis driver) and which used RabbitMQ between services. Mixing them up is the fastest way to lose credibility."},
+{id:"CV-04",s:"cv",q:"'Report load times cut by up to 85%.' Take one report and show me before and after.",
+ cv:"heavy reports over millions of records using MongoDB aggregation pipelines, Laravel queue jobs … Redis caching, cutting report load times by up to 85%",
+ why:"<b>They want:</b> a real diagnosis story with numbers. 'Up to' will get probed.",
+ a:["Pick one report: name the data size, the old time (for example 40 s), and the new time (6 s).","Diagnosis: slow query log / Telescope → EXPLAIN → find a full scan or filesort, or N+1 in the loop.","Fixes in order: composite index matching WHERE + ORDER BY, remove N+1 with eager loading, precompute summaries (delivery_summaries / order_summaries in MongoDB), move generation to a queue job for huge exports, cache results per tenant + filter hash.","State how you measured: p95 before and after, not a single run."],
+ f:["How do you keep precomputed summaries correct when orders change?","What is your cache invalidation rule for that report?"],
+ hook:"Have exact numbers for one report ready. A precise small number beats a vague big one."},
+{id:"CV-05",s:"cv",q:"You tracked a 99.9% SLO for report generation. Define the SLI, how you measured it, and what the error budget was.",
+ cv:"tracked SLIs/SLOs (99.9% report-generation availability, API latency and error rate) … SLO-based alerts",
+ why:"<b>The job post names SLI/SLO directly.</b> Expect them to check whether you know the maths.",
+ a:["SLI = good events / valid events. Example: report jobs finished without error within 60 s ÷ report jobs requested.","SLO = target for the SLI over a window: 99.9% over 30 days.","Error budget = 0.1% of events, or in time terms 43.2 minutes a month (30 × 24 × 60 × 0.001).","Alerting on burn rate: page when the budget is burning fast (for example 14× over 1 hour), open a ticket when it burns slowly. This beats alerting on every 5xx.","SLA is the external contract with penalties and is looser than the SLO."],
+ f:["What do you do when the error budget is used up?","Which SLI would you choose for the work-order API?"],
+ hook:"Say the 43.2-minute number. It shows you have done the calculation."},
+{id:"CV-06",s:"cv",q:"How exactly did you cut issue resolution time by 65%? What was your on-call workflow?",
+ cv:"Primary 24/7 on-call engineer for six production apps … cut issue resolution time by 65%",
+ why:"<b>They want:</b> a process, plus one real incident told end to end.",
+ a:["Before: users reported problems, and you searched raw logs by hand.","After: structured logs with tenant_id and request_id, dashboards per app, alerts before users noticed, and runbooks for recurring issues.","Metric: mean time to resolve from ticket timestamps, before vs after.","Tell one incident: symptom → alert → hypothesis → isolate → fix → prevention (test + alert + runbook)."],
+ f:["What was the worst outage you handled?","How do you avoid alert fatigue?"],
+ hook:"Prepare one incident story, timed at 2 minutes."},
+{id:"CV-07",s:"cv",q:"Your payment integration had 'zero failed transactions.' How do HMAC verification and idempotency keys actually work?",
+ cv:"initiation, webhooks, retries, auto-reconciliation and receipts, secured with HMAC signature verification and idempotency keys",
+ why:"<b>Field Nation pays technicians.</b> Payment correctness questions are very likely.",
+ a:["HMAC: provider signs <code>timestamp + raw body</code> with a shared secret (HMAC-SHA256). You recompute over the raw bytes, compare with a constant-time function, and reject old timestamps to block replays.","Idempotency: every payment attempt carries a unique key. A unique constraint on (key) means a retried request returns the stored result instead of charging twice.","Webhook handling: store the event ID with a unique index, respond 200 fast, process in a job. Duplicate events become no-ops.","Reconciliation: a scheduled job compares your records with the gateway's settlement report and flags mismatches.","Rephrase 'zero failed' as 'no double charges or lost payments'. Declines still happen, and an interviewer will point that out."],
+ f:["The gateway charged the card but your server crashed before saving. What happens?","Why must HMAC be computed on the raw body and not on parsed JSON?"],
+ hook:"Answer the crash scenario with: pending record before the call, idempotency key, then webhook + reconciliation fix the state."},
+{id:"CV-08",s:"cv",q:"How did you detect GPS spoofing?",
+ cv:"Van Sales, Vehicle Feedback and Van Attendance modules … plus GPS-spoofing fraud detection",
+ why:"<b>Field Nation checks technicians in by GPS.</b> This is directly relevant, so give a concrete answer.",
+ a:["Client signals: Android mock-location flag, developer options enabled, known spoofing apps.","Server checks: impossible travel speed between consecutive points, location accuracy that is suspiciously perfect, timestamps out of order, check-in outside the outlet's geofence radius.","Response: flag for review rather than auto-block, to limit false positives, and track the flag rate per user.","Name which of these you actually built. Don't claim ones you didn't."],
+ f:["How would you handle a technician in a basement with poor GPS?","How do you store and query location history efficiently?"],
+ hook:"Connect it to Field Nation's check-in / check-out flow. It is the same problem."},
+{id:"CV-09",s:"cv",q:"Tell me about the Node.js services you built. What did they do, and how were they structured?",
+ cv:"Built Node.js/Express services, background workers and developer tooling alongside the Laravel core API, in JavaScript and TypeScript",
+ why:"<b>Your biggest risk.</b> Node is their target stack and your CV names it only generally. Expect deep follow-ups on the event loop and error handling.",
+ a:["Name one concrete service: its purpose, its inputs and outputs, and how it talks to Laravel (REST or queue).","Structure: routes → controllers → services → data layer, central error middleware, env config validation, structured logging.","Runtime facts: single-threaded event loop, keep CPU-heavy work off it (worker_threads or a separate job), handle unhandledRejection, graceful shutdown on SIGTERM.","If NestJS is still 'learning', say so and show your practice repo. Being honest and showing evidence beats bluffing."],
+ f:["How do you handle an error thrown inside an async Express handler?","How did you share types between the Node service and the frontend?"],
+ hook:"The D4 NestJS repo exists for this question. Have the link ready."},
+{id:"CV-10",s:"cv",q:"Show me a MySQL optimization you did: the query, the index, and the EXPLAIN before and after.",
+ cv:"Tuned MySQL with composite indexes, EXPLAIN analysis and N+1 elimination",
+ why:"<b>MySQL is their core DB.</b> They will ask you to read or write an index.",
+ a:["Query shape: <code>WHERE tenant_scope AND status = ? AND created_at BETWEEN ? AND ? ORDER BY created_at</code>.","Index: equality columns first, then the range/sort column, for example <code>(status, created_at)</code>.","EXPLAIN before: <code>type=ALL</code>, rows ≈ 2M, <code>Using filesort</code>. After: <code>type=range</code>, rows ≈ 8k, no filesort.","N+1: 1 query for 500 orders + 500 queries for customers becomes 2 queries with eager loading."],
+ f:["Why does index (a, b) not help WHERE b = ?","When does adding an index make things slower?"],
+ hook:"Draw the index on the whiteboard as a sorted list, then show why the column order matters."},
+{id:"CV-11",s:"cv",q:"How did your CI/CD make deployments 40% faster, and what does the pipeline look like?",
+ cv:"Containerized services with Docker and built CI/CD pipelines … deployments about 40% faster",
+ why:"<b>Docker + K8s are in the post.</b> Deployment detail links to that.",
+ a:["Stages: lint → unit tests → build image (multi-stage, cached layers) → push with commit SHA tag → deploy → migrate → health check → roll back on failure.","Faster because of: layer caching, parallel test jobs, building once and promoting the same image across environments.","Zero-downtime: new containers must pass health checks before old ones are removed, and migrations are backward-compatible (expand, then contract)."],
+ f:["How do you roll back a deploy that included a DB migration?","Where do secrets live?"],
+ hook:"Mention the expand/contract migration pattern. It shows production maturity."},
+{id:"CV-12",s:"cv",q:"Your skills say 'Kubernetes (familiar)'. What have you actually done with it?",
+ cv:"Docker, Docker Compose, CI/CD, AWS … Kubernetes (familiar)",
+ why:"<b>An honesty check.</b> Field Nation runs services on Kubernetes.",
+ a:["Be exact: 'I ran my practice service on minikube/kind with a Deployment, Service, probes and ConfigMap. Production at Sokrio was Docker Compose on servers.'","Then show you know the concepts: Pod, Deployment (rolling update), Service, Ingress, liveness vs readiness probe, HPA, requests/limits.","Close with how you learn fast: the Vue → React rewrite you led in 2 months."],
+ f:["Liveness vs readiness: what happens if you mix them up?","A pod keeps restarting. How do you debug it?"],
+ hook:"Clear limits plus a practice demo come across as senior. Don't bluff here."},
+{id:"CV-13",s:"cv",q:"You write tests first. Show me how you would TDD a small feature right now.",
+ cv:"Wrote tests first for new service and API logic with PHPUnit and pytest",
+ why:"<b>They may ask for live TDD.</b> Practise the rhythm out loud.",
+ a:["Red: write the smallest failing test (for example 'cannot assign a cancelled work order').","Green: write the least code to make it pass.","Refactor: clean up while tests stay green, then add the next test.","Explain the pyramid: many unit tests, fewer integration tests, few e2e. Mock at the boundaries (DB repository, HTTP clients), not inside your own logic."],
+ f:["When is TDD not worth it?","How do you test code that calls RabbitMQ?"],
+ hook:"Use the work-order state machine as your kata. It is small and relevant."},
+
+/* ---------------- BACKEND ---------------- */
+{id:"BE-01",s:"be",q:"A client's POST /work-orders timed out, they retried, and now there are two work orders. How do you prevent this?",
+ why:"<b>Integrations are core to Field Nation.</b> Buyers create work orders from their own ticketing tools.",
+ a:["Client sends an <code>Idempotency-Key</code> header (a UUID per logical request).","Server stores key + request hash + response in a table with a unique index on (client_id, key).","Same key + same hash → return the saved response. Same key + different body → 422. Same key still in progress → 409 or wait.","Keys expire after, say, 24 hours.","A natural unique key such as (client_id, external_ticket_id) is a second safety net."],
+ f:["Where do you store keys: Redis or MySQL? What if Redis evicts one?"]},
+{id:"BE-02",s:"be",q:"PUT vs PATCH vs POST: which are idempotent? And 401 vs 403, 400 vs 422, 409?",
+ why:"<b>A quick fundamentals check.</b> Answer in under 60 seconds.",
+ a:["GET, PUT and DELETE are idempotent. POST is not. PATCH is not guaranteed: 'set status=done' is idempotent, 'append a note' is not.","401: not authenticated (no token or bad token). 403: authenticated but not allowed.","400: malformed request. 422: well-formed but fails validation.","409: conflicts with current state (for example assigning an already assigned work order). 429: rate limited, send Retry-After."],
+ f:["Which code do you return for an async job you accepted but haven't finished? (202)"]},
+{id:"BE-03",s:"be",q:"Why is OFFSET pagination slow on 10M rows, and how does cursor (keyset) pagination fix it?",
+ why:"<b>Work-order lists are large.</b> This is a common MySQL + API question.",
+ a:["OFFSET 500000 makes MySQL read and throw away 500k rows. Cost grows with page depth.","Keyset: <code>WHERE (created_at, id) &lt; (?, ?) ORDER BY created_at DESC, id DESC LIMIT 50</code> with an index on (created_at, id). Each page costs the same.","Return an opaque cursor (base64 of the last row's values).","Trade-off: no 'jump to page 57', and it needs a stable, unique sort key."],
+ f:["How do you add filters (status, buyer) and keep it fast?"]},
+{id:"BE-04",s:"be",q:"Design webhooks so a buyer's system can trust them, deduplicate them, and survive our retries.",
+ why:"<b>Direct Field Nation scenario:</b> work-order status webhooks to buyer systems.",
+ a:["Payload has event_id, event type, occurred_at, and the resource ID or a snapshot.","Signature: HMAC-SHA256 over timestamp + body in a header. The receiver checks it in constant time and rejects old timestamps.","Delivery: at-least-once. Retry with exponential backoff + jitter for about 24 h, then mark failed and show it in the buyer's dashboard with a replay button.","Receivers dedupe by event_id. Ordering is not guaranteed, so include a version or updated_at, or tell receivers to fetch the latest state.","Isolation: a per-endpoint queue, so one slow buyer does not delay the others. Disable endpoints that keep failing."],
+ f:["How would you let a buyer rotate the signing secret without downtime?"]},
+{id:"BE-05",s:"be",q:"Explain the Node.js event loop. In what order do setTimeout, setImmediate, Promise.then and process.nextTick run?",
+ why:"<b>The most common Node question.</b> They are moving to Node.",
+ a:["One JS thread. I/O is offloaded to the OS or the libuv thread pool, and callbacks come back to the loop.","Phases: timers → pending callbacks → poll (I/O) → check (setImmediate) → close callbacks.","After each callback: the process.nextTick queue drains first, then the Promise microtask queue.","So in the main module: sync code → nextTick → promise → then timeout vs immediate (order not guaranteed in the main module; inside an I/O callback, setImmediate comes first).","Blocking the loop (big JSON.parse, sync crypto, heavy loops) stalls every request. Fix with worker_threads, chunking, or moving the work to a queue."],
+ f:["What does the libuv thread pool handle? (fs, dns.lookup, crypto, zlib)"]},
+{id:"BE-06",s:"be",q:"Promise.all vs Promise.allSettled vs Promise.race vs Promise.any. And how do errors escape in async Express handlers?",
+ why:"<b>Everyday Node correctness.</b>",
+ a:["all: rejects at the first rejection. allSettled: waits for all and returns each result. race: first to settle wins. any: first to fulfil wins, and rejects only if all reject.","Express 4 does not catch rejected promises from async handlers. Wrap them or call next(err). Express 5 and NestJS handle it for you.","Always listen for unhandledRejection and log it. Don't keep running in an unknown state."],
+ f:["How would you limit concurrency to 5 parallel calls?"]},
+{id:"BE-07",s:"be",q:"Walk through the NestJS request lifecycle and map it to Laravel.",
+ why:"<b>Shows you can move from Laravel to Nest quickly.</b>",
+ a:["Order: middleware → guards → interceptors (before) → pipes → controller → service → interceptors (after) → exception filters on error.","Laravel mapping: middleware = middleware, guard ≈ Gate/Policy or auth middleware, pipe + DTO/class-validator ≈ FormRequest, interceptor ≈ response macro or middleware after-hook, exception filter ≈ Handler::render, provider/DI ≈ service container.","Modules group controllers + providers, like Laravel service providers per domain."],
+ f:["Where would you put tenant resolution in Nest?"]},
+{id:"BE-08",s:"be",q:"Model the work-order status in TypeScript so invalid transitions don't compile or don't run.",
+ why:"<b>Tests TS depth</b> (discriminated unions) on their core entity.",
+ a:["<code>type Status = 'draft'|'published'|'assigned'|'checked_in'|'done'|'approved'|'paid'|'cancelled'</code>","Transition map: <code>const next: Record&lt;Status, Status[]&gt; = { draft:['published','cancelled'], … }</code> and a function that throws a domain error (→ 409) when the move is not allowed.","A discriminated union per state (<code>{status:'assigned', providerId:string}</code>) makes the compiler require fields that only exist in that state.","Enforce it in the DB too, with a conditional UPDATE (see BE-10)."],
+ f:["unknown vs any? When would you use a generic here?"]},
+{id:"BE-09",s:"be",q:"Index (buyer_id, status, created_at). Which queries use it well, and which don't?",
+ why:"<b>Advanced SQL</b> is often tested this way.",
+ a:["Works well for: buyer_id = ?; buyer_id = ? AND status = ?; buyer_id = ? AND status = ? ORDER BY created_at; buyer_id = ? AND status = ? AND created_at &gt; ?.","Partial: buyer_id = ? AND created_at &gt; ? uses only the buyer_id part for seeking.","Not usable for a seek: status = ? alone, or created_at alone (leftmost prefix rule).","A range on a middle column stops the columns after it from being used for seeking.","Covering index: if every selected column is in the index, EXPLAIN shows <code>Using index</code> and the table is never read."],
+ f:["Read an EXPLAIN: what do type=ref, type=range, type=ALL and Using filesort mean?"]},
+{id:"BE-10",s:"be",q:"Two dispatchers assign the same work order to different technicians at the same moment. How do you make only one win?",
+ why:"<b>The classic concurrency question</b> for a marketplace.",
+ a:["Conditional update (optimistic): <code>UPDATE work_orders SET provider_id=?, status='assigned', version=version+1 WHERE id=? AND status='published'</code>. If 1 row changed you won; if 0, return 409.","Or pessimistic: <code>SELECT … FOR UPDATE</code> inside a transaction, check the status, update, commit. Keep the transaction short.","InnoDB default is REPEATABLE READ. A plain SELECT then UPDATE without a lock is a race.","Publish the WorkOrderAssigned event after commit (outbox), never before."],
+ f:["What is a deadlock and how do you reduce them? (same lock order, short transactions, retry)"]},
+{id:"BE-11",s:"be",q:"Explain MySQL isolation levels and which anomalies each allows.",
+ why:"<b>Senior-leaning,</b> but it appears in mid-level rounds too.",
+ a:["READ UNCOMMITTED: dirty reads. READ COMMITTED: no dirty reads, but non-repeatable reads. REPEATABLE READ (InnoDB default): stable snapshot per transaction; locking reads use next-key locks to block phantoms. SERIALIZABLE: plain SELECTs become locking reads.","Snapshot (MVCC) reads vs locking reads (FOR UPDATE / FOR SHARE) behave differently. That difference is the usual trap."],
+ f:["Why might you run reports on READ COMMITTED or on a replica?"]},
+{id:"BE-12",s:"be",q:"How do you add a column or index to a 50M-row table in production without downtime?",
+ why:"<b>You ran 100+ tenant DBs.</b> They will expect this.",
+ a:["MySQL 8 online DDL (ALGORITHM=INSTANT for many column adds, INPLACE for indexes), or gh-ost / pt-online-schema-change for big tables.","Expand → migrate → contract: add a nullable column, deploy code that writes to both, backfill in batches, switch reads, then remove the old column.","Every migration must work with both the old and the new app version during a rolling deploy."],
+ f:["How do you backfill without locking or replica lag?"]},
+{id:"BE-13",s:"be",q:"Where do you put Redis caching, how do you invalidate, and how do you stop a cache stampede?",
+ why:"<b>Caching</b> comes up in almost every round.",
+ a:["Cache-aside: read the cache, on a miss load from the DB and set with a TTL. Invalidate by deleting on write, or use versioned keys.","Key includes tenant/scope + a hash of the filters. Never cache per-user data under a shared key.","Stampede: a lock so only one request rebuilds the value (others wait or get stale data), stale-while-revalidate, TTL jitter.","Don't cache: money balances used for decisions, or anything that must be read right after a write."],
+ f:["Redis as a queue vs RabbitMQ: what do you lose?"]},
+{id:"BE-14",s:"be",q:"What is the transactional outbox pattern and why do you need it?",
+ why:"<b>The main event-driven correctness question.</b>",
+ a:["Problem: 'save to DB, then publish to RabbitMQ' can fail halfway. You get a DB write with no event, or an event for a rolled-back write.","Fix: in the same DB transaction, insert the event into an <code>outbox</code> table. A relay process polls it (or reads the binlog with CDC, for example Debezium), publishes, and marks rows as sent.","This gives at-least-once delivery, so consumers dedupe by event ID (inbox table with a unique key)."],
+ f:["How do you keep per-work-order ordering? (partition or route by work-order ID)"]},
+{id:"BE-15",s:"be",q:"RabbitMQ vs Kafka: when would you choose each?",
+ why:"<b>Both are named in the job post.</b>",
+ a:["RabbitMQ: a broker that routes messages to queues; a message is removed after ack. Good for task queues, flexible routing, per-message retries/DLQ, moderate throughput.","Kafka: a partitioned, replicated log; messages stay for the retention period and consumers track offsets. Good for high throughput, replay, event sourcing, many independent consumers, ordering per partition.","For Field Nation-style commands (send notification, generate invoice) use RabbitMQ. For an event stream feeding analytics, search indexing and audit use Kafka."],
+ f:["How does a Kafka consumer group scale, and what limits it? (number of partitions)"]},
+{id:"BE-16",s:"be",q:"Service A calls service B synchronously and B is slow. What protects A?",
+ why:"<b>Microservice resilience.</b>",
+ a:["Timeouts on every call (never the default of no timeout).","Retries only for idempotent calls, with exponential backoff + jitter and a cap.","Circuit breaker: after N failures, fail fast for a cooldown period.","Bulkheads: separate connection pools per dependency.","Fallback: cached or partial response. Or move the call to async messaging if the user does not need the result immediately."],
+ f:["How do retries make an outage worse? (retry storms)"]},
+{id:"BE-17",s:"be",q:"Liveness vs readiness probes, and how does a Node service shut down gracefully in Kubernetes?",
+ why:"<b>Kubernetes is in the post.</b>",
+ a:["Readiness fails → the pod is removed from Service endpoints and gets no traffic (for example while warming up or when the DB is down). Liveness fails → the kubelet restarts the container (use it only for a stuck process).","Mistake: checking the DB in liveness means a DB outage restarts every pod in a loop.","Shutdown: pod gets SIGTERM → stop accepting new requests, finish in-flight ones, close DB/AMQP connections, exit before terminationGracePeriodSeconds (default 30 s). A short preStop sleep helps endpoints update first."],
+ f:["Requests vs limits for CPU and memory? What is OOMKilled?"]},
+{id:"BE-18",s:"be",q:"What are the four golden signals, and how would you trace one request across three services?",
+ why:"<b>Observability / APM is in the post.</b>",
+ a:["Latency (p50/p95/p99, not the average), traffic, errors, saturation (CPU, memory, queue depth, DB connections).","Tracing: create a trace ID at the edge and pass it in HTTP headers (W3C traceparent) and in message headers. Each service logs it and records spans. OpenTelemetry → Jaeger/Tempo/Datadog.","Logs are structured JSON with trace_id, tenant_id and user_id, so you can go from a metric spike to the trace to the logs."],
+ f:["Why is average latency misleading?"]},
+{id:"BE-19",s:"be",q:"How do you test a service that writes to MySQL and publishes to RabbitMQ?",
+ why:"<b>TDD and testing depth.</b>",
+ a:["Unit: domain logic with repository and publisher interfaces mocked.","Integration: real MySQL + RabbitMQ in Docker (Testcontainers or docker-compose in CI). Assert the row and the published message.","Contract tests (for example Pact) between producer and consumer, so a payload change breaks CI instead of production.","Keep e2e tests few and slow-path only."],
+ f:["How do you stop tests from sharing DB state?"]},
+{id:"BE-20",s:"be",q:"API authentication for third-party integrations: API keys, OAuth2 client credentials, or JWT?",
+ why:"<b>Field Nation has a public API</b> for buyers.",
+ a:["API key: simple, good for server-to-server. Hash it at rest, scope it, make it rotatable.","OAuth2 client credentials: short-lived access tokens, scopes, standard tooling. Better for a public platform.","JWT is a token format, not a flow. It suits stateless verification across services, but revocation is hard, so keep them short-lived with refresh tokens.","Add rate limits per client (token bucket in Redis) and return 429."],
+ f:["How do you revoke a JWT before it expires?"]},
+
+/* ---------------- SYSTEM DESIGN (short Q cards; full cases in their own tab) ---------------- */
+{id:"SD-01",s:"sd",q:"Estimate the load: 1M work orders a year, 100k technicians. What dominates the traffic?",
+ why:"<b>Estimation checks judgement.</b> The numbers come from your dossier; confirm them.",
+ a:["1M/year ≈ 2,740 per day ≈ 0.03 per second on average. Even a 10× peak is tiny for writes.","Traffic comes from reads (technician search and job feeds), status updates, check-in pings, photo uploads, notifications and webhook fan-out: perhaps 20–50 events per work order.","Storage: photos dominate. 1M × 10 photos × 2 MB ≈ 20 TB a year → S3 + CDN, never the DB.","Conclusion: the hard parts are correctness, integrations and search, not raw QPS. Say this out loud."],
+ f:["Where would you need read replicas first?"]},
+{id:"SD-02",s:"sd",q:"Monolith or microservices for a new feature? How do you decide service boundaries?",
+ why:"<b>They are mid-migration</b> and want judgement, not buzzwords.",
+ a:["Split by business capability with its own data (work orders, dispatch, payments, notifications), not by technical layer.","A good boundary means few synchronous calls across it and one owner for each piece of data.","Start in the monolith when the domain is unclear. Extract when scaling, deploy frequency or team ownership demands it.","Costs of microservices: network failures, eventual consistency, tracing, operational load."],
+ f:["How do two services share data they both need? (events + local read models, not a shared DB)"]},
+{id:"SD-03",s:"sd",q:"How does a saga handle 'approve work → charge buyer → pay technician' across services?",
+ why:"<b>Distributed transactions</b> in their payment flow.",
+ a:["No 2PC. Each step is a local transaction that publishes an event.","Orchestration: a Payment Orchestrator tracks state and calls each step; if one fails it runs compensations (refund the buyer, reverse the ledger entry).","Choreography: services react to each other's events. Simpler at first, harder to follow later.","Every step must be idempotent and retryable, and the saga state is stored so it survives a crash."],
+ f:["The technician payout fails permanently. What does the user see?"]}
+];
+
+const CASES = [
+ {t:"Work-order dispatch and matching",p:"Buyers publish work orders. Route each one to suitable technicians by skill, distance, rating and availability. Technicians request or accept, and exactly one gets assigned.",
+  req:["Functional: publish WO, find candidate techs, notify them, tech requests, buyer or auto-assign, confirm.","Non-functional: assignment must never double-book; search p95 &lt; 300 ms; notifications within seconds."],
+  data:["work_orders (id, buyer_id, status, location POINT, skills, schedule_start, pay, version)","providers (id, location, skills, rating, active)","provider_availability, work_order_requests (wo_id, provider_id, status, UNIQUE)","Spatial index or geohash column; Elasticsearch/OpenSearch for combined geo + skill + rating search"],
+  flow:["Publish → outbox event WorkOrderPublished → Matching service queries candidates → ranks them → Notification service fans out push/SMS.","Assign with a conditional UPDATE on status + version (BE-10) → WorkOrderAssigned event → calendar, notifications, buyer webhook."],
+  deep:["Ranking: a score = weights × (distance, rating, completion rate, past work with this buyer). Keep it tunable per buyer.","Hot spots: many techs request one urgent WO. The DB row lock handles correctness; rate-limit requests.","Fairness: don't always notify the same top 10; rotate or batch in waves (first 20, widen the radius after 10 min)."],
+  arch:"Buyer / API client → Gateway → Work-order service → MySQL + outbox → RabbitMQ → Matching service (search index) → Notification service → Technician app"},
+ {t:"Notifications and outbound webhooks",p:"Send email, SMS, push and in-app notifications on work-order events, and deliver signed webhooks to buyer systems reliably.",
+  req:["At-least-once, deduplicated, user preferences and quiet hours respected, templates per locale.","One failing buyer endpoint must not delay other buyers."],
+  data:["notification_preferences (user, channel, event_type, enabled)","notifications (id, user, event_id, channel, status, attempts) UNIQUE(event_id, user, channel)","webhook_endpoints (buyer_id, url, secret, events, status); webhook_deliveries (event_id, endpoint_id, attempt, status_code, next_retry_at)"],
+  flow:["Domain event → Notification service → expand to (user × channel) → per-channel queues → provider adapters (SES, Twilio, FCM).","Webhooks: per-endpoint queue → HMAC-signed POST → 2xx marks done; otherwise backoff + jitter; failed after 24 h → dashboard + replay."],
+  deep:["Priority lanes: urgent (tech en route) vs digest.","Provider failover: second SMS provider behind a circuit breaker.","Metrics: delivery latency per channel, failure rate per endpoint, queue depth."],
+  arch:"Domain event → Notification service (preferences) → email / SMS / push queues → providers · Domain event → Webhook dispatcher → per-endpoint queues → buyer systems → failed + replay"},
+ {t:"Technician check-in, offline mobile and deliverables",p:"A React Native app lets technicians check in and out with GPS and time, work offline on site, and upload photos and signatures as proof of work.",
+  req:["Works with no signal and syncs later without duplicates.","Evidence can't be faked easily; photos can be large."],
+  data:["time_logs (wo_id, provider_id, type, lat, lng, accuracy, device_time, server_time, client_event_id UNIQUE)","deliverables (wo_id, s3_key, sha256, taken_at, lat, lng)"],
+  flow:["App writes to a local queue (SQLite) with a client_event_id → syncs when online → server upserts by client_event_id (idempotent).","Photos: the app requests a pre-signed S3 URL → uploads directly → confirms → a worker makes thumbnails and checks EXIF."],
+  deep:["Conflicts: server state wins for status; append-only for logs. Keep both device and server time.","Anti-spoofing: geofence radius, impossible speed, mock-location flag (your CV-08 story).","Battery: no continuous tracking, only event-based location."],
+  arch:"Check-in saved offline (client_event_id) → sync when online → API dedupes → request pre-signed URL → PUT photo to S3 → confirm deliverable → worker makes thumbnails"},
+ {t:"Work approval and technician payouts",p:"After the buyer approves the work, charge the buyer and pay the technician. Money must never be lost or paid twice.",
+  req:["Exactly-once effect (idempotency), auditable, reconciles with the payment provider.","Handles disputes and partial payments."],
+  data:["Double-entry ledger: ledger_entries (txn_id, account, debit, credit) with every transaction summing to zero","payouts (id, provider_id, amount, currency, status, idempotency_key UNIQUE, provider_ref)"],
+  flow:["Approved → saga: charge buyer (idempotent key) → ledger entries → payout batch → provider webhook confirms → mark paid.","Nightly reconciliation compares the ledger with provider settlement files and raises alerts."],
+  deep:["Never update balances in place; derive them from the ledger.","Decimal or integer minor units, never floats.","State machine for payout: pending → processing → paid / failed → retry or manual."],
+  arch:"Approved → Charging → Charged → Payout pending → Paid · Charging → Charge failed · Payout pending → Payout failed → retry"},
+ {t:"Extract a PHP module into a Node.js service",p:"Move one domain (say, notifications or work-order search) out of the PHP/MySQL monolith into a Node.js service on Kubernetes with zero downtime.",
+  req:["No downtime, easy rollback, data stays consistent during the transition."],
+  data:["The new service owns its tables. Until cutover it builds them from monolith events (outbox or CDC)."],
+  flow:["1. Put a routing layer (gateway/Nginx/Ingress) in front. 2. Monolith publishes events via outbox. 3. Node service builds its own data. 4. Shadow traffic and compare responses. 5. Move traffic with a flag, per tenant or by percentage. 6. Make the monolith read-only for that domain, then delete the old code."],
+  deep:["Avoid dual writes from app code; use outbox or CDC.","Contract tests keep the API identical for clients.","This is your CV-02 story. Tell it as 'I did this, and here is how I would do it at Field Nation.'"],
+  arch:"Clients → Gateway / Ingress → (most traffic) PHP monolith → MySQL → outbox / CDC → events → Node.js service → service DB · (flagged tenants) → Node.js service"},
+ {t:"Multi-tenant platform with noisy neighbours",p:"Enterprise buyers vary hugely in volume. Stop one big buyer's bulk import or report from slowing down everyone else.",
+  req:["Fair resource use, per-tenant limits, isolation of data and performance."],
+  data:["Shared schema with tenant_id vs DB per tenant vs a hybrid (big tenants get their own DB)."],
+  flow:["Per-tenant rate limits at the gateway (token bucket in Redis).","Separate queues or weighted fair scheduling per tenant for heavy jobs.","Reports run on read replicas or a precomputed store, never on the primary."],
+  deep:["Metrics labelled by tenant to spot the noisy one.","Your Sokrio landlord/tenant design is the story; say what you would change at a larger scale."],
+  arch:"Big buyer + small buyers → per-tenant rate limiter → API → per-tenant job queues → fair workers → read replica · API → primary DB"}
+];
+
+const FRAMEWORK = [
+ ["0–5 min","Clarify","Users, core use cases, what is out of scope. Ask about scale."],
+ ["5–10","Estimate","Requests/s, storage, read:write ratio. Keep it rough."],
+ ["10–15","API + data","3–5 endpoints, the main tables, and the status state machine."],
+ ["15–30","High-level design","Boxes and arrows: gateway, services, DB, cache, queue, storage."],
+ ["30–40","Deep dive","The hard part: concurrency, consistency, failure, hot spots."],
+ ["40–45","Wrap up","Bottlenecks, monitoring and SLOs, what you would build next."]
+];
+
+/* ---------------- state ---------------- */
+const KEY="fn-prep-v1";
+let st={status:{},open:{},tab:"plan",filter:"all"};
+try{const raw=localStorage.getItem(KEY); if(raw) st=Object.assign(st,JSON.parse(raw));}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(st));}catch(e){}}
+
+const TABS=[["plan","Plan"],["cv","Defend your CV"],["be","Backend"],["sd","System design"],["how","How to answer"]];
+const tabsEl=document.getElementById("tabs"), main=document.getElementById("main");
+
+function counts(sec){const qs=Q.filter(q=>q.s===sec);let s=0,h=0;qs.forEach(q=>{if(st.status[q.id]==="s")s++;else if(st.status[q.id]==="h")h++;});return {n:qs.length,s,h};}
+
+function renderTabs(){
+  tabsEl.innerHTML=TABS.map(([k,l])=>{const c=SECTIONS[k]?`<span class="count">${counts(k).n}</span>`:"";return `<button role="tab" type="button" id="tab-${k}" aria-selected="${st.tab===k}" data-tab="${k}">${l}${c}</button>`}).join("");
+}
+tabsEl.addEventListener("click",e=>{const b=e.target.closest("button[data-tab]");if(!b)return;st.tab=b.dataset.tab;st.filter="all";save();render();window.scrollTo({top:0});});
+
+function progressHTML(){
+  return `<div class="progress-grid">${Object.keys(SECTIONS).map(k=>{const c=counts(k);const pw=c.n?c.s/c.n*100:0,ph=c.n?c.h/c.n*100:0;
+   return `<div class="pcard"><span class="label">${SECTIONS[k]}</span><div class="bar"><i class="s" style="width:${pw}%"></i><i class="h" style="width:${ph}%"></i></div><span class="nums">${c.s} solid · ${c.h} shaky · ${c.n-c.s-c.h} not tried</span></div>`}).join("")}</div>`;
+}
+
+function planHTML(){
+  return `<section class="panel">
+   <div class="note pitch"><b>Your one-line pitch</b><p>"At Sokrio I built a multi-tenant field-force and order platform with GPS check-ins, task tracking, payments and client integrations, and I led its move from a Laravel monolith to event-driven services. Field Nation is solving the same kind of problem at a larger scale."</p></div>
+   ${progressHTML()}
+   <p class="muted small">Three weeks at about 3–4 hours on weekdays. If the interview is sooner, do only the <span class="tag must">must</span> days in order, and use the Drill button daily. Deeper topic checklists are in <code>backend-system-design-study-plan.md</code> in this folder.</p>
+   <div class="weeks">${PLAN.map(w=>`<div class="week"><h3>${w.week}<span>${w.sub}</span></h3>
+    <div class="table-wrap"><table><thead><tr><th>Day</th><th>Topic</th><th>What to do</th><th>Priority</th></tr></thead><tbody>
+    ${w.days.map(d=>`<tr><td class="day">${d[0]}</td><td><b>${d[1]}</b></td><td>${d[2]}<span class="out">Output: ${d[4]}</span></td><td><span class="tag ${d[3]}">${d[3]==="rev"?"review":d[3]}</span></td></tr>`).join("")}
+    </tbody></table></div></div>`).join("")}</div>
+  </section>`;
+}
+
+function qCard(q){
+  const open=!!st.open[q.id], v=st.status[q.id]||"";
+  return `<article class="q" id="${q.id}">
+   <div class="qhead"><span class="qid">${q.id}</span><div class="qtext">${q.q}</div></div>
+   ${q.cv?`<div class="cvline">${q.cv}</div>`:""}
+   <p class="why">${q.why}</p>
+   <div class="qfoot">
+     <button class="reveal" type="button" data-rev="${q.id}" aria-expanded="${open}">${open?"Hide answer":"Show answer points"}</button>
+     <span class="spacer"></span>
+     <span class="status" role="group" aria-label="Self-rating">
+       <button type="button" data-q="${q.id}" data-v="h" aria-pressed="${v==="h"}">Shaky</button>
+       <button type="button" data-q="${q.id}" data-v="s" aria-pressed="${v==="s"}">Solid</button>
+     </span>
+   </div>
+   <div class="answer" ${open?"":"hidden"}>
+     <div><h4>Answer points</h4><ul>${q.a.map(x=>`<li>${x}</li>`).join("")}</ul></div>
+     ${q.f?`<div><h4>Likely follow-ups</h4><ul>${q.f.map(x=>`<li>${x}</li>`).join("")}</ul></div>`:""}
+     ${q.hook?`<div class="hook"><b>Tip:</b> ${q.hook}</div>`:""}
+   </div>
+  </article>`;
+}
+
+function qSectionHTML(sec){
+  const intro={cv:"Every claim on your CV can become a question. For each card, answer out loud in about 2 minutes with a real example and a number, then open the answer points and compare. Where your own facts differ from the points, trust your facts.",
+    be:"The fundamentals Field Nation's stack depends on: REST, Node.js, TypeScript, MySQL, caching, messaging, Kubernetes, observability and testing.",
+    sd:"Short estimation and architecture cards. The full practice cases are further down this tab."}[sec];
+  let list=Q.filter(q=>q.s===sec);
+  if(st.filter==="todo")list=list.filter(q=>!st.status[q.id]);
+  if(st.filter==="h")list=list.filter(q=>st.status[q.id]==="h");
+  const f=(k,l)=>`<button class="chip" type="button" data-filter="${k}" aria-pressed="${st.filter===k}">${l}</button>`;
+  return `<section class="panel">
+   <p class="lede">${intro}</p>
+   <div class="toolbar">${f("all","All")}${f("todo","Not tried")}${f("h","Shaky")}<span class="spacer"></span>
+     <button class="btn ghost" type="button" data-openall="${sec}">Show all answers</button></div>
+   <div class="qlist">${list.length?list.map(qCard).join(""):`<p class="muted">Nothing in this filter. Pick another one.</p>`}</div>
+   ${sec==="sd"?casesHTML():""}
+  </section>`;
+}
+
+function casesHTML(){
+  return `<div style="display:grid;gap:14px;margin-top:10px">
+   <h2>The 45-minute framework</h2>
+   <div class="framework">${FRAMEWORK.map(s=>`<div class="step"><span class="min">${s[0]}</span><b>${s[1]}</b><span>${s[2]}</span></div>`).join("")}</div>
+   <h2>Practice cases</h2>
+   <p class="muted">Set a 40-minute timer, design it on paper first, and only then read the reference notes.</p>
+   ${CASES.map((c,i)=>`<div class="case">
+     <h3>Case ${i+1}: ${c.t}</h3>
+     <p class="prompt">${c.p}</p>
+     <button class="reveal" type="button" data-case="${i}" aria-expanded="${!!st.open['case'+i]}">${st.open['case'+i]?"Hide reference notes":"Show reference notes"}</button>
+     <div ${st.open['case'+i]?"":"hidden"} style="display:grid;gap:12px">
+       <div class="case-grid">
+         <div><h4>Requirements</h4><ul>${c.req.map(x=>`<li>${x}</li>`).join("")}</ul></div>
+         <div><h4>Data model</h4><ul>${c.data.map(x=>`<li>${x}</li>`).join("")}</ul></div>
+         <div><h4>Main flow</h4><ul>${c.flow.map(x=>`<li>${x}</li>`).join("")}</ul></div>
+         <div><h4>Deep-dive points</h4><ul>${c.deep.map(x=>`<li>${x}</li>`).join("")}</ul></div>
+       </div>
+       <div><h4>Architecture</h4><p class="chain">${c.arch.split(" · ").map(x=>x.split(" → ").map(y=>`<span>${y}</span>`).join("<i>→</i>")).join("<br>")}</p></div>
+     </div>
+   </div>`).join("")}
+  </div>`;
+}
+
+function howHTML(){
+  return `<section class="panel">
+   <div class="note"><h3>Answering a technical question</h3>
+    <p>1. Give the direct answer in one sentence. 2. Explain the mechanism. 3. Give a Sokrio example with a number. 4. Name the trade-off or the case where it breaks. Stop there and let them ask the follow-up.</p></div>
+   <div class="note"><h3>Answering a CV question</h3>
+    <p>Use situation → what <i>you</i> did → result with a number → what you'd change. Say "I", not "we", for your own part. If a claim on the CV is broader than what you did, narrow it yourself before they do.</p></div>
+   <div class="note"><h3>When you don't know</h3>
+    <p>"I haven't used that in production. Here's how I'd reason about it…" and then reason from first principles. Guessing confidently and being wrong costs more than saying you haven't done it.</p></div>
+   <div class="note"><h3>Numbers to remember</h3>
+    <div class="table-wrap"><table class="nums-table"><tbody>
+     <tr><td>99.9% / 30 days</td><td>43.2 minutes of error budget</td></tr>
+     <tr><td>99.99% / 30 days</td><td>4.3 minutes</td></tr>
+     <tr><td>1 day</td><td>86,400 s, about 10<sup>5</sup></td></tr>
+     <tr><td>1M events/day</td><td>about 12 per second average</td></tr>
+     <tr><td>1M work orders/year</td><td>about 2,740 per day (dossier figure, confirm it)</td></tr>
+     <tr><td>Memory read / SSD read / same-region round trip</td><td>about 100 ns / 100 µs / 0.5–1 ms</td></tr>
+     <tr><td>K8s termination grace</td><td>30 s default</td></tr>
+    </tbody></table></div></div>
+   <div class="note"><h3>Questions to ask them</h3><ul style="margin:0;padding-left:20px">
+     <li>Which services have already moved from PHP to Node, and which one is next?</li>
+     <li>Is RabbitMQ or Kafka in production, and for what?</li>
+     <li>How do you define and review SLOs? Who owns on-call?</li>
+     <li>What would a new engineer own in the first 90 days?</li></ul></div>
+  </section>`;
+}
+
+function render(){
+  renderTabs();
+  main.innerHTML = st.tab==="plan"?planHTML(): st.tab==="how"?howHTML(): qSectionHTML(st.tab);
+}
+
+main.addEventListener("click",e=>{
+  const t=e.target.closest("button"); if(!t)return;
+  if(t.dataset.rev){st.open[t.dataset.rev]=!st.open[t.dataset.rev];}
+  else if(t.dataset.case!==undefined){const k="case"+t.dataset.case;st.open[k]=!st.open[k];}
+  else if(t.dataset.q){const cur=st.status[t.dataset.q];st.status[t.dataset.q]=cur===t.dataset.v?"":t.dataset.v;}
+  else if(t.dataset.filter){st.filter=t.dataset.filter;}
+  else if(t.dataset.openall){const all=Q.filter(q=>q.s===t.dataset.openall);const anyClosed=all.some(q=>!st.open[q.id]);all.forEach(q=>st.open[q.id]=anyClosed);}
+  else return;
+  const y=window.scrollY; save(); render(); window.scrollTo({top:y});
+});
+
+document.getElementById("drill").addEventListener("click",()=>{
+  const pool=Q.filter(q=>st.status[q.id]!=="s"); const pick=(pool.length?pool:Q)[Math.floor(Math.random()*(pool.length||Q.length))];
+  st.tab=pick.s; st.filter="all"; st.open[pick.id]=false; save(); render();
+  const el=document.getElementById(pick.id); if(el){el.scrollIntoView({block:"center"});el.classList.add("flash");setTimeout(()=>el.classList.remove("flash"),1600);}
+});
+
+render();
+</script>
+
+</body></html>

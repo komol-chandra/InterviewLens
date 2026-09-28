@@ -23,6 +23,8 @@ source: 03-roles/fieldnation-software-engineer/00-research/Komol_CV_FieldNation_
 | S7 | Client integration troubleshooting (SOAP/REST) | "Difficult stakeholder", "communication", "offshore/client work" | Customers, REST, communication | 🟡 |
 | S8 | AI-assisted engineering setup | "How do you use AI?", "productivity", "learning" | Team productivity | 🟡 |
 | S9 | Field-force modules + GPS-spoofing detection | "Feature you're proud of", "business impact", "why FN?" | **Work-order/technician ডোমেইন** | 🟡 |
+| S10 | Disagreement with a teammate/manager | "A time you disagreed", "conflict" | Teamwork | ⬜ |
+| S11 | Mistake / failure + system fix | "A mistake you made", "failure" | Ownership | ⬜ |
 
 **বাকি থাকা behavioral টাইপ, যার স্টোরি এখনো নেই:** failure/mistake, disagreement with a teammate or manager, missed deadline। Day 13-এর আগে S10–S12 যোগ করো `[Komol পূরণ করবে]`।
 
@@ -90,3 +92,17 @@ source: 03-roles/fieldnation-software-engineer/00-research/Komol_CV_FieldNation_
 - **Result (CV):** কোম্পানির ২৭% রেভিনিউ বৃদ্ধিতে অবদান।
 - **Defend:** spoofing কীভাবে ধরতে (mock-location flag, speed/distance jump, …)? `[Komol পূরণ করবে]` · ২৭%-এ তোমার অংশ কতটা? (সতর্ক থাকো: "contributed to", "caused" না)
 - **FN মিল:** 🎯 **এটাই "Why Field Nation" উত্তরের কেন্দ্র।** Technician check-in/check-out, GPS proof, work-order approval হুবহু একই সমস্যা।
+
+## S10 — Disagreement (⬜ scaffold, 2026-09-29)
+
+- **Situation/Task:** `[Komol পূরণ করবে: কার সাথে (রোল দিয়ে বলো, নাম না), কী নিয়ে — tech choice / estimate / scope / code review?]`
+- **Action:** আগে তাদের যুক্তি শোনা → `[data / PoC / pros-cons লিখে দেখানো]` → `[কীভাবে একমত হলে]`
+- **Result + lesson:** `[ফলাফল]` · "Disagreements get resolved faster with data than with opinions."
+- **Mock:** `05-mocks/mock-01-cv-behavioral.md` D4
+
+## S11 — Mistake / Failure (⬜ scaffold, 2026-09-29)
+
+- **Situation:** `[Komol পূরণ করবে: কী ভুল — bad deploy / migration / ভুল estimate / prod bug? "I made a mistake when…"]`
+- **Action:** `[কত দ্রুত ঠিক করলে, টিমকে খোলাখুলি জানালে]` → `[test / checklist / alert যোগ, যাতে আবার না হয়]`
+- **Result + habit:** `[ফলাফল]` · "Since then I always…" `[অভ্যাস]`
+- **Mock:** `05-mocks/mock-01-cv-behavioral.md` D5
