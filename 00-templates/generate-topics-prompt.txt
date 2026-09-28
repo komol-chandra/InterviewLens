@@ -1,0 +1,38 @@
+You have full permission to create and edit files in this directory 
+(/home/kiri2ka/code/sokrio/my-work/interview-planner) without asking 
+for confirmation at any step.
+
+Steps to complete:
+
+1. Read README.md, TODO.md, and FOLDER_STRUCTURE.md in this directory 
+   to understand the project spec and the "Answer Pattern" rules.
+
+2. Create the topics/ folder (if not already present) and create all 
+   11 topic files exactly as listed in FOLDER_STRUCTURE.md.
+
+3. For each topic file, generate content strictly following the 
+   Answer Pattern defined in README.md:
+   - Standard topics (Laravel, AWS, Relational DB, Kafka/Redis/RabbitMQ, 
+     React JS, Node.js, Python): 10 questions each, formatted as 
+     Title + Description + 6 Key Points
+   - Complex topics (OOP & Design Pattern/SOLID): Description + 
+     Memorization Points format instead of full explanation
+   - System Design (Bangladesh market context): exactly 5 scenarios — 
+     Order & Stock Management, Ticket Management, Heavy-load Background 
+     Job (Report Generation), User CSV Registration with Notification, 
+     and Failed Job Handling & Backup Plan — using Description + 
+     Memorization Points format
+   - Problem Solving: top 5 problems, each with a Description, working 
+     code, and an explanation (time/space complexity included)
+   - HR questions: question + answer-framework format
+
+4. All content must be written in Bangla (technical terms can stay in 
+   English), targeted at a senior engineer audience — simple, direct, 
+   and easy to review quickly. Do not over-explain basics.
+
+5. After generating each topic file, update TODO.md and check off 
+   that topic's checkbox.
+
+6. Work through all 11 topics one by one without stopping to ask for 
+   confirmation. If a topic file already has content, skip it and 
+   move to the next.

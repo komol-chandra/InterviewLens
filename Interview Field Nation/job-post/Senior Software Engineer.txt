@@ -1,0 +1,92 @@
+Field Nation logo
+Senior Software Engineer (Full stack)
+DhakaSoftware Development /Full-time /Hybrid
+Who we are:
+Field Nation brings companies and service professionals together through an integrated, easy-to-use platform. We support businesses looking to grow their service offerings while also empowering technicians to leverage their skills on their own terms. Our mission is to help the service delivery industry do great work, and we live that mission by doing great work for the companies and service professionals who depend on us.
+ 
+Why is this role important to Field Nation?
+Field Nation is a leading onsite work marketplace seeking creative and skilled developers to join our global engineering team. Our mission is to design and develop technology that improves the lives of its users while providing an exceptionally high level of service.
+We are looking for experienced developers who want to be part of a fast-paced, dynamic environment, where everyone’s opinions and efforts are valued. We hire outstanding professionals and allow them to thrive in a collaborative atmosphere that values learning, growth, and hard work.
+
+If you have the desire to be a part of an exciting, challenging, and growing team, and if you are passionate about software development, please apply below.
+
+What you’ll get to do:
+Cutting-edge technology SaaS solution hosted on AWS that enables today’s and tomorrow’s Gig economy.
+Backend built on PHP, MySQL, and increasingly Node JS microservices, exposed via REST API
+Frontend built with React, React-native, and redux in web and mobile app.
+Services built and deployed using Docker containers managed by Kubernetes.
+Service observability, monitoring, alerts, and maintaining SLI/SLO.
+Work closely with the engineering team, Product Management, UX, and our customers to ensure we build and deliver impactful features.
+Assist in preparing technical specs as a team.
+Bring fresh ideas on how technology can be used to solve big problems.
+Attend our customer call to troubleshoot integration issues if needed.
+You might be a good fit if you have:
+4+ years of experience in the backend.
+3+ years of experience in reactJS.
+Strong understanding of JavaScript/TypeScript, REST API, ES6, React, and React-native.
+Backend web experience with languages such as NodeJS, NestJs, PHP, etc.
+ Advanced knowledge of SQL – MySQL specifically is a plus.
+Ability to write clean, standards-compliant HTML and CSS. Preprocessor experience (LESS/SASS) is a plus.
+Strong focus and experience Test Driven Development.
+Familiarity with the Git version control system.
+Knowledge of Linux or other Unix-based systems (Ubuntu/Debian is a plus).
+Experience with Web Services-based solutions (REST specifically).
+Experience with Microservice architecture.
+Demonstrated ability to integrate AI tools into daily development workflows (code generation, review, debugging, documentation)
+Familiarity with AI orchestration or automation tools to reduce repetitive engineering tasks
+Experience with Mobile Applications (react-native).
+Experience with Event-Driven Architecture(RabbitMQ / Kafka) is a plus.
+Knowledge of Software Observability (Application Performance Monitoring) is a plus.
+Broad technical knowledge – we look for people who can tie together technologies to solve enormous problems.
+Demonstrated ability to integrate AI tools into daily development workflows (code generation, review, debugging, documentation)
+Familiarity with AI orchestration or automation tools to reduce repetitive engineering tasks
+Strong written and verbal communication skills.
+Ability to work well with others as part of a team and across teams.
+Ability to break down more significant initiatives into manageable pieces.
+Experience working with offshore teams is a plus.
+Education:
+ B.Sc. / M.Sc. in Computer Science & Engineering from any reputed University or equivalent practical experience
+Work Schedule and Location:
+Working days: Hybrid, Monday to Friday (3 Work from Home + 2 Work from Office days)
+Working hours: 1PM - 10PM BD time 
+Location: Uttara 12, Dhaka, Bangladesh
+Salary Range:
+BDT 160,000 - 210,000 (Monthly)
+Why we think you'll love it here:
+At Field Nation, we believe great work deserves great support. Here’s a snapshot of the benefits designed to reward performance, support well-being and create an enjoyable workplace experience.
+ 
+1. Compensation & Financial Rewards
+Because hard work should feel like winning.
+Field Nation LLC Performance Reward – Because every citizen of Field Nation deserves a stake in the win!
+Festival Bonus – Celebrate the big festivals with some extra cheer (and cash!).
+Referral Bonus – Incentives for successful employee referrals.
+Gratuity – Honoring your long-term dedication
+Leave Encashment – Opportunity to encash unused annual leave balance at year-end.
+2. Health & Wellness
+Your body, mind, and family matter.
+Medical Insurance – Comprehensive health coverage for employees and their immediate family (spouse and children).
+Gym Membership – Stay fit, active, and energized.
+3. Daily Operations & Office Perks
+Complimentary Lunch / Dinner – Because good work needs good food.
+Unlimited Tea & Coffee – Keep the energy flowing.
+Transportation – Helping you get to work hassle-free.
+Mobile Data Allowance – Allowances to ensure connectivity.
+4. Professional Development
+Career Development Budget – Dedicated funds for professional learning and growth.
+5. Culture, Events & Time Off
+Fostering work-life balance and strong team connections.
+Work Model: Hybrid (2 days in-office, 3 days remote per week) – balance is key.
+Summer & Winter Field Weeks – Two annual team retreats to connect, collaborate, and recharge.
+Quarterly Team Outing Budget – Enjoy exciting activities and quality time with your team to bond, relax and celebrate together. 
+Occasional Gifts – Surprises and gifts to celebrate milestones & welcome new faces.
+Leave Benefits:
+Paid Time Off  – Take the time you need! Covers annual, casual, and sick leave so you can recharge and come back ready to shine.
+Hajj/Umrah Leave
+Maternity Leave
+Paternity Leave
+Why Field Nation?
+At Field Nation, we are breaking the barriers to work and enabling the gig economy. We’re a tech company that offers a web-based marketplace solution for buyers and sellers of contract services to simply connect, work, and manage their business. We look for collaborators, innovators, and problem solvers to join us in our common purpose of changing the way work gets done. We were named a Top Workplace by the Star Tribune in 2017, 2018, 2019, and a Top 150 Workplace in 2020. We look to hire extraordinary people and provide them extraordinary benefits.
+We may use artificial intelligence (AI) tools to support parts of the hiring process, such as reviewing applications, analyzing resumes, or assessing responses and identifying potential inconsistencies or verification signals in application materials based on available information. These tools assist our recruitment team but do not replace human judgment. Final hiring decisions are ultimately made by humans. If you would like more information about how your data is processed, please contact us.
+Field Nation Home Page
+
+Jobs powered byLever logo

@@ -1,0 +1,19 @@
+Dear Hiring Team,
+
+I hope you are doing well.
+
+I'm writing to express interest in the Software Engineer position at your organization. With 5+ years of experience building production systems, I've worked across ecommerce platforms, SaaS products, and large-scale multi-tenant enterprise software processing millions of records daily.
+
+At Sokrio, I've been a core contributor across the full stack. I led the migration of a Laravel + Vue.js monolith to microservices — introducing RabbitMQ, MongoDB, and Redis — and rewrote the frontend from Vue.js to React.js + Next.js in under two months. I also built Python-based analytics APIs supporting 100+ enterprise clients.
+
+Before Sokrio, I built ecommerce platforms at SoftArch and a complete SaaS product at Am Coders, where I was promoted from intern to full-time within a month.
+I'd welcome the chance to discuss how my experience could contribute to your team. My resume is attached for your review.
+Thank you for your consideration.
+
+Warm regards,
+
+Komol Chandra Devnath
+Software Engineer
+komolnath67@gmail.com
++880 1874-303467
+
