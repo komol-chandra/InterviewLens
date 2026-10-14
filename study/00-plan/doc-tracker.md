@@ -47,6 +47,8 @@ Path বেস: `03-roles/fieldnation-software-engineer/`
 | FN-23 | Mock 3 — full-stack (stub) | `05-mocks/mock-03-fullstack.md` | mock | — | ⬜ | 2026-09-29 | | |
 | FN-24 | Mock 5 — rapid-fire fluency (stub) | `05-mocks/mock-05-rapid-fire.md` | mock | — | ⬜ | 2026-09-29 | | |
 | FN-25 | Mock 1 Part C — CV deep dive full answer guide (EN) | `05-mocks/mock-01-part-c-deep-dive.md` | mock | — | 🟡 | 2026-09-29 | | |
+| FN-26 | HM / tech-team রাউন্ড — ৮-দিনের depth প্ল্যান + Truth Audit | `00-plan/02-fieldnation-hm-depth-plan.md` | plan | — | 🟡 | 2026-10-14 | | |
+| FN-27 | HM technical-depth Q-bank (Depth Ladder A1–A6, Why-X-not-Y, incidents, gaps) | `03-roles/fieldnation-software-engineer/04-behavioral/04-hm-technical-depth-qbank.md` | Q-bank | — | 🟡 | 2026-10-14 | | |
 | — | 5-mock series overview | `05-mocks/00-series-overview.md` | notes | — | 🟡 | 2026-09-29 | | |
 
 ---
