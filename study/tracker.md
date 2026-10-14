@@ -124,7 +124,40 @@
 
 | ID | ডক | Path | Status | Studied | Conf |
 |---|---|---|---|---|---|
-| TRK-01 | System Design + Design Patterns প্ল্যান | `5-tracks/00-plan.md` | 📝 draft (অনুমোদনের অপেক্ষায়) | | |
+| TRK-01 | System Design + Design Patterns প্ল্যান | `5-tracks/00-plan.md` | ✅ approved 2026-10-15 · Phase 0 ✅ generated (পড়া বাকি) | | |
+| SD-01 | ৪৫-মিনিট SD ফ্রেমওয়ার্ক + estimation চিটশিট | `5-tracks/system-design/01-framework.md` | ✅ generated | | |
+| SD-23 | Multi-tenant SaaS কেস (A1 কেস-ফরম্যাটে) | `5-tracks/system-design/cases/23-multi-tenant-saas.md` | ✅ generated | | |
+| DP-02 | Sokrio-তে design pattern ম্যাপ (১ পাতা, কোডে যাচাই) | `5-tracks/design-patterns/02-sokrio-pattern-map.md` | ✅ generated | | |
+| TRK-02 | প্রশ্নের তালিকা: SD ১৫টা + DP ১৫টা + ১০-ফেজ উত্তর প্ল্যান | `5-tracks/01-question-list.md` | ✅ ৩০/৩০ generated · SD ১৫/১৫ + বোনাস · DP ১৫/১৫ + ৪ machine coding (2026-10-15) | | |
+| SD-02 | SD-Q02: 1K → 1M users স্কেলিং | `5-tracks/system-design/concepts/02-scaling.md` | ✅ generated (TRK-02 P1) | | |
+| SD-03 | SD-Q03: Caching, invalidation, stampede | `5-tracks/system-design/concepts/03-caching.md` | ✅ generated (TRK-02 P1) | | |
+| DP-01 | DP-Q01: Pattern কী, কখন কোড খারাপ করে, SOLID | `5-tracks/design-patterns/01-principles.md` | ✅ generated (TRK-02 P1) | | |
+| SD-04 | SD-Q04: এক MySQL যথেষ্ট না → index → replica → sharding | `5-tracks/system-design/concepts/04-db-scaling.md` | ✅ generated (TRK-02 P2) | | |
+| SD-05 | SD-Q05: SQL vs NoSQL, polyglot | `5-tracks/system-design/concepts/05-sql-vs-nosql.md` | ✅ generated (TRK-02 P2) | | |
+| DP-03 | DP-Q03: Strategy (if/else → class), চলমান TS | `5-tracks/design-patterns/behavioral/03-strategy.md` · `code/strategy.ts` | ✅ generated (TRK-02 P2) | | |
+| SD-06 | SD-Q06: CAP, PACELC, consistency মডেল | `5-tracks/system-design/concepts/06-cap-consistency.md` | ✅ generated (TRK-02, SD batch) | | |
+| SD-07 | SD-Q07: Queue, delivery guarantee, failure/DLQ/outbox | `5-tracks/system-design/concepts/07-queues.md` | ✅ generated (TRK-02, SD batch) | | |
+| SD-11 | SD বোনাস: Reliability (timeout, retry, circuit breaker, SLO) | `5-tracks/system-design/concepts/11-reliability.md` | ✅ generated (TRK-02, SD batch) | | |
+| SD-20 | SD-Q08: URL shortener | `5-tracks/system-design/cases/08-url-shortener.md` | ✅ generated (TRK-02, SD batch) | | |
+| SD-21 | SD-Q09: Rate limiter | `5-tracks/system-design/cases/09-rate-limiter.md` | ✅ generated (TRK-02, SD batch) | | |
+| SD-22 | SD-Q10: Notification service (SMS resend = নিজের কাজ) | `5-tracks/system-design/cases/10-notification.md` | ✅ generated (TRK-02, SD batch) | | |
+| SD-24 | SD-Q15: Reporting pipeline (A2) | `5-tracks/system-design/cases/15-reporting-pipeline.md` | ✅ generated (TRK-02, SD batch) | | |
+| SD-28 | SD-Q11: Payment, ডাবল চার্জ | `5-tracks/system-design/cases/11-payment.md` | ✅ generated (TRK-02, SD batch) | | |
+| SD-29 | SD-Q12: Order + inventory, oversell | `5-tracks/system-design/cases/12-order-inventory.md` | ✅ generated (TRK-02, SD batch) | | |
+| SD-30 | SD-Q13: Work-order dispatch (FN-14-এর পরিপূরক) | `5-tracks/system-design/cases/13-dispatch.md` | ✅ generated (TRK-02, SD batch) | | |
+| DP-04 | DP-Q04: Factory Method vs Abstract Factory | `5-tracks/design-patterns/creational/04-factory.md` · `code/factory.ts` | 🟡 generated (TRK-02, DP batch) | | |
+| DP-05 | DP-Q05: Builder (১০-parameter constructor এড়ানো) | `5-tracks/design-patterns/creational/05-builder.md` · `code/builder.ts` | 🟡 generated (TRK-02, DP batch) | | |
+| DP-06 | DP-Q06: Singleton কেন anti-pattern, DI | `5-tracks/design-patterns/creational/06-singleton.md` · `code/singleton.ts` | 🟡 generated (TRK-02, DP batch) | | |
+| DP-07 | DP-Q07: Adapter, ৩টা SMS provider | `5-tracks/design-patterns/structural/07-adapter.md` · `code/adapter.ts` | 🟡 generated (TRK-02, DP batch) | | |
+| DP-08 | DP-Q08: Decorator vs Proxy (cache + log), তোমার `cached_with_timing` | `5-tracks/design-patterns/structural/08-decorator-proxy.md` · `code/decorator-proxy.ts` | 🟡 generated (TRK-02, DP batch) | | |
+| DP-09 | DP-Q09: Observer, sync vs queued listener | `5-tracks/design-patterns/behavioral/09-observer.md` · `code/observer.ts` | 🟡 generated (TRK-02, DP batch) | | |
+| DP-10 | DP-Q10: Middleware = Chain of Responsibility | `5-tracks/design-patterns/behavioral/10-chain.md` · `code/chain.ts` | 🟡 generated (TRK-02, DP batch) | | |
+| DP-11 | DP-Q11: Command (queue, retry, undo), QA journal | `5-tracks/design-patterns/behavioral/11-command.md` · `code/command.ts` | 🟡 generated (TRK-02, DP batch) | | |
+| DP-12 | DP-Q12: State pattern / transition table | `5-tracks/design-patterns/behavioral/12-state.md` · `code/state.ts` | 🟡 generated (TRK-02, DP batch) | | |
+| DP-13 | DP-Q13: Template Method vs Strategy, ScenarioSeeder | `5-tracks/design-patterns/behavioral/13-template-method.md` · `code/template-method.ts` | 🟡 generated (TRK-02, DP batch) | | |
+| DP-14 | DP-Q14: Repository on Eloquent, দুই পক্ষ | `5-tracks/design-patterns/architectural/14-repository.md` · `code/repository.ts` | 🟡 generated (TRK-02, DP batch) | | |
+| DP-15 | DP-Q15: CQRS, Saga, Outbox, Circuit Breaker | `5-tracks/design-patterns/architectural/15-distributed-patterns.md` · `code/distributed-patterns.ts` | 🟡 generated (TRK-02, DP batch) | | |
+| DP-16 | Machine coding ×৪: LRU, parking lot, rate limiter, work-order lifecycle | `5-tracks/design-patterns/machine-coding/README.md` + ৪টা `.ts` | 🟡 generated (TRK-02 বোনাস) | | |
 
 ---
 

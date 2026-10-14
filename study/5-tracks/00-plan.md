@@ -1,4 +1,4 @@
-> Tracker ID: TRK-01 · Generated: 2026-10-15 · Status: **📝 draft, Komol-এর অনুমোদনের অপেক্ষায়** · Source: `study/` বিদ্যমান কনটেন্ট স্ক্যান
+> Tracker ID: TRK-01 · Generated: 2026-10-15 · Status: **✅ approved 2026-10-15** (Q1 = Phase 0 এখনই; Q2–Q5 = সুপারিশ মতো, ডিফল্ট ধরে নেওয়া) · Source: `study/` বিদ্যমান কনটেন্ট স্ক্যান
 
 # Plan: System Design + Coding Design Patterns ট্র্যাক
 

@@ -8,7 +8,7 @@
 
 | দিন | তারিখ | কাজ | কোন ফাইলে লিখবে | ✔ |
 |---|---|---|---|---|
-| **D-8** | বৃহঃ ১০-১৫ | 🔴 Truth Audit (RabbitMQ / Node / Kafka-র সত্যি) + ৬টা Receipt Card | `1-me/decisions.md` (খোলা প্রশ্ন) · [0-now/receipt-cards.md](0-now/receipt-cards.md) | ⬜ |
+| **D-8** | বৃহঃ ১০-১৫ | 🔴 Truth Audit (RabbitMQ / Node / Kafka-র সত্যি) + ৬টা Receipt Card | `1-me/decisions.md` (খোলা প্রশ্ন) · [0-now/receipt-cards.md](0-now/receipt-cards.md) | ⬜ (১০-১৫ সময় গেছে 5-tracks-এ: SD+DP ৩০/৩০ জেনারেট; Truth Audit বাকি → পরের সেশনে প্রথম) |
 | D-7 | শুক্র ১০-১৬ | Anchor A1–A3 → L1–L5 লেখা + রেকর্ড করে জোরে বলা | `0-now/hm-qbank.md` §A | ⬜ |
 | D-6 | শনি ১০-১৭ | Anchor A4–A6 + Sokrio আর্কিটেকচার ২ মিনিটে আঁকা | `0-now/hm-qbank.md` §A | ⬜ |
 | D-5 | রবি ১০-১৮ | ১০টা "Why X not Y" কার্ড (Context → Options → Choice → Cost → Revisit) | `0-now/hm-qbank.md` §B | ⬜ |
@@ -33,6 +33,7 @@ study/
 ├── 2-speak/        ← যা মুখে ইংরেজিতে বলব: pitch, HR উত্তর, প্রশ্ন জিজ্ঞেস করা
 ├── 3-practice/     ← যা হাতে-কলমে করব: mocks/, dsa/ (১৪ প্যাটার্ন + PDF সিরিজ), mcq-bank
 ├── 4-library/      ← দরকার হলে পড়ার রেফারেন্স: cs/ (জেনেরিক টপিক), fieldnation/ (domain, topics, system-design, research)
+├── 5-tracks/       ← দীর্ঘমেয়াদি ট্র্যাক: System Design + Design Patterns (প্ল্যান `5-tracks/00-plan.md`)
 └── 9-archive/      ← পুরনো প্ল্যান ও TODO, হাতে-লেখা নোট। শুধু পড়া, এখানে কাজ হয় না
 ```
 
