@@ -7,7 +7,7 @@
 ```
 A_InterviewLens/
 ├── 00-templates/           ← নতুন কোম্পানি প্রেপ বুটস্ট্র্যাপ করার জন্য reusable templates
-├── study/                  ← 🎯 সব স্টাডি + প্ল্যান + ট্র্যাকার + প্রেপ মেমরি (বিস্তারিত: study/README.md)
+├── study/                  ← 🎯 সব স্টাডি + প্ল্যান + ট্র্যাকার + প্রেপ মেমরি (শুরু: study/START-HERE.md)
 │   ├── 00-plan/  _memory/  01-cse-fundamentals/  02-problem-solving/  03-roles/
 ├── 02-companies/           ← প্রতিটা কোম্পানি/রোলের জন্য আলাদা সাবফোল্ডার
 ├── 03-job-applications/    ← জব অ্যাপ্লিকেশন ট্র্যাকার ও ইমেইল টেমপ্লেট
@@ -19,7 +19,7 @@ A_InterviewLens/
 `FOLDER_STRUCTURE.md`, `README.md`, `TODO.md` — খালি টেমপ্লেট, নতুন কোম্পানি প্রেপ শুরু করার সময় `02-companies/<company-name>/`-এ কপি করে ব্যবহার করো। `README.md`-এর "Answer Pattern" অংশটাই Claude Code দিয়ে টপিক কনটেন্ট জেনারেট করার একমাত্র নিয়ম। `generate-topics-prompt.txt` ও `company-research-prompt.md` — কনটেন্ট জেনারেশন/কোম্পানি রিসার্চের জন্য রেডিমেড প্রম্পট।
 
 ### `study/` (আগে `01-cse-fundamentals/` নামে টপ-লেভেলে ছিল)
-সব স্টাডি কাজ এখন `study/`-এর ভেতরে: অ্যাক্টিভ প্ল্যান (`00-plan/`), টাইপ-ভিত্তিক প্রেপ মেমরি (`_memory/`), জেনেরিক CS (`01-cse-fundamentals/`), DSA PDF (`02-problem-solving/`), রোল-নির্দিষ্ট প্রেপ (`03-roles/`)। Claude সেশন প্রোটোকল: `study/CLAUDE.md`। নিচের অংশটা `study/01-cse-fundamentals/`-এর বর্ণনা:
+সব স্টাডি কাজ এখন `study/`-এর ভেতরে: কাজের ধরন অনুযায়ী: `0-now/` (এখনকার রাউন্ড), `1-me/` (প্রেপ মেমরি), `2-speak/`, `3-practice/` (mocks + DSA), `4-library/` (cs + fieldnation), `9-archive/`। শুরু: `study/START-HERE.md`। Claude সেশন প্রোটোকল: `study/CLAUDE.md`। নিচের অংশটা পুরনো `01-cse-fundamentals/`-এর বর্ণনা (এখন `4-library/cs/` + `3-practice/dsa/`):
 
 "CS Global Study Dir" — জেনেরিক, রিইউজেবল CS কনটেন্ট, **সব কোম্পানির প্রেপে শেয়ার্ড**। ভেতরে দুই ভাগ: `theory/` (১৫টা কনসেপ্ট টপিক, প্রতিটা নিজের ফোল্ডারে নোট/চিটশিট/ডিপ-ডাইভ ফাইল সহ) আর `practical/` (DSA প্যাটার্ন-ভিত্তিক প্র্যাকটিস, easy/medium/hard গ্রেডেড)। বিস্তারিত `01-cse-fundamentals/README.md`-এ। কোনো কোম্পানি-স্পেসিফিক ফোল্ডারে এই কনটেন্ট ডুপ্লিকেট করা হবে না — নতুন জেনেরিক টপিক লাগলে এখানেই যোগ করো।
 
