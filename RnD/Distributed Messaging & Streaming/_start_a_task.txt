@@ -1,0 +1,1 @@
+Read _komol/RnD/Distributed Messaging & Streaming/_plan/README.md, TRACKER.md, MEMORY.md, HANDOFF.md. All tasks done; see HANDOFF "If you continue".

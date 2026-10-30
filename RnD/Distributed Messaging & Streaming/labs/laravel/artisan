@@ -1,0 +1,10 @@
+<?php
+// Minimal Laravel 9.52 console on Sokrio's vendor (mounted read-only at /srv/vendor). Lab only.
+require '/srv/vendor/autoload.php';
+require __DIR__ . '/jobs.php';
+$app = new Illuminate\Foundation\Application(__DIR__);
+$app->singleton(Illuminate\Contracts\Console\Kernel::class, Illuminate\Foundation\Console\Kernel::class);
+$app->singleton(Illuminate\Contracts\Debug\ExceptionHandler::class, Illuminate\Foundation\Exceptions\Handler::class);
+$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
+if (($argv[1] ?? '') === 'run') { $kernel->bootstrap(); require $argv[2]; exit(0); }   // php artisan run script.php
+exit($kernel->handle(new Symfony\Component\Console\Input\ArgvInput, new Symfony\Component\Console\Output\ConsoleOutput));
