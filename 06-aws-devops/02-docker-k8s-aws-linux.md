@@ -37,7 +37,7 @@ HEALTHCHECK CMD wget -qO- http://localhost:3000/health || exit 1
 CMD ["node", "dist/main.js"]
 ```
 
-🔗 Sokrio link: CV-তে CI/CD প্রসঙ্গ আছে, কিন্তু নির্দিষ্ট Dockerfile ডিটেইল `[Komol পূরণ করবে]`।
+🔗 DistroSaaS link: CV-তে CI/CD প্রসঙ্গ আছে, কিন্তু নির্দিষ্ট Dockerfile ডিটেইল `[Komol পূরণ করবে]`।
 
 ## ২. docker-compose লোকাল ডেভেলপমেন্টে কী সমাধান করে?
 
@@ -72,7 +72,7 @@ Rolling update: নতুন ভার্সনের Pod একে একে �
 - **SQS/SNS:** ম্যানেজড queue (SQS) আর pub/sub (SNS) — নিজে RabbitMQ/Kafka হোস্ট না করে ম্যানেজড অল্টারনেটিভ।
 - **CloudWatch:** লগ, মেট্রিক, অ্যালার্ম।
 
-🔗 Sokrio link: CV-তে CloudWatch ব্যবহারের উল্লেখ আছে (S4-এর on-call/SLO স্টোরিতে)। EKS/RDS/S3-এর গভীর প্রোডাকশন ডিটেইল `[Komol পূরণ করবে]`।
+🔗 DistroSaaS link: CV-তে CloudWatch ব্যবহারের উল্লেখ আছে (S4-এর on-call/SLO স্টোরিতে)। EKS/RDS/S3-এর গভীর প্রোডাকশন ডিটেইল `[Komol পূরণ করবে]`।
 
 ## ৮. Linux — দ্রুত রিভিশন
 

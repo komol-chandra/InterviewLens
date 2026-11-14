@@ -5,7 +5,7 @@ for ($i = 0; $i < 120; $i++) Redis::rpush("feature_tracking:buffer:$i", 'evt');
 $match = config('database.redis.options.prefix') . 'feature_tracking:buffer:*';
 $out = [];
 try { $c = '0'; $n = 0; do { [$c, $k] = Redis::scan($c, 'MATCH', $match, 'COUNT', 50); $n += count($k ?: []); } while ((string) $c !== '0');
-      $out[] = "Sokrio call (FlushFeatureEventsJob.php:68): $n/120"; } catch (\Throwable $e) { $out[] = 'Sokrio call: ERROR ' . $e->getMessage(); }
+      $out[] = "DistroSaaS call (FlushFeatureEventsJob.php:68): $n/120"; } catch (\Throwable $e) { $out[] = 'DistroSaaS call: ERROR ' . $e->getMessage(); }
 foreach (['null' => null, 'int 0' => 0, "'0'" => '0'] as $label => $start) {
     try { $cursor = $start; $n = 0; $loops = 0;
         do { $r = Redis::scan($cursor, ['match' => $match, 'count' => 50]); if ($r === false) break;

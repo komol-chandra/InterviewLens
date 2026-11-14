@@ -37,7 +37,7 @@ const handler: Next = async (req) => ({ status: 200, body: `orders of ${req.tena
 // Order matters: auth before tenant before permission.
 const app = pipeline([timing, auth, tenant, permission('VIEW_ORDER')], handler);
 
-// ---------- Same pattern for query filters (Sokrio app/Filters + laravel-funnel) ----------
+// ---------- Same pattern for query filters (DistroSaaS app/Filters + laravel-funnel) ----------
 type Query = string[];
 type Filter = (q: Query, params: Record<string, string>, next: (q: Query) => Query) => Query;
 
@@ -51,10 +51,10 @@ function applyFilters(filters: Filter[], params: Record<string, string>): Query 
 }
 
 async function main() {
-  const base = { host: 'thl.sokrio.com', path: '/api/orders' };
+  const base = { host: 'tenant-a.distrosaas.example', path: '/api/orders' };
   console.log((await app({ ...base, token: 'good', permissions: ['VIEW_ORDER'] })).body);
   console.log((await app({ ...base, token: 'bad', permissions: [] })).body);
-  console.log((await app({ ...base, host: 'evil.sokrio.com', token: 'good', permissions: ['VIEW_ORDER'] })).body);
+  console.log((await app({ ...base, host: 'evil.example.com', token: 'good', permissions: ['VIEW_ORDER'] })).body);
   console.log((await app({ ...base, token: 'good', permissions: [] })).body);
 
   console.log('\nfilters ->', applyFilters([byStatus, byTerritory, byDate], { status: 'pending', from: '2026-10-01' }).join(' AND '));

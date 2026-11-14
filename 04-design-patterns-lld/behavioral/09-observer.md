@@ -10,7 +10,7 @@ tags: [lld, behavioral]
 updated: 2026-11-14
 ---
 
-> Tracker ID: DP-09 · Generated: 2026-10-15 · Answers: **DP-Q09** (TRK-02 Phase 6) · Source: GoF + sokrio-server code (`Providers/EventServiceProvider` `OrderApproved` listeners, `app/Observers/`, `Observers/Concerns/PublishesKafkaMessage`, `Notification/ApprovalNotifier` `->afterCommit()`) · Runnable: `04-design-patterns-lld/code/observer.ts` (✅ ran + strict tsc 2026-10-15) · Status: 🟡 generated
+> Tracker ID: DP-09 · Generated: 2026-10-15 · Answers: **DP-Q09** (TRK-02 Phase 6) · Source: GoF + api-server code (`Providers/EventServiceProvider` `OrderApproved` listeners, `app/Observers/`, `Observers/Concerns/PublishesKafkaMessage`, `Notification/ApprovalNotifier` `->afterCommit()`) · Runnable: `04-design-patterns-lld/code/observer.ts` (✅ ran + strict tsc 2026-10-15) · Status: 🟡 generated
 
 # DP-Q09: When an order is placed, you need to send SMS, update stock and write a log. How do you keep these decoupled?
 
@@ -161,7 +161,7 @@ DB::transaction(function () use ($data) {
 **মূল উত্তর (৪৫ সেকেন্ড):**
 > "The order service saves the order and publishes one event, `OrderPlaced`, after the transaction commits. It doesn't know who listens. Each side effect is its own listener: SMS, audit log, analytics. The key decision is sync versus queued. Anything that must be consistent with the order, like reserving stock, I keep inside the transaction, either directly or as a sync listener. Slow or flaky things like SMS go to a queued listener with retries and backoff, and since queues deliver at least once, that listener checks whether it already sent before sending. Adding a new reaction later, like loyalty points, is one new listener and no change to the order code."
 
-**Sokrio উদাহরণ:**
+**DistroSaaS উদাহরণ:**
 > "When an order is approved in our system, the model dispatches `OrderApproved`, and the event map lists six listeners: accept the order, start a revision, create the invoice, increase pending quantity in the seller's stock, and fire notifications. The notification and revision listeners are queued. Separately, model observers on orders and deliveries publish change events to Kafka for other services."
 
 ---
@@ -178,7 +178,7 @@ DB::transaction(function () use ($data) {
 
 ---
 
-🔗 **Sokrio link:** (কোডে যাচাই করা)
+🔗 **DistroSaaS link:** (কোডে যাচাই করা)
 - **Event + listeners:** `app/Providers/EventServiceProvider.php` → `OrderApproved::class => [AcceptOrder, InitOrderRevision, CreateInvoice, IncreasePendingQtyInSellerStock, InitInvoiceRevision, FireAcceptedNotifications]` (আর `AchieveInvoiceTargets`/`AchieveProductTargets` comment করা)। Dispatch: `app/Models/Order/Order.php` → `approve()` → `OrderApproved::dispatch($this)`; MongoDB `PrimaryOrder`-এরও নিজস্ব `OrderApproved`। Queued: `FireAcceptedNotifications`, `InitOrderRevision`, `AchieveProductTargets` (`ShouldQueue`)। লেখক টিম (Tanmay, sihab, shihab)।
 - **Model observers:** `app/Observers/` (Order, Delivery, History, Permission, Role, Setting, Unit…)। `Observers/Concerns/PublishesKafkaMessage` trait → Kafka publish (sihab; A4, টিমের)।
 - **After commit:** `app/Services/Notification/ApprovalNotifier.php` → `SendApprovalNotificationJob::dispatch(...)->afterCommit()`।

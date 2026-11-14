@@ -27,7 +27,7 @@ The target is a 1–2 hour technical interview in English with a US-style team. 
 ## Master Setup Prompt (paste first, in every mock)
 
 > Act as a Senior Technical Interviewer evaluating me for a Full-Stack Software Engineer role.
-> - **CV:** `/home/kiri2ka/code/sokrio/_komol/InterviewLens/Komol_CV_FieldNation_Software_Engineer.docx`
+> - **CV:** `Komol_CV_FieldNation_Software_Engineer.docx`
 > - **Format:** 1–2 hour deep-dive interview
 > - **Goal:** Assess technical accuracy, system architecture knowledge, communication clarity, and spoken English fluency.
 >

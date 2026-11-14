@@ -25,17 +25,17 @@ updated: 2026-11-14
 
 **"কেন company PHP থেকে Node-এ সরায়, কী PHP-তেই রাখবে?"** — Field Nation-এর real decision, তোমার নিজের অভিজ্ঞতা দিয়েই উত্তর দাও (নিচে S1)।
 
-🔗 Sokrio link: S1 — Laravel monolith থেকে Node-স্টাইল সার্ভিস (RabbitMQ-connected) সরানোর সরাসরি অভিজ্ঞতা।
+🔗 DistroSaaS link: S1 — Laravel monolith থেকে Node-স্টাইল সার্ভিস (RabbitMQ-connected) সরানোর সরাসরি অভিজ্ঞতা।
 
 ---
 
 ## Q2. "কেন PHP থেকে Node-এ সরাবে?" — নিজের মাইগ্রেশন গল্প দিয়ে উত্তর
 
-Sokrio-তে Laravel 8 + Vue.js 2 monolith ছিল। কোর API Laravel-এই রাখা হয়েছে (auth, tenant resolution, main CRUD — কারণ এখানে Laravel-এর ecosystem/maturity ভালো কাজ করে), কিন্তু **Report, Notification, SOP** সার্ভিস আলাদা করে RabbitMQ দিয়ে যুক্ত করা হয়েছে (কারণ এগুলো async, event-driven, independently scale করা দরকার ছিল)।
+DistroSaaS-এে Laravel 8 + Vue.js 2 monolith ছিল। কোর API Laravel-এই রাখা হয়েছে (auth, tenant resolution, main CRUD — কারণ এখানে Laravel-এর ecosystem/maturity ভালো কাজ করে), কিন্তু **Report, Notification, SOP** সার্ভিস আলাদা করে RabbitMQ দিয়ে যুক্ত করা হয়েছে (কারণ এগুলো async, event-driven, independently scale করা দরকার ছিল)।
 
 **সাধারণ নীতি:** যেটা request-response, ACID transaction-heavy, দ্রুত ডেভেলপ করতে হবে — PHP/Laravel-এই রাখো। যেটা event-driven, I/O-heavy, independently scale করতে হবে, বা টিম নতুন স্ট্যাক শিখতে চায় — Node-এ সরাও। **Big-bang rewrite না, স্ট্র্যাংলার-ফিগ প্যাটার্নে piece-by-piece।**
 
-🔗 Sokrio link: S1 — "core API + আলাদা Report/Notification/SOP সার্ভিস, RabbitMQ, দুই সিস্টেম প্যারালালে চালিয়ে zero-downtime cutover, সার্ভার লোড ~২০% কম।"
+🔗 DistroSaaS link: S1 — "core API + আলাদা Report/Notification/SOP সার্ভিস, RabbitMQ, দুই সিস্টেম প্যারালালে চালিয়ে zero-downtime cutover, সার্ভার লোড ~২০% কম।"
 
 ---
 
@@ -48,7 +48,7 @@ Sokrio-তে Laravel 8 + Vue.js 2 monolith ছিল। কোর API Laravel-�
 
 এটা "data modelling" বা "security" প্রশ্নের সবচেয়ে শক্তিশালী উত্তর — ১০০+ টেন্যান্টে সত্যিকারের প্রোডাকশন-স্কেল multi-tenancy।
 
-🔗 Sokrio link: S3 — "প্রতিটা ক্লায়েন্টের নিজস্ব tenant DB, landlord DB-র পেছনে। Request tenant resolve করে, connection সুইচ হয়, প্রতিটা cache key ও queued job tenant scope বহন করে। ১০০+ টেন্যান্টে শূন্য cross-tenant leak।"
+🔗 DistroSaaS link: S3 — "প্রতিটা ক্লায়েন্টের নিজস্ব tenant DB, landlord DB-র পেছনে। Request tenant resolve করে, connection সুইচ হয়, প্রতিটা cache key ও queued job tenant scope বহন করে। ১০০+ টেন্যান্টে শূন্য cross-tenant leak।"
 
 ---
 

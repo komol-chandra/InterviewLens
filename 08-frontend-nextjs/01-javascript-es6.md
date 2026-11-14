@@ -31,7 +31,7 @@ console.log('5');
 // আউটপুট: 1, 5, 4, 3, 2
 ```
 
-🔗 Sokrio link: সরাসরি অভিজ্ঞতা নেই এভাবে ফ্রেম করা — এভাবে বলো: "I reason about this the same way I reason about Laravel's queue vs immediate response — synchronous code finishes first, then microtasks (Promises) drain, then the event loop moves to the next macrotask."
+🔗 DistroSaaS link: সরাসরি অভিজ্ঞতা নেই এভাবে ফ্রেম করা — এভাবে বলো: "I reason about this the same way I reason about Laravel's queue vs immediate response — synchronous code finishes first, then microtasks (Promises) drain, then the event loop moves to the next macrotask."
 
 ---
 
@@ -48,7 +48,7 @@ const counter = makeCounter();
 counter(); counter(); // 2 — count বাইরে থেকে access করা যায় না
 ```
 
-🔗 Sokrio link: S8 — এই ধরনের encapsulation প্যাটার্ন Node/NestJS service লেয়ারে ব্যবহার হয়, যেখানে Claude Code দিয়ে backend কাজ করি।
+🔗 DistroSaaS link: S8 — এই ধরনের encapsulation প্যাটার্ন Node/NestJS service লেয়ারে ব্যবহার হয়, যেখানে Claude Code দিয়ে backend কাজ করি।
 
 ---
 
@@ -57,7 +57,7 @@ counter(); counter(); // 2 — count বাইরে থেকে access কর�
 - **Regular function:** call-site নির্ধারণ করে (`obj.method()` → `this = obj`; standalone call → `undefined`/`globalThis`)
 - **Arrow function:** নিজের `this` নেই, lexical scope থেকে inherit করে — callback-এ (যেমন `setTimeout`, array method) `this` হারানো ঠেকাতে সবচেয়ে বেশি ব্যবহৃত হয়।
 
-🔗 Sokrio link: সরাসরি অভিজ্ঞতা নেই — এভাবে বলো: "In our React/TS codebase we default to arrow functions for exactly this reason — no `this` rebinding surprises in event handlers."
+🔗 DistroSaaS link: সরাসরি অভিজ্ঞতা নেই — এভাবে বলো: "In our React/TS codebase we default to arrow functions for exactly this reason — no `this` rebinding surprises in event handlers."
 
 ---
 
@@ -65,7 +65,7 @@ counter(); counter(); // 2 — count বাইরে থেকে access কর�
 
 `var` hoist হয় এবং `undefined`-এ initialize হয় (declaration-এর আগে access করলে error না)। `let`/`const` hoist হয় কিন্তু initialize হয় না — declaration-এর আগে access করলে **ReferenceError** (এই gap-টাই TDZ)। `function` declaration পুরোটাই hoist হয় (আগে কল করা যায়), `function expression`/arrow ফাংশন হয় না।
 
-🔗 Sokrio link: সরাসরি অভিজ্ঞতা নেই — এভাবে বলো: "We enforce `let`/`const` only via ESLint in the frontend codebase specifically to avoid these hoisting bugs."
+🔗 DistroSaaS link: সরাসরি অভিজ্ঞতা নেই — এভাবে বলো: "We enforce `let`/`const` only via ESLint in the frontend codebase specifically to avoid these hoisting bugs."
 
 ---
 
@@ -83,7 +83,7 @@ Promise.race([
 ]);
 ```
 
-🔗 Sokrio link: S1 — মাইগ্রেশনের সময় parallel সিস্টেম চালানোর মতো জায়গায় multiple async call-এর ফলাফল একসাথে সামলাতে হয়েছিল।
+🔗 DistroSaaS link: S1 — মাইগ্রেশনের সময় parallel সিস্টেম চালানোর মতো জায়গায় multiple async call-এর ফলাফল একসাথে সামলাতে হয়েছিল।
 
 ---
 
@@ -91,7 +91,7 @@ Promise.race([
 
 প্রতিটা object-এর একটা internal `[[Prototype]]` লিংক আছে (`__proto__` দিয়ে exposed)। Property lookup না পেলে prototype chain বেয়ে ওপরে যায়, `null` পর্যন্ত। ES6 `class` এটার উপর syntactic sugar মাত্র — আসলে `Object.create`/`function.prototype`-ই কাজ করছে ভেতরে।
 
-🔗 Sokrio link: সরাসরি অভিজ্ঞতা নেই — এভাবে বলো: "Day to day I work in TypeScript classes/interfaces, but I know they compile down to this prototype chain."
+🔗 DistroSaaS link: সরাসরি অভিজ্ঞতা নেই — এভাবে বলো: "Day to day I work in TypeScript classes/interfaces, but I know they compile down to this prototype chain."
 
 ---
 
@@ -103,7 +103,7 @@ const merged = { ...defaults, ...overrides }; // shallow merge, পরের key
 const [first, ...others] = providers;
 ```
 
-🔗 Sokrio link: S6 — React/TS রিরাইটে props/state handle করতে এই প্যাটার্নগুলো রোজ ব্যবহার হয়।
+🔗 DistroSaaS link: S6 — React/TS রিরাইটে props/state handle করতে এই প্যাটার্নগুলো রোজ ব্যবহার হয়।
 
 ---
 
@@ -121,7 +121,7 @@ function debounce<T extends (...args: any[]) => void>(fn: T, delay: number) {
 
 শেষ কলের `delay` ms পরে একবার execute হয় — search-input, resize handler-এ ব্যবহার হয়।
 
-🔗 Sokrio link: S6 — filterable list/search UI-তে (React frontend) এই প্যাটার্ন সরাসরি দরকার হয়।
+🔗 DistroSaaS link: S6 — filterable list/search UI-তে (React frontend) এই প্যাটার্ন সরাসরি দরকার হয়।
 
 ---
 
@@ -141,7 +141,7 @@ function throttle<T extends (...args: any[]) => void>(fn: T, limit: number) {
 
 প্রতি `limit` ms-এ সর্বোচ্চ একবার execute হয় — scroll/GPS-ping handler-এ ব্যবহার হয়।
 
-🔗 Sokrio link: S9 — GPS check-in ping-এর মতো high-frequency ইভেন্টে throttling দরকার হয়, যদিও exact implementation `[Komol পূরণ করবে]`।
+🔗 DistroSaaS link: S9 — GPS check-in ping-এর মতো high-frequency ইভেন্টে throttling দরকার হয়, যদিও exact implementation `[Komol পূরণ করবে]`।
 
 ---
 
@@ -161,7 +161,7 @@ async function fetchWO(id) {
 
 Node-এ un-caught rejection process crash করাতে পারে (`unhandledRejection` event)। প্রতিটা `await`-কে `try/catch`-এ মোড়ানো, অথবা caller পর্যন্ত propagate হতে দেওয়া — silently swallow করা যাবে না।
 
-🔗 Sokrio link: S2 — queue job-এ retry/dead-letter queue ঠিক এই কারণেই দরকার হয়েছিল: unhandled failure যেন silently হারিয়ে না যায়।
+🔗 DistroSaaS link: S2 — queue job-এ retry/dead-letter queue ঠিক এই কারণেই দরকার হয়েছিল: unhandled failure যেন silently হারিয়ে না যায়।
 
 ---
 

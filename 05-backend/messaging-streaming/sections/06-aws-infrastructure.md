@@ -12,26 +12,26 @@ updated: 2026-10-28
 
 # 06 · AWS Infrastructure — What Runs Where, and What AWS Would Manage
 
-> **Snapshot:** `sokrio-server` @ `master` · HEAD `d14c0ebb2` · written 2026-10-26. `master` is now `bf223a126`, and its 2 new commits touch no file under `.github/`, `config/`, the Kafka code, the jobs or `README.md`, so every ref below still holds. The working tree is on `survey-question-image-stg-new` (switched outside this session). Code was read from `git archive d14c0ebb2`, and vendor code from the installed `vendor/` (Laravel 9.52.22, `longlang/phpkafka` 1.2.5, `aws/aws-sdk-php` 3.394.3).
-> Paths are relative to `sokrio-server/` unless prefixed. Tags: `[CODE]` app code or repo files · `[LIB]` vendor code · `[HIST]` git history (deleted files) · `[NOTES]` project docs and skills · `[GENERAL]` AWS and industry knowledge · `[INFERENCE]` follows from code, not observed in prod · `[ASSUMPTION]` best guess plus how to verify.
+> **Snapshot:** `api-server` @ `master` · HEAD `d14c0ebb2` · written 2026-10-26. `master` is now `bf223a126`, and its 2 new commits touch no file under `.github/`, `config/`, the Kafka code, the jobs or `README.md`, so every ref below still holds. The working tree is on `survey-question-image-stg-new` (switched outside this session). Code was read from `git archive d14c0ebb2`, and vendor code from the installed `vendor/` (Laravel 9.52.22, `longlang/phpkafka` 1.2.5, `aws/aws-sdk-php` 3.394.3).
+> Paths are relative to `api-server/` unless prefixed. Tags: `[CODE]` app code or repo files · `[LIB]` vendor code · `[HIST]` git history (deleted files) · `[NOTES]` project docs and skills · `[GENERAL]` AWS and industry knowledge · `[INFERENCE]` follows from code, not observed in prod · `[ASSUMPTION]` best guess plus how to verify.
 > **Big caveat:** prod `.env` and the server-side `pipeline.sh` scripts can't be read from here. A3–A5 are still open, so every "today" statement about Kafka and Redis hosting is evidence-weighted, not confirmed.
 > Question bank links: Q20–Q23 (Kafka ops, replication), Q38–Q42 (Redis persistence/HA), Q46–Q50 (Kafka vs SQS/Kinesis), Q58 (queue at scale), Q72–Q76 (design on AWS), Q79 (AZ failure).
 
 ## 6.0 What changed our understanding (read this first)
 
-The task card said: "EC2 VMs deployed by GitHub Actions over SSH. Unknown: MSK vs self-hosted Kafka, ElastiCache vs self-hosted Redis." That is still the frame, but checking how Sokrio's code would run on each AWS service turned up five new findings and two corrections.
+The task card said: "EC2 VMs deployed by GitHub Actions over SSH. Unknown: MSK vs self-hosted Kafka, ElastiCache vs self-hosted Redis." That is still the frame, but checking how DistroSaaS's code would run on each AWS service turned up five new findings and two corrections.
 
 | # | Finding | Severity | Proof |
 |---|---|---|---|
 | **F19** | **The upload → job handoff uses the local disk.** `BulkStockController` stores the upload on the `local` disk of the box that served the request, and `BulkStockBatchImportJob` reads it from the `local` disk of the box that runs the job. With a separate queue-worker VM that only works if both boxes share storage, or if the web box's own worker picks up the job. Otherwise the job logs a warning and returns: a silent no-op | 🟡 `[INFERENCE]` | §6.6 |
 | **F20** | **The Python benchmark service shares Redis DB 0 with Laravel's queues.** Its `REDIS_URL` points at DB `/0`, the same DB that holds `queues:*`. Its cache therefore shares `maxmemory` and the eviction policy with the queue. A cache-heavy benchmark run can trigger OOM errors on `dispatch()` under `noeviction`, or evict queued jobs under any `*-lru` policy | 🟡 | §6.5 |
-| **F21** | **The Kafka client rules out most MSK auth modes.** `longlang/phpkafka` supports TLS and SASL **PLAIN** only. MSK offers IAM, SCRAM, mTLS or unauthenticated access. IAM (the only option on MSK Serverless) and SCRAM are impossible without a client change. Sokrio configures neither TLS nor SASL today | 🟢 (a constraint) | §6.4 |
+| **F21** | **The Kafka client rules out most MSK auth modes.** `longlang/phpkafka` supports TLS and SASL **PLAIN** only. MSK offers IAM, SCRAM, mTLS or unauthenticated access. IAM (the only option on MSK Serverless) and SCRAM are impossible without a client change. DistroSaaS configures neither TLS nor SASL today | 🟢 (a constraint) | §6.4 |
 | **F22** | **Moving the `order-approved` queue to SQS breaks it.** Approval delays are validated up to **60 minutes**, but SQS `DelaySeconds` is capped at **900 s** (15 min). Laravel passes the delay straight through, so `sendMessage` throws inside the order request. Laravel's SQS driver also ignores `retry_after` and short-polls | 🟡 (migration blocker) | §6.8 |
 | **F23** | **Deploy pipeline hygiene.** The deploy workflows use `appleboy/ssh-action@master` (an unpinned third-party action that receives SSH credentials), log in with **password** SSH on prod/PVM/staging, and run `sudo bash pipeline.sh`. PVM deploys to the **same host secret** as prod | 🟡 | §6.1 |
 
 | # | Was | Now (code wins) |
 |---|---|---|
-| D17 | Devops skill: `containerization/docker-compose.prod.yml` is an "AWS overlay (ECR images, RDS/ElastiCache)" (`.claude/skills/sokrio-devops/SKILL.md:42`) | No such file exists anywhere under `~/code` (searched `find -name docker-compose.prod.yml`, and `containerization/` doesn't exist, see D15). There is **no evidence of ECR, RDS or ElastiCache** in any repo |
+| D17 | Devops skill: `containerization/docker-compose.prod.yml` is an "AWS overlay (ECR images, RDS/ElastiCache)" (`.claude/skills/devops/SKILL.md:42`) | No such file exists anywhere under `~/code` (searched `find -name docker-compose.prod.yml`, and `containerization/` doesn't exist, see D15). There is **no evidence of ECR, RDS or ElastiCache** in any repo |
 | D18 | Inventory §0.10: "`.docker/php/` only (image bits)" | `.docker/php/` is an **empty, untracked** folder in the local working tree. Git at `d14c0ebb2` has no `.docker/`; the real Docker files were deleted in `557e63d68` (2024-01-02) |
 
 ---
@@ -48,11 +48,11 @@ flowchart LR
   GH2[benchmark-python<br/>deploy.yml] -- "push main (key SSH)<br/>docker compose build+up" --> PY
 
   subgraph AWS["AWS account — EC2 (per secret names)"]
-    PROD["Prod 'all task' VM<br/>nginx + php-fpm<br/>scheduler (RUN_SCHEDULER)<br/>/home/sokrio/sokrio-prod + /pvm"]
+    PROD["Prod 'all task' VM<br/>nginx + php-fpm<br/>scheduler (RUN_SCHEDULER)<br/>/home/deploy/app-prod + /pvm"]
     QW["Queue-worker VM<br/>queue:work (queues: ?)"]
     REP["Report VM<br/>no scheduler"]
     STG["Staging VM"]
-    PY["Benchmark API<br/>Docker, network 'sokrio'"]
+    PY["Benchmark API<br/>Docker, network 'app'"]
     K[("Kafka<br/>A4: EC2 or MSK?")]
     R[("Redis<br/>A5: EC2 or ElastiCache?")]
   end
@@ -65,18 +65,18 @@ flowchart LR
 
 | Box | Trigger | Auth | Server-side script | Ref |
 |---|---|---|---|---|
-| Prod ("all task" server) | push `master` | **password** (`AWS_VM_HOST`/`_USERNAME`/`_PASSWORD`) | `/home/sokrio/sokrio-prod/post-deploy/pipeline.sh` | `[CODE]` `.github/workflows/ci-cd.yml:5-6,17-23` |
-| PVM tenant app | push `pvm/master` | **same `AWS_VM_HOST` secret as prod** | `/home/sokrio/pvm/post-deploy/pipeline.sh` | `[CODE]` `.github/workflows/pvm-ci-cd.yml:6,19-23` |
-| Queue worker | push `prod-queue` | SSH key (`AWS_QUEUE_VM_*`) | `/home/sokrio/sokrio-queue/post-deploy/pipeline.sh` | `[CODE]` `.github/workflows/queue-worker-deploy.yml:6,20-26` |
-| Report server | push `prod-report` | SSH key (`AWS_REPORT_VM_*`) | `/home/sokrio/sokrio-report/post-deploy/pipeline.sh` | `[CODE]` `.github/workflows/prod-report-deploy.yml:6,20-26` |
+| Prod ("all task" server) | push `master` | **password** (`AWS_VM_HOST`/`_USERNAME`/`_PASSWORD`) | `/home/deploy/app-prod/post-deploy/pipeline.sh` | `[CODE]` `.github/workflows/ci-cd.yml:5-6,17-23` |
+| PVM tenant app | push `pvm/master` | **same `AWS_VM_HOST` secret as prod** | `/home/deploy/pvm/post-deploy/pipeline.sh` | `[CODE]` `.github/workflows/pvm-ci-cd.yml:6,19-23` |
+| Queue worker | push `prod-queue` | SSH key (`AWS_QUEUE_VM_*`) | `/home/deploy/app-queue/post-deploy/pipeline.sh` | `[CODE]` `.github/workflows/queue-worker-deploy.yml:6,20-26` |
+| Report server | push `prod-report` | SSH key (`AWS_REPORT_VM_*`) | `/home/deploy/app-report/post-deploy/pipeline.sh` | `[CODE]` `.github/workflows/prod-report-deploy.yml:6,20-26` |
 | Staging | push `staging` | **password** (`AWS_DEV_*`) | a pipeline under a personal home dir | `[CODE]` `.github/workflows/stg.yml:6,19-23` |
-| Benchmark API (Python) | push `main` | SSH key (`EC2_*`) | inline: `git pull` → `docker compose build --pull` → `up -d --no-deps` → import check → `.env` drift warning | `[CODE]` `sokrio-benchmark-python/.github/workflows/deploy.yml:15-67` |
+| Benchmark API (Python) | push `main` | SSH key (`EC2_*`) | inline: `git pull` → `docker compose build --pull` → `up -d --no-deps` → import check → `.env` drift warning | `[CODE]` `benchmark-python/.github/workflows/deploy.yml:15-67` |
 
 What this tells us:
 - `[CODE]` **It's EC2 VMs, deployed by SSH.** There's no ECS, EKS, Lambda, Beanstalk, CodeDeploy, ECR, Terraform, CloudFormation or CDK in any repo (inventory §0.13 search, re-run across all five repos for `docker-compose`, `Dockerfile`, `*.tf`, `cdk.json`, `serverless.yml`, `k8s`, `helm`, `ecs`, `task-def`).
 - `[CODE]` **The scheduler runs on exactly one box.** `Kernel.php:113-117`: "Only run the scheduler on the 'all task' production server, not on the report server", gated by `RUN_SCHEDULER`. That's a manual singleton, which is why no `onOneServer()` is needed today (T4 risk 6).
 - `[INFERENCE]` **PVM shares the prod VM.** Both workflows SSH into `secrets.AWS_VM_HOST` and run a different directory's `pipeline.sh`. A noisy-neighbour or reboot event on that VM takes down both.
-- `[INFERENCE]` **PHP probably runs in Docker on the VMs.** The README's Supervisor programs use `/var/www/html/artisan` (`README.md:179,190,203`), the official-image path, and its Datadog note says to set the env "*not* container-wide" (`README.md:224`). The benchmark compose joins an **external** Docker network called `sokrio` (`sokrio-benchmark-python/docker-compose.yml:14-19`), which something else on that host must create. `.env.example:143-148` carries `HTTP_PORT`, `HTTPS_PORT`, `SSL_*` and `NGINX_CONF_PATH`, which are compose-style knobs.
+- `[INFERENCE]` **PHP probably runs in Docker on the VMs.** The README's Supervisor programs use `/var/www/html/artisan` (`README.md:179,190,203`), the official-image path, and its Datadog note says to set the env "*not* container-wide" (`README.md:224`). The benchmark compose joins an **external** Docker network called `DistroSaaS` (`benchmark-python/docker-compose.yml:14-19`), which something else on that host must create. `.env.example:143-148` carries `HTTP_PORT`, `HTTPS_PORT`, `SSL_*` and `NGINX_CONF_PATH`, which are compose-style knobs.
 - `[CODE]` **No GitHub Actions concurrency guard** on the five server workflows. Two quick pushes run two `pipeline.sh` at once. The Python deploy has one (`deploy.yml:7-9`).
 - `[CODE]` **F23 hygiene.** `appleboy/ssh-action@master` (`ci-cd.yml:17` and the other four) runs whatever is on that action's `master` branch with our SSH secrets. Pin it to a commit SHA. Password SSH plus `sudo` on prod is the weakest link; the queue and report boxes already use keys.
 
@@ -91,10 +91,10 @@ Nothing in the repos says "MSK" or "ElastiCache". So we weigh the evidence.
 | `config/kafka.php:5` has one `KAFKA_BROKERS` string, with no TLS or SASL keys anywhere in `config/kafka.php` or `app/Services/Kafka` | Plaintext listener. Self-hosted, or MSK with an unauthenticated plaintext listener (allowed, but not the default) | `[CODE]` |
 | Topics auto-created with RF from `KAFKA_AUTO_CREATE_REPLICATION_FACTOR`, default **1** (`config/kafka.php:74-75`) | A single-broker dev-style cluster. On a 3-broker MSK cluster you'd normally set 3 | `[CODE]` |
 | No Kafka in any compose file, now or in history; the deleted 2024 prod compose had only `redis`, `mariadb`, `nginx`, `certbot`, `app`, `worker`, `cron` | Kafka was added after Docker files were removed (`dcc8984e8`). So it's either a hand-installed broker or a managed service | `[HIST]` `557e63d68^:docker-compose.prod.yml` |
-| The deleted 2024 prod compose ran `redis:alpine` as container `sokrio-redis` with a `./data/redis` volume and `${REDIS_PORT}:6379` published | Redis was self-hosted next to the app, at least until 2024 | `[HIST]` |
+| The deleted 2024 prod compose ran `redis:alpine` as container `app-redis` with a `./data/redis` volume and `${REDIS_PORT}:6379` published | Redis was self-hosted next to the app, at least until 2024 | `[HIST]` |
 | `config/database.php:193-220`: no `scheme`/TLS option, no `clusters` block; `REDIS_URL` (`:203`) exists but isn't in `.env.example` | Plain TCP to one node. ElastiCache with in-transit encryption would need `tls://` (possible via `REDIS_URL`, so not conclusive) | `[CODE]` |
 | The 2024 worker image ran `pecl install redis` (the phpredis extension) | A7 history: the old prod worker used **phpredis** (adds weight to F14) | `[HIST]` `557e63d68^:.docker/php-fpm/worker.dockerfile` |
-| Python's `REDIS_URL=redis://<redacted>/0` (no `rediss://`) | Plain TCP, same Redis | `[CODE]` `sokrio-benchmark-python/.env.example` |
+| Python's `REDIS_URL=redis://<redacted>/0` (no `rediss://`) | Plain TCP, same Redis | `[CODE]` `benchmark-python/.env.example` |
 
 **Verdict.** `[ASSUMPTION]` Both are most likely **self-hosted on EC2**: Redis as a container or package on one of the VMs, Kafka as a single broker. Confidence is medium for Redis and medium-low for Kafka. **Verify** (names only, no values pasted anywhere):
 - Host pattern behind `KAFKA_BROKERS`: `b-N.<cluster>.….kafka.<region>.amazonaws.com` means MSK. `aws kafka list-clusters-v2` with an empty list means not MSK.
@@ -106,7 +106,7 @@ Nothing in the repos says "MSK" or "ElastiCache". So we weigh the evidence.
 
 ## 6.3 The concern table (README_2 Phase 6)
 
-| Concern | Today (best evidence) | AWS-managed option | Fit for Sokrio |
+| Concern | Today (best evidence) | AWS-managed option | Fit for DistroSaaS |
 |---|---|---|---|
 | **Kafka** | `[ASSUMPTION]` One self-hosted broker; topics P=3 / RF=1, auto-created by `TopicProvisioner`; plaintext; acks=0 (F5) | **MSK provisioned** (2–3 AZ, managed brokers, storage scaling, MSK Connect). MSK Serverless needs IAM auth, so it's ruled out by F21 | Good, if TLS-only or mTLS is acceptable (§6.4). Biggest gain: RF=3 across AZs |
 | **RabbitMQ** | `[CODE]` Not used (T3) | Amazon MQ for RabbitMQ (single-instance or 3-node cluster) | Not needed (T3 verdict). SQS covers the use cases |
@@ -136,19 +136,19 @@ Nothing in the repos says "MSK" or "ElastiCache". So we weigh the evidence.
 | Version upgrades | Us | AWS runs them; **we** choose when and test the client |
 | Metrics | Us (JMX exporter or nothing) | CloudWatch per-broker/topic metrics + optional open monitoring (Prometheus) |
 
-### Would Sokrio's code run on MSK as-is?
+### Would DistroSaaS's code run on MSK as-is?
 
-| Check | Sokrio today | On MSK | Ref |
+| Check | DistroSaaS today | On MSK | Ref |
 |---|---|---|---|
 | Auth | None configured | Must enable an **unauthenticated** listener (plaintext 9092 or TLS 9094), or mTLS (9094 + client cert). **IAM (9098) and SCRAM (9096) can't be used**: the client only implements `PLAIN` | `[LIB]` `Sasl/PlainSasl.php:27`, `Client/SyncClient.php:203-211` (F21) |
-| TLS | Not set | Supported by the library: `setSsl()` → `ssl://` stream. Sokrio's `InterruptResilientStreamSocket` delegates to `parent::connect()`, so TLS would still work | `[LIB]` `Config/CommonConfig.php:197-216`, `Socket/StreamSocket.php:270,277-279`; `[CODE]` `InterruptResilientStreamSocket.php:85-116` |
+| TLS | Not set | Supported by the library: `setSsl()` → `ssl://` stream. DistroSaaS's `InterruptResilientStreamSocket` delegates to `parent::connect()`, so TLS would still work | `[LIB]` `Config/CommonConfig.php:197-216`, `Socket/StreamSocket.php:270,277-279`; `[CODE]` `InterruptResilientStreamSocket.php:85-116` |
 | MSK Serverless | — | **Not possible** (IAM only) | `[GENERAL]` + F21 |
 | Topic creation | `TopicProvisioner` calls CreateTopics explicitly | Works even though MSK's default `auto.create.topics.enable=false`. But it passes **RF=1** explicitly, which overrides MSK's `default.replication.factor`. Set `KAFKA_AUTO_CREATE_REPLICATION_FACTOR=3` | `[CODE]` `config/kafka.php:74-75`, `TopicProvisioner.php:52-81` |
 | Durability | acks=0 (F5) | MSK replication doesn't help a producer that never waits for an ack. Fix F5 first (`setAcks(-1)` with RF=3, min ISR=2) | `[LIB]` `ProducerConfig.php:36` |
 | Static membership, rebalances | `group.instance.id = ""` per group (D1) | Unchanged. MSK broker **rolling patches** restart brokers one at a time, so each consumer sees a coordinator move. Our reconnect loop handles it (T2 §2.3), but expect brief lag spikes in the maintenance window | `[CODE]` `KafkaConsumer.php:79-95,404-432` |
 | Broker list | One host:port string | MSK gives 2–3 bootstrap brokers; `KAFKA_BROKERS` already takes a comma list | `[CODE]` `config/kafka.php:5` |
 
-### Sizing for Sokrio `[INFERENCE]`
+### Sizing for DistroSaaS `[INFERENCE]`
 Two topics (tracking, departments) × 3 partitions, one consumer process each (numprocs=1), and modest volume (field-force GPS pings, batched 200 per flush). That's tiny for Kafka. The smallest 3-broker, 3-AZ MSK cluster (`kafka.t3.small`/`m7g.large` class) is far more than enough. The real choice is **operational**: is "nobody owns the broker" worse than the MSK bill? With RF=1 on one self-hosted broker (A3), one disk or instance failure loses the topics. That is the strongest argument for MSK, or for a 3-broker KRaft cluster on EC2 if the cost matters more.
 
 ### Migration outline (if chosen)
@@ -160,13 +160,13 @@ Two topics (tracking, departments) × 3 partitions, one consumer process each (n
 
 ## 6.5 Redis: self-hosted vs ElastiCache vs MemoryDB
 
-### What Sokrio puts in Redis (from T4)
+### What DistroSaaS puts in Redis (from T4)
 | DB | Contents | Loss on restart hurts? | Eviction OK? |
 |---|---|---|---|
 | 0 | Laravel queues (`queues:*`, `:delayed`, `:reserved`), the feature-tracking buffer, `TopicProvisioner` keys go to the cache store (DB1), **plus the Python benchmark cache (F20)** | **Yes**: delayed approvals in `:delayed` have no sweeper (T4 §4.9) | **No** for queues, yes for the Python cache |
 | 1 | Laravel cache: reports, `Org` lookups, unique-job locks, `Cache::lock`, rate limiters | Mostly no (recomputed), but lost locks allow duplicate runs | Yes, except locks |
 
-`[CODE]` F20 proof: `sokrio-benchmark-python/app/config.py:20` defaults `REDIS_URL` to DB `/0`; `.env.example` sets DB `/0`; it's the "same Redis" per `.claude/_architecture/system-overview.md:14,189` `[NOTES]`. Laravel queues use connection `default` = `REDIS_DB` 0 (`config/database.php:202-210`, `config/queue.php:61-67`). A Redis DB index is only a key namespace: memory, `maxmemory-policy` and CPU are shared across all DBs `[GENERAL]`.
+`[CODE]` F20 proof: `benchmark-python/app/config.py:20` defaults `REDIS_URL` to DB `/0`; `.env.example` sets DB `/0`; it's the "same Redis" per `.claude/_architecture/system-overview.md:14,189` `[NOTES]`. Laravel queues use connection `default` = `REDIS_DB` 0 (`config/database.php:202-210`, `config/queue.php:61-67`). A Redis DB index is only a key namespace: memory, `maxmemory-policy` and CPU are shared across all DBs `[GENERAL]`.
 
 ### What AWS manages vs what we still own `[GENERAL]`
 
@@ -179,7 +179,7 @@ Two topics (tracking, departments) × 3 partitions, one consumer process each (n
 | TLS, AUTH/RBAC | **Us** | Optional in-transit TLS, AUTH token or RBAC users | TLS always on, ACL users |
 | Key design, TTLs, memory budget | Us | **Still us** | **Still us** |
 
-### Compatibility checks for Sokrio's code
+### Compatibility checks for DistroSaaS's code
 
 | Check | Result | Ref |
 |---|---|---|
@@ -242,7 +242,7 @@ sequenceDiagram
 
 ### Graceful shutdown is the hard part
 
-| Platform | Stop behaviour `[GENERAL]` | Impact on Sokrio |
+| Platform | Stop behaviour `[GENERAL]` | Impact on DistroSaaS |
 |---|---|---|
 | **EC2 + Supervisor** | `stopsignal` → wait `stopwaitsecs` (we choose) → SIGKILL | Fine. Kafka consumers flush + commit + `leaveGroup` within 35 s. `queue:work` finishes the current job if `stopwaitsecs` covers it |
 | **ECS (EC2 or Fargate)** | SIGTERM → `stopTimeout` (**max 120 s**) → SIGKILL | The `$timeout = 0` report jobs (T4 list) and `KPISummary` can run much longer than 120 s. Each deploy kills them mid-run; they reappear after `retry_after = 9000` s (2.5 h). Needs job timeouts < 120 s or chunked/resumable jobs first |
@@ -253,11 +253,11 @@ sequenceDiagram
 
 ---
 
-## 6.8 Alternatives: SQS, SNS, EventBridge, Kinesis — per Sokrio use case
+## 6.8 Alternatives: SQS, SNS, EventBridge, Kinesis — per DistroSaaS use case
 
 ### The quick map
 
-| Sokrio use case | Today | Best AWS fit | Why / trade-off |
+| DistroSaaS use case | Today | Best AWS fit | Why / trade-off |
 |---|---|---|---|
 | GPS tracking stream (high volume, replayable, per-user order) | Kafka `tracking` | **Keep Kafka** (MSK if managed). Kinesis is the AWS-native alternative | Kinesis: per-shard ordering by partition key, 24 h–365 d retention, but **no first-class PHP consumer** (KCL is Java; the multi-lang daemon is awkward) and per-shard throughput limits |
 | Department change → Mongo | Kafka `departments` | Kafka, or **SNS → SQS FIFO** (group id = department_id) | Low volume. SQS FIFO gives per-department order + DLQ for free, but loses replay. Either way, add an outbox (T2) |
@@ -273,7 +273,7 @@ sequenceDiagram
 - **`retry_after` is ignored.** `pop()` calls `receiveMessage` with no `VisibilityTimeout` (`SqsQueue.php:169-182`). The queue's own visibility timeout (default 30 s, max 12 h) plays the `retry_after` role. It must exceed the longest job, or long reports run twice (the T4 risk, in a new form).
 - **Short polling.** No `WaitTimeSeconds` in `pop()`. Every empty poll is a billed request, and worker `--sleep` adds latency. A queue-level `ReceiveMessageWaitTimeSeconds = 20` fixes it without code.
 - **Attempts and DLQ.** `SqsJob::attempts()` reads `ApproximateReceiveCount` (`vendor/…/Queue/Jobs/SqsJob.php:82`); `release()` = `changeMessageVisibility` (`:50-58`). Use a redrive policy (`maxReceiveCount`) as a DLQ next to Laravel's `failed_jobs`.
-- **Payload size.** SQS caps the message size (256 KB for most of its history; check the current quota). Sokrio jobs pass ids, paths and `Org` (T5 rule 2), so they're fine. Don't start passing row arrays.
+- **Payload size.** SQS caps the message size (256 KB for most of its history; check the current quota). DistroSaaS jobs pass ids, paths and `Org` (T5 rule 2), so they're fine. Don't start passing row arrays.
 - **Tenant context.** Moving to SQS changes nothing about F16/F17: tenant restore is app-level (T5).
 - **No `ShouldBeUnique` change.** Unique locks still live in the cache store (Redis), not SQS.
 - **Ordering.** Standard SQS has no ordering. FIFO queues give per-`MessageGroupId` order, but Laravel 9's stock SQS driver doesn't set a group id (no FIFO support until later Laravel versions) `[GENERAL]`.
@@ -375,7 +375,7 @@ flowchart LR
 - [x] Task-card items covered:
   - the README_2 concern table (§6.3)
   - what AWS manages vs what we own, for Kafka (§6.4) and Redis (§6.5)
-  - alternatives SQS/SNS/EventBridge/Kinesis with Sokrio trade-offs (§6.8)
+  - alternatives SQS/SNS/EventBridge/Kinesis with DistroSaaS trade-offs (§6.8)
   - workers and graceful shutdown (§6.7)
   - monitoring present vs missing (§6.9)
 - [x] HANDOFF hooks:

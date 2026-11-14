@@ -14,7 +14,7 @@ updated: 2026-10-26
 
 *Part 2 of 2 — the production story. [Part 1](03-event-driven-systems-and-kafka.md) covers the event-driven concepts this builds on.*
 
-Most Kafka write-ups assume a JVM service, a mature client library, and a team whose whole job is streaming. Ours didn't look like that. `sokrio-server` is a multi-tenant Laravel monolith — one database per tenant, connections switched per request by middleware (covered in post 01 of this series, not kept in this repo). Our Kafka client is `longlang/phpkafka`, a pure-PHP implementation. Our consumers are `php artisan` commands kept alive by Supervisor.
+Most Kafka write-ups assume a JVM service, a mature client library, and a team whose whole job is streaming. Ours didn't look like that. `api-server` is a multi-tenant Laravel monolith — one database per tenant, connections switched per request by middleware (covered in post 01 of this series, not kept in this repo). Our Kafka client is `longlang/phpkafka`, a pure-PHP implementation. Our consumers are `php artisan` commands kept alive by Supervisor.
 
 None of that is unusual on its own. Put together, it produced a set of failure modes we couldn't find written down anywhere. This post covers the design we ended up with, how we rolled it out without trusting it, and the incidents that turned "it works on my machine" into "it runs unsupervised in production."
 
@@ -161,10 +161,10 @@ We accept that for GPS points, where the alternative is worse. A handler that th
 
 ### Running it: a microservice that lives in the monolith's repo
 
-The consumers aren't queue workers and they aren't request-driven. We deploy them like small, single-purpose services, even though the code lives in `sokrio-server`:
+The consumers aren't queue workers and they aren't request-driven. We deploy them like small, single-purpose services, even though the code lives in `api-server`:
 
 ```ini
-[program:sokrio-kafka-consumer-tracking]
+[program:kafka-consumer-tracking]
 command=php /var/www/html/artisan kafka:consume tracking
 autostart=true
 autorestart=true

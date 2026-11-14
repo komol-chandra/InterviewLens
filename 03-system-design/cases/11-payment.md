@@ -10,7 +10,7 @@ tags: [system-design, cases]
 updated: 2026-10-15
 ---
 
-> Tracker ID: SD-28 · Generated: 2026-10-15 · Answers: **SD-Q11** (TRK-02 Phase 8) · Source: general SD knowledge (Stripe-style idempotency, ledger, reconciliation) + sokrio-server code (`SMSGateway::resend`, `MessageResendService`) · Format: 7-ধাপ · Status: ✅ generated
+> Tracker ID: SD-28 · Generated: 2026-10-15 · Answers: **SD-Q11** (TRK-02 Phase 8) · Source: general SD knowledge (Stripe-style idempotency, ledger, reconciliation) + api-server code (`SMSGateway::resend`, `MessageResendService`) · Format: 7-ধাপ · Status: ✅ generated
 
 # SD-Q11: Design a payment flow. How do you stop a customer from being charged twice?
 
@@ -136,8 +136,8 @@ created → pending → succeeded → refunded
 
 ---
 
-🔗 **Sokrio link:**
-- ⚠️ **S5 সাবধান:** CV/S5 বলে "payment gateway: webhook, HMAC, idempotency"। কিন্তু ২০২৬-১০-১৫-এ **সব লোকাল Sokrio রিপোতে** (server, app/admin frontend, mobile, benchmark) কোনো HMAC বা payment-webhook কোড পাওয়া যায়নি। একমাত্র পেমেন্ট কোড `app/Models/Core/OrgPayment.php` = সাবস্ক্রিপশনের **ম্যানুয়াল bKash** পেমেন্ট, admin `approve()`/`reject('No transaction record matched!')` করে (লেখক Tanmay); webhook না। কাজটা কি অন্য রিপো/প্রজেক্টে? কোন provider? কী তুমি নিজে লিখেছিলে? **Truth Audit-এ নিশ্চিত করো** `[Komol পূরণ করবে]`। নিশ্চিত না হলে S5 দিয়ে উত্তর দিও না, নিচের সেতু ব্যবহার করো।
+🔗 **DistroSaaS link:**
+- ⚠️ **S5 সাবধান:** CV/S5 বলে "payment gateway: webhook, HMAC, idempotency"। কিন্তু ২০২৬-১০-১৫-এ **সব লোকাল DistroSaaS রিপোতে** (server, app/admin frontend, mobile, benchmark) কোনো HMAC বা payment-webhook কোড পাওয়া যায়নি। একমাত্র পেমেন্ট কোড `app/Models/Core/OrgPayment.php` = সাবস্ক্রিপশনের **ম্যানুয়াল bKash** পেমেন্ট, admin `approve()`/`reject('No transaction record matched!')` করে (লেখক Tanmay); webhook না। কাজটা কি অন্য রিপো/প্রজেক্টে? কোন provider? কী তুমি নিজে লিখেছিলে? **Truth Audit-এ নিশ্চিত করো** `[Komol পূরণ করবে]`। নিশ্চিত না হলে S5 দিয়ে উত্তর দিও না, নিচের সেতু ব্যবহার করো।
 - ⭐ **যাচাই করা সেতু (তোমার লেখা):** `app/Services/SMSGateway.php::resend()` (connect হয়নি → retry নিরাপদ, উত্তর নেই → "delivery unknown") আর `ResendFailedSmsBatch::releaseRows()` (`processing` row কখনো অন্ধভাবে আবার পাঠায় না)। এটা ঠিক "timeout ≠ failure" নীতি।
 - **টাকা-ধরনের সঠিকতা:** `MessageResendService::claim()`: ব্যালান্স চেক lock + transaction-এর ভেতরে, অন্য চলমান resend-এর reserved বাদ দিয়ে (SD-Q06)।
 

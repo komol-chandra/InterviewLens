@@ -22,7 +22,7 @@ updated: 2026-11-14
 
 > **Say it (EN):** "I led the move from a Laravel/Vue monolith to a core API plus separate Report, Notification and SOP services talking over RabbitMQ. We ran old and new in parallel and cut over with zero downtime. Server load dropped by about 20%."
 
-**সৎ নোট:** Sokrio-র মাইগ্রেশন PHP→Node ছিল না — এটা ছিল **monolith → modular services**, সবই Laravel/PHP-এর মধ্যে, ভাষা বদলায়নি। যেটা সরাসরি প্রমাণ করে: service boundary কাটা, parallel run, zero-downtime cutover, event-driven decoupling (RabbitMQ)। যেটা নতুন এখানে: দুই ভিন্ন ভাষার (PHP ↔ Node) মধ্যে interop আর data-type/serialization সমস্যা — এটা ইন্টারভিউয়ারকে সততার সাথে বলা উচিত, তারপর ডিজাইনে এক্সটেন্ড করা।
+**সৎ নোট:** DistroSaaS-এর মাইগ্রেশন PHP→Node ছিল না — এটা ছিল **monolith → modular services**, সবই Laravel/PHP-এর মধ্যে, ভাষা বদলায়নি। যেটা সরাসরি প্রমাণ করে: service boundary কাটা, parallel run, zero-downtime cutover, event-driven decoupling (RabbitMQ)। যেটা নতুন এখানে: দুই ভিন্ন ভাষার (PHP ↔ Node) মধ্যে interop আর data-type/serialization সমস্যা — এটা ইন্টারভিউয়ারকে সততার সাথে বলা উচিত, তারপর ডিজাইনে এক্সটেন্ড করা।
 
 ---
 
@@ -92,12 +92,12 @@ flowchart LR
 
 ---
 
-## Sokrio-এ যা সরাসরি করেছি vs এখানে নতুন
+## DistroSaaS-এ যা সরাসরি করেছি vs এখানে নতুন
 
-| অংশ | Sokrio-তে লাইভ অভিজ্ঞতা | নতুন/স্টাডি-করা |
+| অংশ | DistroSaaS-এে লাইভ অভিজ্ঞতা | নতুন/স্টাডি-করা |
 |---|---|---|
 | Monolith → services split, RabbitMQ decoupling | ✅ S1 | — |
 | Parallel run + zero-downtime cutover | ✅ S1 | — |
-| **ভাষা বদল (PHP → Node)**, interop/serialization issue | ❌ | নতুন — Sokrio-র মাইগ্রেশন same-language ছিল |
+| **ভাষা বদল (PHP → Node)**, interop/serialization issue | ❌ | নতুন — DistroSaaS-এর মাইগ্রেশন same-language ছিল |
 | Formal strangler-fig proxy/gateway pattern (named) | ⚠️ আংশিক (concept একই, নাম করে করিনি) | নতুন ভাষায় বলা |
 | Contract testing (Pact) between old/new | ❌ | নতুন — স্টাডি-করা, বাস্তবে ব্যবহার করিনি |

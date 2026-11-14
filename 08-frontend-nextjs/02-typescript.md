@@ -25,7 +25,7 @@ updated: 2026-11-14
 
 **নিয়ম:** public API/library shape হলে `interface` (extend করার সুযোগ রাখো), union/complex logic হলে `type`।
 
-🔗 Sokrio link: S6 — React/TS রিরাইটে component props সাধারণত `interface`, API response union `type` দিয়ে মডেল করা।
+🔗 DistroSaaS link: S6 — React/TS রিরাইটে component props সাধারণত `interface`, API response union `type` দিয়ে মডেল করা।
 
 ---
 
@@ -40,7 +40,7 @@ function firstOf<T>(arr: T[]): T | undefined {
 const wo = firstOf<WorkOrder>(workOrders); // wo: WorkOrder | undefined
 ```
 
-🔗 Sokrio link: সরাসরি অভিজ্ঞতা নেই — এভাবে বলো: "We use generics heavily in our typed axios wrapper — `apiGet<T>(url)` returns `T`, so every call site gets full autocomplete without re-typing the response shape."
+🔗 DistroSaaS link: সরাসরি অভিজ্ঞতা নেই — এভাবে বলো: "We use generics heavily in our typed axios wrapper — `apiGet<T>(url)` returns `T`, so every call site gets full autocomplete without re-typing the response shape."
 
 ---
 
@@ -55,7 +55,7 @@ function handle(input: unknown) {
 }
 ```
 
-🔗 Sokrio link: সরাসরি অভিজ্ঞতা নেই — এভাবে বলো: "Any third-party webhook payload we parse starts as `unknown`, then we narrow it with a validation schema before touching it."
+🔗 DistroSaaS link: সরাসরি অভিজ্ঞতা নেই — এভাবে বলো: "Any third-party webhook payload we parse starts as `unknown`, then we narrow it with a validation schema before touching it."
 
 ---
 
@@ -70,7 +70,7 @@ type WOWithoutId = Omit<WorkOrder, 'id'>;           // create payload-এর জ
 type StatusCounts = Record<string, number>;         // dictionary shape
 ```
 
-🔗 Sokrio link: S6 — REST response আর form payload-এর জন্য আলাদা derived type বানাতে এই utility types রোজ ব্যবহার হয়।
+🔗 DistroSaaS link: S6 — REST response আর form payload-এর জন্য আলাদা derived type বানাতে এই utility types রোজ ব্যবহার হয়।
 
 ---
 
@@ -93,7 +93,7 @@ function next(state: WOState) {
 
 কমন `status` field (discriminant) দিয়ে TS প্রতিটা branch-এ বাকি field narrow করে দেয় — invalid combination (যেমন `draft` state-এ `providerId`) কম্পাইল টাইমেই আটকায়।
 
-🔗 Sokrio link: সরাসরি অভিজ্ঞতা নেই — এভাবে বলো: "This is exactly how I'd model Field Nation's work-order status machine — it turns an invalid-state bug into a compile error instead of a runtime 409."
+🔗 DistroSaaS link: সরাসরি অভিজ্ঞতা নেই — এভাবে বলো: "This is exactly how I'd model Field Nation's work-order status machine — it turns an invalid-state bug into a compile error instead of a runtime 409."
 
 ---
 
@@ -107,7 +107,7 @@ function isProvider(u: Buyer | Provider): u is Provider {
 }
 ```
 
-🔗 Sokrio link: সরাসরি অভিজ্ঞতা নেই — এভাবে বলো: "We write custom type guards for polymorphic API responses, like distinguishing a tenant admin from a field-force user in the same endpoint."
+🔗 DistroSaaS link: সরাসরি অভিজ্ঞতা নেই — এভাবে বলো: "We write custom type guards for polymorphic API responses, like distinguishing a tenant admin from a field-force user in the same endpoint."
 
 ---
 
@@ -115,7 +115,7 @@ function isProvider(u: Buyer | Provider): u is Provider {
 
 `strictNullChecks` (null/undefined আলাদা টাইপ, প্রতিটা optional access-এ চেক লাগবে), `noImplicitAny`, `strictFunctionTypes`, `strictPropertyInitialization` ইত্যাদি। প্রোডাকশন কোডবেসে `strict: true` প্রায় সবসময় রাখা উচিত — এটাই সবচেয়ে বেশি রানটাইম null-reference বাগ ধরে।
 
-🔗 Sokrio link: সরাসরি অভিজ্ঞতা নেই — `[Komol পূরণ করবে: sokrio-app-frontend/tsconfig.json-এ strict mode চালু কিনা]`।
+🔗 DistroSaaS link: সরাসরি অভিজ্ঞতা নেই — `[Komol পূরণ করবে: app-frontend/tsconfig.json-এ strict mode চালু কিনা]`।
 
 ---
 
@@ -128,7 +128,7 @@ type Status = 'draft' | 'assigned';                     // শুধু compile-
 
 আধুনিক TS-এ **union literal প্রেফার্ড** — tree-shakeable, সহজে serialize হয় (API/DB string-এর সাথে সরাসরি মেলে), আর `enum`-এর কিছু গোচরাগোছরা edge case (numeric enum reverse-mapping) নেই।
 
-🔗 Sokrio link: সরাসরি অভিজ্ঞতা নেই — এভাবে বলো: "I'd default to string literal unions for anything that round-trips through an API or a DB column."
+🔗 DistroSaaS link: সরাসরি অভিজ্ঞতা নেই — এভাবে বলো: "I'd default to string literal unions for anything that round-trips through an API or a DB column."
 
 ---
 
@@ -136,13 +136,13 @@ type Status = 'draft' | 'assigned';                     // শুধু compile-
 
 NestJS decorator-নির্ভর (`@Controller()`, `@Get()`, `@Injectable()`, `@Body()`) — এগুলো মূলত metadata attach করে (`reflect-metadata` দিয়ে), যা Nest-এর DI container রানটাইমে পড়ে dependency resolve করতে/route bind করতে ব্যবহার করে। Laravel-এর attribute/annotation-based routing-এর সাথে conceptually কাছাকাছি।
 
-🔗 Sokrio link: S1 — Laravel-এর convention-based ecosystem (route/middleware attribute)-এর অভিজ্ঞতা NestJS decorator model বুঝতে সরাসরি সাহায্য করে।
+🔗 DistroSaaS link: S1 — Laravel-এর convention-based ecosystem (route/middleware attribute)-এর অভিজ্ঞতা NestJS decorator model বুঝতে সরাসরি সাহায্য করে।
 
 ---
 
-## Q10. Sokrio frontend-এর একটা টাইপ রিফ্যাক্টর উদাহরণ
+## Q10. DistroSaaS frontend-এর একটা টাইপ রিফ্যাক্টর উদাহরণ
 
-`[Komol পূরণ করবে: sokrio-app-frontend বা admin-frontend-এ কোনো `any`-heavy কোড টাইপ-সেফ করার নির্দিষ্ট উদাহরণ — কোন ফাইল, কী সমস্যা ছিল, কী utility type/generic ব্যবহার করলে]`। Day 3-এর টাস্ক হলো এই উদাহরণটা প্রস্তুত রাখা, কারণ "walk me through a TS refactor you did" প্রশ্নে সরাসরি লাইভ কোড দেখাতে পারলে সবচেয়ে জোরালো হয়।
+`[Komol পূরণ করবে: app-frontend বা admin-frontend-এ কোনো `any`-heavy কোড টাইপ-সেফ করার নির্দিষ্ট উদাহরণ — কোন ফাইল, কী সমস্যা ছিল, কী utility type/generic ব্যবহার করলে]`। Day 3-এর টাস্ক হলো এই উদাহরণটা প্রস্তুত রাখা, কারণ "walk me through a TS refactor you did" প্রশ্নে সরাসরি লাইভ কোড দেখাতে পারলে সবচেয়ে জোরালো হয়।
 
 ---
 

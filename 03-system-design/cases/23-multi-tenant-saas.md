@@ -10,12 +10,12 @@ tags: [system-design, cases]
 updated: 2026-11-14
 ---
 
-> Tracker ID: SD-23 · Generated: 2026-10-15 · Track: TRK-01 Phase 0 · Source: `99-archive/fieldnation-2026-10/0-now/hm-qbank.md` A1/A2 + sokrio-server কোড · Status: ✅ generated
+> Tracker ID: SD-23 · Generated: 2026-10-15 · Track: TRK-01 Phase 0 · Source: `99-archive/fieldnation-2026-10/0-now/hm-qbank.md` A1/A2 + api-server কোড · Status: ✅ generated
 
 # SD-23: Design a Multi-tenant SaaS Platform
 
 > **কেন এই কেস:** এটা তোমার নিজের সিস্টেম (A1)। প্রশ্ন "design a multi-tenant B2B SaaS" হোক বা "tell me about your architecture", একই কাঠামো চলে।
-> ছাঁচ = SD-01-এর ৭ ধাপ। প্রতিটা ধাপের শেষে **🟢 Sokrio-তে** = যা আছে (কোডে যাচাই করা), **🔵 নতুন** = যা ইন্টারভিউতে বাড়তি বলবে।
+> ছাঁচ = SD-01-এর ৭ ধাপ। প্রতিটা ধাপের শেষে **🟢 DistroSaaS-এে** = যা আছে (কোডে যাচাই করা), **🔵 নতুন** = যা ইন্টারভিউতে বাড়তি বলবে।
 
 ---
 
@@ -40,7 +40,7 @@ updated: 2026-11-14
 
 ## 2. Estimation (৩ মিনিট)
 
-> ⚠️ নিচের সংখ্যাগুলো **উদাহরণ অনুমান**, Sokrio-র আসল সংখ্যা না। আসল সংখ্যা বলতে চাইলে `[Komol পূরণ করবে: টেন্যান্ট সংখ্যা, সবচেয়ে বড় টেন্যান্টের ইউজার/অর্ডার/দিন]`
+> ⚠️ নিচের সংখ্যাগুলো **উদাহরণ অনুমান**, DistroSaaS-এর আসল সংখ্যা না। আসল সংখ্যা বলতে চাইলে `[Komol পূরণ করবে: টেন্যান্ট সংখ্যা, সবচেয়ে বড় টেন্যান্টের ইউজার/অর্ডার/দিন]`
 
 ধরো ২০০ টেন্যান্ট, বড়টায় ২,০০০ ফিল্ড ইউজার, জনপ্রতি দিনে ~১০০ API কল:
 - বড় টেন্যান্ট: 2×10³ × 10² ÷ 10⁵ ≈ **২ QPS গড়**, অফিস-আওয়ারে peak ×৫ ≈ ১০ QPS
@@ -64,8 +64,8 @@ GET  https://{tenant}.app.com/api/reports/sales?from=&to=
 - Subdomain: ব্রাউজারে স্বাভাবিক, cookie আলাদা থাকে; কিন্তু DNS/TLS wildcard লাগে
 - JWT claim: সবচেয়ে নিরাপদ (ক্লায়েন্ট বদলাতে পারে না), সার্ভিস-টু-সার্ভিসে ভালো
 
-🟢 **Sokrio-তে:** subdomain। সব রুট `Route::domain("{account}.$appHost")`-এ মোড়ানো। FastAPI benchmark সার্ভিস `X-Tenant-Domain` header নেয়।
-🔵 **নতুন:** subdomain থেকে টেন্যান্ট পাওয়ার পর token-এর টেন্যান্টের সাথে **মিলিয়ে দেখা** (token অন্য টেন্যান্টের হলে 403)। `[Komol পূরণ করবে: Sokrio-তে এই চেক আছে কি? Sanctum token কি org-scoped?]`
+🟢 **DistroSaaS-এে:** subdomain। সব রুট `Route::domain("{account}.$appHost")`-এ মোড়ানো। FastAPI benchmark সার্ভিস `X-Tenant-Domain` header নেয়।
+🔵 **নতুন:** subdomain থেকে টেন্যান্ট পাওয়ার পর token-এর টেন্যান্টের সাথে **মিলিয়ে দেখা** (token অন্য টেন্যান্টের হলে 403)। `[Komol পূরণ করবে: DistroSaaS-এে এই চেক আছে কি? Sanctum token কি org-scoped?]`
 
 ---
 
@@ -81,7 +81,7 @@ GET  https://{tenant}.app.com/api/reports/sales?from=&to=
 
 **সাথে একটা আলাদা landlord / control-plane DB:** org লিস্ট, domain → DB ম্যাপিং, প্ল্যান, প্ল্যাটফর্ম অ্যাডমিন।
 
-🟢 **Sokrio-তে:** landlord MySQL + টেন্যান্ট প্রতি **MySQL DB + MongoDB DB** (দুটোর নাম একই = `org.domain`)। Migration দুই ভাগে: `base:migrate` (landlord) আর `tenant:migrate {db?}`।
+🟢 **DistroSaaS-এে:** landlord MySQL + টেন্যান্ট প্রতি **MySQL DB + MongoDB DB** (দুটোর নাম একই = `org.domain`)। Migration দুই ভাগে: `base:migrate` (landlord) আর `tenant:migrate {db?}`।
 
 **Trade-off বাক্য (EN):**
 > "We chose database-per-tenant over a shared schema because our clients are enterprises: one missed `WHERE tenant_id` must never leak data, and we need to back up or restore one client alone. The cost is running migrations across N databases and harder cross-tenant analytics, which we solved with a separate read-only fan-out service."
@@ -112,7 +112,7 @@ flowchart LR
 4. তারপর auth → permission gate → controller → service → acme-র DB
 5. Response; cache key-তে টেন্যান্ট prefix
 
-🟢 **Sokrio-তে:** `EnsureTenantAccess` → `LOWER(domain)` দিয়ে Org খোঁজে (৭ দিন cache `org_by_domain_{domain}`) → `TenantManager::tenant($org)->reconnect()` MySQL + Mongo একসাথে সুইচ করে → `auth:sanctum` → `permission:` gate। Cache prefix: `ScopeCacheToTenant` middleware।
+🟢 **DistroSaaS-এে:** `EnsureTenantAccess` → `LOWER(domain)` দিয়ে Org খোঁজে (৭ দিন cache `org_by_domain_{domain}`) → `TenantManager::tenant($org)->reconnect()` MySQL + Mongo একসাথে সুইচ করে → `auth:sanctum` → `permission:` gate। Cache prefix: `ScopeCacheToTenant` middleware।
 
 ---
 
@@ -120,7 +120,7 @@ flowchart LR
 
 ### 6a. Tenant context leak: সবচেয়ে বিপজ্জনক bug
 - **HTTP-তে** middleware context বসায়। কিন্তু **queue job, cron, Kafka consumer**-এ middleware চলে না
-- 🟢 Sokrio-র আসল gotcha: `ScopeCacheToTenant` শুধু HTTP request-এ cache prefix দেয়, job সেই key দেখে না। আর switch-এর পর landlord-এ ফিরতে ভুললে পরের query ভুল DB-তে যায়
+- 🟢 DistroSaaS-এর আসল gotcha: `ScopeCacheToTenant` শুধু HTTP request-এ cache prefix দেয়, job সেই key দেখে না। আর switch-এর পর landlord-এ ফিরতে ভুললে পরের query ভুল DB-তে যায়
 - **প্রতিকার:**
   - job payload-এ `tenant_id` **explicitly** পাঠাও, job শুরুতে switch + শেষে (finally) reset
   - cache key-তে টেন্যান্ট নিজে বসাও, middleware-এর ওপর ভরসা না
@@ -130,17 +130,17 @@ flowchart LR
 ### 6b. N টা DB-তে schema migration
 - সমস্যা: ২০০ DB-র ৮০-তে migration সফল, তারপর একটা fail → schema drift
 - প্রতিকার: প্রতিটা migration **backward-compatible** (expand → deploy → contract), টেন্যান্ট-বাই-টেন্যান্ট চালাও, ফলাফল landlord-এ লগ করো, fail হলে retry/resume
-- 🟢 Sokrio-তে: `tenant:migrate {db?}` একটা বা সব টেন্যান্টে চালায়। `[Komol পূরণ করবে: fail হলে কী হয়? কোনো রেকর্ড রাখা হয় কি?]`
+- 🟢 DistroSaaS-এে: `tenant:migrate {db?}` একটা বা সব টেন্যান্টে চালায়। `[Komol পূরণ করবে: fail হলে কী হয়? কোনো রেকর্ড রাখা হয় কি?]`
 
 ### 6c. Noisy neighbour + ভারী রিপোর্ট
 - DB আলাদা হলেও **একই DB সার্ভার** শেয়ার করলে বড় টেন্যান্টের রিপোর্ট CPU/IO খেয়ে ফেলে
 - প্রতিকার: রিপোর্ট hot path থেকে সরাও (pre-aggregated rollup, read replica), per-tenant rate limit/queue, বড় টেন্যান্টকে আলাদা DB সার্ভারে (placement map দিয়ে)
-- 🟢 Sokrio-তে (A2): benchmark fan-out-এ bounded adaptive concurrency `[8, 24]`, cache TTL 600s → 10800s, monthly `order_rollups_monthly` rollup
+- 🟢 DistroSaaS-এে (A2): benchmark fan-out-এ bounded adaptive concurrency `[8, 24]`, cache TTL 600s → 10800s, monthly `order_rollups_monthly` rollup
 
 ### 6d. Cross-tenant analytics
 - DB-per-tenant মানে "সব টেন্যান্টে গড়" = N টা query
 - বিকল্প: (১) request-time fan-out (সহজ, ধীর) · (২) scheduled rollup → এক জায়গায় · (৩) CDC/stream → warehouse (সবচেয়ে scalable, সবচেয়ে জটিল)
-- 🟢 Sokrio-তে: (১) + (২), আলাদা read-only FastAPI সার্ভিস। Event-driven না করে scheduled কেন: লেখে Laravel, তাই hook লাগলে দুই সার্ভিস কাপল হয়ে যেত, আর benchmark কয়েক ঘণ্টা পুরনো হলেও চলে।
+- 🟢 DistroSaaS-এে: (১) + (২), আলাদা read-only FastAPI সার্ভিস। Event-driven না করে scheduled কেন: লেখে Laravel, তাই hook লাগলে দুই সার্ভিস কাপল হয়ে যেত, আর benchmark কয়েক ঘণ্টা পুরনো হলেও চলে।
 - 🔵 ১০× হলে: (৩), যেমন Kafka/CDC → columnar store
 
 ### 6e. Connection management
@@ -176,4 +176,4 @@ flowchart LR
 2. ⬜ ৩টা isolation মডেলের টেবিল মুখে বলো, ৯০ সেকেন্ডে
 3. ⬜ 6a জোরে বলো: এটাই তোমার সবচেয়ে "senior" শোনানো অংশ
 
-🔗 Sokrio link: S3 (multi-tenant), S2 (report/benchmark performance) · `99-archive/fieldnation-2026-10/0-now/hm-qbank.md` A1, A2 · কোড: `EnsureTenantAccess`, `TenantManager`, `ScopeCacheToTenant`
+🔗 DistroSaaS link: S3 (multi-tenant), S2 (report/benchmark performance) · `99-archive/fieldnation-2026-10/0-now/hm-qbank.md` A1, A2 · কোড: `EnsureTenantAccess`, `TenantManager`, `ScopeCacheToTenant`

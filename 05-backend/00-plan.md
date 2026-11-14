@@ -26,7 +26,7 @@ updated: 2026-11-14
 
 **শেষে যা পারবে:**
 - যেকোনো HLD প্রশ্ন ৪৫ মিনিটের ফ্রেমওয়ার্কে জোরে বলা + আঁকা, প্রতিটা সিদ্ধান্তে trade-off
-- ১৬টা GoF pattern + ৮টা architecture pattern: প্রতিটার সমস্যা, কোড (TypeScript), Laravel/Sokrio-তে কোথায় আছে, কখন **ব্যবহার করবে না**
+- ১৬টা GoF pattern + ৮টা architecture pattern: প্রতিটার সমস্যা, কোড (TypeScript), Laravel/DistroSaaS-এে কোথায় আছে, কখন **ব্যবহার করবে না**
 - ৬টা LLD প্রবলেম ৪৫ মিনিটে চলমান কোডে
 
 ---
@@ -72,7 +72,7 @@ updated: 2026-11-14
 
 ### ৩.১ Concepts (বিল্ডিং ব্লক)
 
-| ID | অধ্যায় | মূল প্রশ্ন | Sokrio link |
+| ID | অধ্যায় | মূল প্রশ্ন | DistroSaaS link |
 |---|---|---|---|
 | SD-01 | ফ্রেমওয়ার্ক + estimation | Requirements → Estimate → API → Data model → HLD → Deep dive → Trade-offs | — |
 | SD-02 | Scaling + Load balancing | vertical vs horizontal, stateless, L4/L7, sticky session | S1 |
@@ -88,13 +88,13 @@ updated: 2026-11-14
 
 ### ৩.২ Cases (কেস স্টাডি)
 
-প্রতিটা কেস একই ৭-ধাপের ছাঁচে (FN-14-এর মতো), শেষে "**Sokrio-এ যা করেছি vs এখানে নতুন**"।
+প্রতিটা কেস একই ৭-ধাপের ছাঁচে (FN-14-এর মতো), শেষে "**DistroSaaS-এ যা করেছি vs এখানে নতুন**"।
 
 | ID | কেস | কেন |
 |---|---|---|
 | SD-20 | URL shortener | ক্লাসিক ওয়ার্ম-আপ: ID gen, cache, read-heavy |
 | SD-21 | Rate limiter (distributed) | Redis, algorithm, প্রায়ই আসে |
-| SD-22 | Notification service (push/SMS/email) | queue, retry, fan-out; Sokrio-র SOP/notification-এর সাথে মিল |
+| SD-22 | Notification service (push/SMS/email) | queue, retry, fan-out; DistroSaaS-এর SOP/notification-এর সাথে মিল |
 | SD-23 | Multi-tenant SaaS platform | **তোমার সবচেয়ে শক্তিশালী কেস** (A1), নিজের সিস্টেম হিসেবে বলবে |
 | SD-24 | Reporting / analytics pipeline | **A2**: rollups, fan-out, cache |
 | SD-25 | Chat / real-time messaging | WebSocket, presence, ordering |
@@ -103,7 +103,7 @@ updated: 2026-11-14
 | SD-28 | Payment / wallet | idempotency, ledger, reconciliation (S5) |
 | SD-29 | Order + inventory (oversell প্রতিরোধ) | locking, reservation (BD সিনারিও ১ রিইউজ) |
 | SD-30 | Ride / technician matching | geo + dispatch → FN-14 লিংক |
-| SD-31 | Distributed job scheduler | cron at scale, Sokrio scheduled job |
+| SD-31 | Distributed job scheduler | cron at scale, DistroSaaS scheduled job |
 
 ---
 
@@ -115,19 +115,19 @@ updated: 2026-11-14
 ## Problem: কোন ব্যথা দূর করে (১ প্যারা, বাস্তব উদাহরণ)
 ## Structure: ছোট mermaid class diagram
 ## Code: TypeScript (code/-এ চলমান ফাইল), আগে "ছাড়া" → পরে "সহ"
-## In the wild: Laravel-এ কোথায় (যেমন Pipeline = Chain of Responsibility) + Sokrio কোডে কোথায়
+## In the wild: Laravel-এ কোথায় (যেমন Pipeline = Chain of Responsibility) + DistroSaaS কোডে কোথায়
 ## When NOT to use: over-engineering-এর লক্ষণ
-## Interview Qs: ৩টা প্রশ্ন + ছোট উত্তর · 🔗 Sokrio link
+## Interview Qs: ৩টা প্রশ্ন + ছোট উত্তর · 🔗 DistroSaaS link
 ```
 
 ### ৪.২ Pattern লিস্ট (ইন্টারভিউ-প্রাসঙ্গিকতা অনুযায়ী, ২৩টা GoF-এর সব না)
 
-| গ্রুপ | Patterns | Laravel / Sokrio উদাহরণ (যাচাই করে লিখব) |
+| গ্রুপ | Patterns | Laravel / DistroSaaS উদাহরণ (যাচাই করে লিখব) |
 |---|---|---|
 | Creational (DP-10…) | Singleton, Factory Method, Abstract Factory, Builder | Service container singleton, `Manager` ক্লাস (driver factory), Query Builder |
 | Structural (DP-20…) | Adapter, Decorator, Facade, Proxy, Composite | Laravel Facades, cache/filesystem driver adapter, middleware decorator |
 | Behavioral (DP-30…) | Strategy, Observer, Command, State, Template Method, Chain of Responsibility, Iterator | Kafka observer (`PublishesKafkaMessage`), queued Job = Command, middleware pipeline = Chain, work-order lifecycle = State |
-| Architectural (DP-40…) | Repository + Service layer, DI/IoC, CQRS, Event sourcing (হালকা), Saga, Outbox, Circuit breaker, Strangler fig | Sokrio service layer, QA Test Lab journal, FN-15 strangler |
+| Architectural (DP-40…) | Repository + Service layer, DI/IoC, CQRS, Event sourcing (হালকা), Saga, Outbox, Circuit breaker, Strangler fig | DistroSaaS service layer, QA Test Lab journal, FN-15 strangler |
 
 ### ৪.৩ LLD / Machine coding
 
@@ -151,7 +151,7 @@ updated: 2026-11-14
 শুধু যেগুলো HM রাউন্ডেও কাজে লাগবে:
 1. SD-01 ফ্রেমওয়ার্ক (panel "sketch it" বললে কাঠামো লাগবে)
 2. SD-23 Multi-tenant SaaS = A1-কে কেস-ফরম্যাটে
-3. Sokrio কোডে যে pattern আছে (Strategy, Observer, Repository, Command/Job, Chain/middleware) তার ১ পাতার তালিকা → "Why X not Y" কার্ডে সরাসরি কাজে লাগবে
+3. DistroSaaS কোডে যে pattern আছে (Strategy, Observer, Repository, Command/Job, Chain/middleware) তার ১ পাতার তালিকা → "Why X not Y" কার্ডে সরাসরি কাজে লাগবে
 
 ### Phase 1–4: HM রাউন্ডের পর, ৪ সপ্তাহ, দিনে ~১.৫–২ ঘণ্টা
 
@@ -170,7 +170,7 @@ updated: 2026-11-14
 
 - **কনটেন্ট সপ্তাহ ধরে ধরে**, একসাথে সব না (আগের ২১টা FN ডক একসাথে বানানো হয়েছিল, পড়া হয়নি: সেই ভুল আর না)। প্রতি সপ্তাহের শুরুতে সেই সপ্তাহের ডক।
 - ভাষা: বাংলা + ইংরেজি টার্ম, মুখে বলার লাইন আর কোড-কমেন্ট ইংরেজিতে (CLAUDE.md নিয়ম)
-- Sokrio উদাহরণ: **শুধু কোডে যাচাই করে**, বানানো নয় (Honesty Rule)
+- DistroSaaS উদাহরণ: **শুধু কোডে যাচাই করে**, বানানো নয় (Honesty Rule)
 - কোড: TypeScript (FN-এর স্ট্যাক + DSA-ও TS-এ), প্রতিটা ফাইল `npx tsx` দিয়ে চলবে
 - `tracker.md`-এ নতুন সেকশন "৫. Tracks" (SD-xx, DP-xx); `START-HERE.md`-এ শুধু ছোট একটা লাইন, HM টেবিল অপরিবর্তিত
 

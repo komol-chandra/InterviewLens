@@ -147,9 +147,9 @@ class RangeIdGenerator {
 
 ---
 
-🔗 **Sokrio link:** সরাসরি অভিজ্ঞতা নেই, এটা ক্লাসিক ওয়ার্ম-আপ কেস। কাছাকাছি যা বলতে পারো:
+🔗 **DistroSaaS link:** সরাসরি অভিজ্ঞতা নেই, এটা ক্লাসিক ওয়ার্ম-আপ কেস। কাছাকাছি যা বলতে পারো:
 - **Read-heavy + cache + TTL:** A2-এর benchmark cache (TTL 600→10800s) আর `cache_remember` (SD-Q03)
-- **ID/uniqueness:** per-tenant DB-তে auto-increment id টেন্যান্টের মধ্যে repeat করে, তাই Sokrio-র rate-limit key আর cache key-তে tenant prefix লাগে (SD-Q09) → "globally unique ID কেন দরকার" প্রশ্নে কাজে লাগে
+- **ID/uniqueness:** per-tenant DB-তে auto-increment id টেন্যান্টের মধ্যে repeat করে, তাই DistroSaaS-এর rate-limit key আর cache key-তে tenant prefix লাগে (SD-Q09) → "globally unique ID কেন দরকার" প্রশ্নে কাজে লাগে
 - এভাবে বলো: *"I haven't built a shortener, but the shape is familiar: a read-heavy lookup where the cache is the design."*
 
 📚 পরে: [09-rate-limiter.md](09-rate-limiter.md)

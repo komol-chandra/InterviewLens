@@ -10,7 +10,7 @@ tags: [lld, behavioral]
 updated: 2026-11-14
 ---
 
-> Tracker ID: DP-03 · Generated: 2026-10-15 · Answers: **DP-Q03** (TRK-02 Phase 2) · Source: GoF + sokrio-server code (`app/Services/VanSales/Alerts/`, `NotificationSender`/`FCMServiceProvider`, `Services/Export/ReportServiceInterface`) · Runnable: `04-design-patterns-lld/code/strategy.ts` (✅ ran 2026-10-15) · Status: ✅ generated
+> Tracker ID: DP-03 · Generated: 2026-10-15 · Answers: **DP-Q03** (TRK-02 Phase 2) · Source: GoF + api-server code (`app/Services/VanSales/Alerts/`, `NotificationSender`/`FCMServiceProvider`, `Services/Export/ReportServiceInterface`) · Runnable: `04-design-patterns-lld/code/strategy.ts` (✅ ran 2026-10-15) · Status: ✅ generated
 
 # DP-Q03: Many `if/else` blocks for discount or payment types. How do you clean this up?
 
@@ -175,7 +175,7 @@ const discounts: Record<string, (o: Order) => number> = {
 **কখন না (এটা বললে সিনিয়র দেখায়):**
 > "If there were only two fixed types, I'd keep a simple conditional or a map of functions. Strategy pays off when new variants keep coming."
 
-**Sokrio উদাহরণ:**
+**DistroSaaS উদাহরণ:**
 > "In our van-sales module, each alert kind, like off-beat or no-sync, is its own rule class behind a `VanAlertRule` interface with `detect()`. A registry lists them, and the detector, the API filters and the feed all read from that one list. Adding a new alert type is a new class and one line in the registry."
 
 ---
@@ -192,10 +192,10 @@ const discounts: Record<string, (o: Order) => number> = {
 
 ---
 
-🔗 **Sokrio link:** (কোডে যাচাই করা, সব **টিমের লেখা** → বলো "our codebase uses", "I built" না)
+🔗 **DistroSaaS link:** (কোডে যাচাই করা, সব **টিমের লেখা** → বলো "our codebase uses", "I built" না)
 - **Strategy + registry:** `app/Services/VanSales/Alerts/VanAlertRule.php` (interface: `type()`, `label()`, `detect(VanAlertScope)`) → `OffBeatRule`, `NoSyncRule`; `VanAlertRules.php` = registry (`RULES` const, `all()`, `types()`, `labels()`), যেটা detector, API আর feed সবাই পড়ে। ঠিক ওপরের `DiscountRegistry`-র মতো। লেখক টিম (Rakib)।
 - **DI দিয়ে Strategy বদলানো:** `NotificationSender` → `FCM` / `LogFCM`; `FCMServiceProvider` testing env-এ `LogFCM` বাঁধে → টেস্টে আসল push যায় না।
 - **Polymorphic export:** `Services/Export/ReportServiceInterface` → ৫টা রিপোর্ট সার্ভিস; export job যেকোনো রিপোর্ট একই interface দিয়ে চালায়।
 - **তোমার নিজের গল্প:** তুমি কি কোনো `if/else` চেইন Strategy-তে refactor করেছ? `[Komol পূরণ করবে]`। না থাকলে সৎভাবে: *"I haven't introduced one from scratch, but I've extended our alert rules and export services, which are built this way."* (সত্যি হলে তবেই বলো)
 
-📚 আরো: `04-design-patterns-lld/oop/` (Strategy অংশ) · সম্পর্কিত: [01-principles.md](../01-principles.md) (কখন না) · Sokrio ম্যাপ: [02-sokrio-pattern-map.md](../02-sokrio-pattern-map.md)
+📚 আরো: `04-design-patterns-lld/oop/` (Strategy অংশ) · সম্পর্কিত: [01-principles.md](../01-principles.md) (কখন না) · DistroSaaS ম্যাপ: [02-distrosaas-pattern-map.md](../02-distrosaas-pattern-map.md)

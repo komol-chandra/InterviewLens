@@ -35,7 +35,7 @@ updated: 2026-10-15
 2. Async চেইন পুরোটা async হতে হয়: async route-এ sync blocking call (requests, time.sleep) দিলে পুরো loop জমে — সবচেয়ে কমন FastAPI বাগ
 3. Blocking কাজ async জগতে: `run_in_executor`/`asyncio.to_thread` — থ্রেডে ঠেলে loop মুক্ত রাখা
 4. FastAPI-র চালাকি: `def` route আপনিই threadpool-এ চলে, `async def` loop-এ — sync লাইব্রেরি হলে সৎভাবে `def`-ই লেখা ভালো
-5. Parallel I/O: `asyncio.gather(*tasks)` — একাধিক tenant/API একসাথে টানা (Sokrio benchmark-এ multi-tenant fan-out এভাবেই); timeout দিতে `asyncio.wait_for`
+5. Parallel I/O: `asyncio.gather(*tasks)` — একাধিক tenant/API একসাথে টানা (DistroSaaS benchmark-এ multi-tenant fan-out এভাবেই); timeout দিতে `asyncio.wait_for`
 6. Async lib আলাদা: httpx (requests-এর বদলে), asyncpg/motor — driver sync হলে async-এর সব লাভ বাতিল
 
 ### ৩. FastAPI: আধুনিক Python API Framework
@@ -46,7 +46,7 @@ updated: 2026-10-15
 1. তিন স্তম্ভ: type hint থেকে validation (Pydantic) + auto OpenAPI docs + async native — boilerplate প্রায় শূন্য
 2. Pydantic boundary-তে: request/response schema আলাদা model — ORM object সরাসরি ফেরানো নয়, `response_model` দিয়ে leak ঠেকানো
 3. Dependency Injection (`Depends`): DB session, current user, tenant resolution — reusable, testable, route signature-এই দৃশ্যমান
-4. Structure বড় হলে: APIRouter দিয়ে module ভাগ (router/service/schema আলাদা ফাইল) — সব main.py-তে নয় (Sokrio-python-এ এই split-ই)
+4. Structure বড় হলে: APIRouter দিয়ে module ভাগ (router/service/schema আলাদা ফাইল) — সব main.py-তে নয় (DistroSaaS-python-এ এই split-ই)
 5. Error handling: HTTPException + custom exception handler — এক জায়গায় consistent error envelope
 6. Sync frameworks তুলনা এক লাইনে: Django (batteries-included, admin ফ্রি — Laravel-এর জাতভাই), Flask (minimal), FastAPI (API-first, async) — API সার্ভিসে FastAPI-ই এখন default পছন্দ
 
@@ -88,7 +88,7 @@ updated: 2026-10-15
 
 ### ৭. Python-এ MongoDB ও Aggregation Pipeline
 
-**Description:** Analytics/reporting সার্ভিসে Python + MongoDB জুটি — pipeline চিন্তা আর performance সচেতনতা (আমার দৈনন্দিন Sokrio-benchmark কাজ)।
+**Description:** Analytics/reporting সার্ভিসে Python + MongoDB জুটি — pipeline চিন্তা আর performance সচেতনতা (আমার দৈনন্দিন DistroSaaS-benchmark কাজ)।
 
 **৬টা Key Point:**
 1. Aggregation pipeline = ধাপের চেইন: `$match` → `$group` → `$project` → `$sort` — SQL-এর WHERE/GROUP BY-এর document-জগত রূপ
@@ -131,5 +131,5 @@ updated: 2026-10-15
 2. Laravel/PHP জেতে: business CRUD প্রোডাক্ট দ্রুত — full-stack convention, BD-তে টিম সহজলভ্য
 3. Node জেতে: real-time + frontend-এর সাথে ভাষা ভাগাভাগি
 4. Raw speed-এ Python ধীরতম — কিন্তু I/O-bound API-তে সেটা প্রায় অপ্রাসঙ্গিক; ভারী অংশ C-extension এ চলে; bottleneck প্রায় সবসময় DB
-5. নিজের বাস্তব উদাহরণ দেওয়া: Sokrio-তে Laravel core (transactional) + Python/FastAPI benchmark সার্ভিস (multi-tenant analytics) — polyglot সিদ্ধান্তটা workload থেকেই এসেছে
+5. নিজের বাস্তব উদাহরণ দেওয়া: DistroSaaS-এে Laravel core (transactional) + Python/FastAPI benchmark সার্ভিস (multi-tenant analytics) — polyglot সিদ্ধান্তটা workload থেকেই এসেছে
 6. পরিণত সমাপ্তি-লাইন: "ভাষা tool — টিম, ecosystem, আর সমস্যার আকৃতি মিলিয়ে বাছাই; ধর্মযুদ্ধ engineering না"

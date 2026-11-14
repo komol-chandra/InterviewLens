@@ -10,7 +10,7 @@ tags: [lld, structural]
 updated: 2026-11-14
 ---
 
-> Tracker ID: DP-08 · Generated: 2026-10-15 · Answers: **DP-Q08** (TRK-02 Phase 5) · Source: GoF + sokrio-server (`Cache::remember` in reports, Laravel Facades, `CheckPermission` middleware) + sokrio-benchmark-python (`app/common/cache.py` `cache_remember`) · Runnable: `04-design-patterns-lld/code/decorator-proxy.ts` (✅ ran + strict tsc 2026-10-15) · Status: 🟡 generated
+> Tracker ID: DP-08 · Generated: 2026-10-15 · Answers: **DP-Q08** (TRK-02 Phase 5) · Source: GoF + api-server (`Cache::remember` in reports, Laravel Facades, `CheckPermission` middleware) + benchmark-python (`app/common/cache.py` `cache_remember`) · Runnable: `04-design-patterns-lld/code/decorator-proxy.ts` (✅ ran + strict tsc 2026-10-15) · Status: 🟡 generated
 
 # DP-Q08: Add caching and logging to a service without changing its code. How? Decorator vs Proxy?
 
@@ -127,7 +127,7 @@ Laravel-এর **middleware**-ও controller-কে decorate করে (DP-Q10)�
 **ফাঁদ:**
 - **ক্রম গুরুত্বপূর্ণ:** logging বাইরে থাকলে cache hit-ও log হয়; ভেতরে থাকলে শুধু miss
 - interface বড় হলে (২০টা method) প্রতিটা decorator-কে সব method forward করতে হয় → বিরক্তিকর। TS-এ `Proxy` object বা base `ForwardingReportService` সাহায্য করে
-- cache decorator-এ **key-তে tenant** না রাখলে এক tenant আরেকজনের ডেটা দেখে (Sokrio CLAUDE.md-এর নিয়ম)
+- cache decorator-এ **key-তে tenant** না রাখলে এক tenant আরেকজনের ডেটা দেখে (DistroSaaS CLAUDE.md-এর নিয়ম)
 - debug কঠিন: stack trace-এ অনেক স্তর
 
 ### কাছাকাছি pattern
@@ -161,13 +161,13 @@ Laravel-এর **middleware**-ও controller-কে decorate করে (DP-Q10)�
 
 ---
 
-🔗 **Sokrio link:** (কোডে যাচাই করা)
-- ⭐ **ঠিক এই প্রশ্নের উত্তর, তোমার নিজের কোডে (Python):** `sokrio-benchmark-python/app/common/timing.py` → `cached_with_timing(module, endpoint, tenant, key, ttl, fn, should_cache)` = **logging মোড়ানো caching মোড়ানো আসল query**। ভেতরে `cache_remember(...)` (`app/common/cache.py`), বাইরে `log_event(...)` সময় + `cache_hit` লেখে, exception হলেও log করে তারপর re-raise। Docstring বলছে: আগে `market_benchmark/router`-এ private `_cached_with_timing` ছিল, তুমি বের করে shared বানিয়েছ যাতে `benchmark` router-ও একই wrapper পায় (duplication সরানো)। `git log`: `timing.py` আর `common/cache.py` দুটোরই একমাত্র লেখক Komol। এখানে "I built" বলতে পারো।
+🔗 **DistroSaaS link:** (কোডে যাচাই করা)
+- ⭐ **ঠিক এই প্রশ্নের উত্তর, তোমার নিজের কোডে (Python):** `benchmark-python/app/common/timing.py` → `cached_with_timing(module, endpoint, tenant, key, ttl, fn, should_cache)` = **logging মোড়ানো caching মোড়ানো আসল query**। ভেতরে `cache_remember(...)` (`app/common/cache.py`), বাইরে `log_event(...)` সময় + `cache_hit` লেখে, exception হলেও log করে তারপর re-raise। Docstring বলছে: আগে `market_benchmark/router`-এ private `_cached_with_timing` ছিল, তুমি বের করে shared বানিয়েছ যাতে `benchmark` router-ও একই wrapper পায় (duplication সরানো)। `git log`: `timing.py` আর `common/cache.py` দুটোরই একমাত্র লেখক Komol। এখানে "I built" বলতে পারো।
   > "In our benchmark service I wrote a `cached_with_timing` wrapper: the real query function goes in, it's wrapped by the cache, and that's wrapped by timing and logging, which records duration and whether it was a cache hit, even on errors. The query code itself never changes. That's how we could tell 'slow because uncached' from 'slow regardless'."
   - সৎ নোট: এটা function-wrapping (higher-order function), class-ভিত্তিক GoF Decorator না। ধারণা একই; জিজ্ঞেস করলে এটা বলো।
 - `should_cache` (তোমার): degraded/খালি ফল cache না করা (SD-Q03)।
 - **Laravel:** প্রায় সব heavy report `Cache::remember($key, $ttl, fn () => ...)` সরাসরি কন্ট্রোলার/সার্ভিসে ব্যবহার করে (CLAUDE.md-এর নিয়ম), **আলাদা decorator class দিয়ে না**। সৎভাবে বলো: *"We mostly inline `Cache::remember` with tenant-scoped keys. If several services needed the same caching, I'd move it into a decorator."*
-- **Proxy:** Laravel Facade (`Cache::`, `DB::`)। Protection proxy-র কাজটা Sokrio-তে করে middleware: `CheckPermission`, `EnsureTenantAccess` (DP-Q10)।
+- **Proxy:** Laravel Facade (`Cache::`, `DB::`)। Protection proxy-র কাজটা DistroSaaS-এে করে middleware: `CheckPermission`, `EnsureTenantAccess` (DP-Q10)।
 - **Tenant-scoped cache key:** `ScopeCacheToTenant` middleware cache prefix-এ `tenant_{id}` বসায় (S3)।
 
 📚 আরো: `04-design-patterns-lld/oop/` · সম্পর্কিত: [07-adapter.md](07-adapter.md) · [10-chain.md](../behavioral/10-chain.md) · `03-system-design/concepts/03-caching.md`

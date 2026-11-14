@@ -12,12 +12,12 @@ updated: 2026-10-26
 
 # 08c · Interview Q&A — Redis, Comparisons, Stream Processing (Q38–Q57)
 
-> **Snapshot:** `sokrio-server` @ `master` · HEAD `d14c0ebb2` · written 2026-10-26.
-> Paths are relative to `sokrio-server/`. Framework paths are shortened to `vendor/…/X` = `vendor/laravel/framework/src/Illuminate/X` (Laravel 9.52.22).
+> **Snapshot:** `api-server` @ `master` · HEAD `d14c0ebb2` · written 2026-10-26.
+> Paths are relative to `api-server/`. Framework paths are shortened to `vendor/…/X` = `vendor/laravel/framework/src/Illuminate/X` (Laravel 9.52.22).
 > Tags: `[CODE]` verified in app code · `[LIB]` verified in vendored code · `[GENERAL]` industry knowledge · `[INFERENCE]` reasoned, needs a lab · `[ASSUMPTION]` best guess plus how to verify.
-> Questions come from `../interview-questions.md` §6–§8 (wording unchanged). Sokrio examples reuse facts from sections 00–07. Finding ids (F1–F24), conflicts (D1–D20), assumptions (A1–A11) and runbooks (R1–R35) point back to those sections.
+> Questions come from `../interview-questions.md` §6–§8 (wording unchanged). DistroSaaS examples reuse facts from sections 00–07. Finding ids (F1–F24), conflicts (D1–D20), assumptions (A1–A11) and runbooks (R1–R35) point back to those sections.
 
-**How to use this file:** Q38–Q47 are Redis, and this is where Sokrio is richest: Redis does seven jobs there (T4 §4.11), so every textbook answer has a real story attached. Q48–Q50 are the "which broker" questions; answer with a decision framework and use Sokrio's actual split (Kafka for streams, Redis for jobs, no RabbitMQ) as the worked example. Q51–Q57 are stream processing, which Sokrio **does not do**: it runs hourly batch summaries. Say that plainly, then show what the streaming version would look like and what would have to change first.
+**How to use this file:** Q38–Q47 are Redis, and this is where DistroSaaS is richest: Redis does seven jobs there (T4 §4.11), so every textbook answer has a real story attached. Q48–Q50 are the "which broker" questions; answer with a decision framework and use DistroSaaS's actual split (Kafka for streams, Redis for jobs, no RabbitMQ) as the worked example. Q51–Q57 are stream processing, which DistroSaaS **does not do**: it runs hourly batch summaries. Say that plainly, then show what the streaming version would look like and what would have to change first.
 
 ---
 
@@ -35,7 +35,7 @@ Everything lives in memory, so a command is a few hundred nanoseconds of CPU, no
 - **The flip side:** one slow command blocks **every** client. `KEYS *` on a big keyspace, `LRANGE 0 -1` on a huge list, `DEL` on a million-member set, or a long Lua script all freeze the server. Use `SCAN`, ranges in chunks, `UNLINK`, and short scripts. `SLOWLOG GET` shows the culprits.
 - **Scaling out:** more CPU means more instances (Cluster, Q46), not more threads. `[GENERAL]` Forks like KeyDB and Dragonfly are multi-threaded; Valkey 8 widened I/O threading. Mention them only as "options exist".
 
-**Sokrio example:**
+**DistroSaaS example:**
 - `[LIB]` Laravel's Redis queue depends on the single-threaded guarantee. `pop` is a Lua script that moves a job from the list to the `:reserved` sorted set and bumps its attempt count atomically (`vendor/…/Queue/RedisQueue.php:275-286`). Two workers can never pop the same job, and no lock is needed, because nothing else runs while the script runs.
 - `[CODE]` The team already avoids the classic blocker: the feature-tracking flusher iterates keys with `SCAN … COUNT 50`, not `KEYS` (`app/Jobs/Analytics/FlushFeatureEventsJob.php:68`), and reads buffers in chunks of 500 (§4.7). (That `SCAN` call has its own bug under phpredis, F14 / R30.)
 - `[CODE]` One instance serves queues (DB 0), cache (DB 1, `config/database.php:202-219`) and the Python benchmark cache (also DB 0, F20). Numbered databases share **one thread**. A slow command from the Python side delays job pops in Laravel. Separate instances are the only real isolation (T6 §6.12).
@@ -76,7 +76,7 @@ RDB is a point-in-time snapshot written by a forked child on a schedule ("save a
 - **Replication isn't persistence:** replicas are asynchronous. A primary that crashes before replicating loses writes even with AOF on the replica. `WAIT n ms` lets a client wait for replicas when it matters.
 - **Restart with neither:** an empty dataset. That's fine for a pure cache and a disaster for a queue.
 
-**Sokrio example:**
+**DistroSaaS example:**
 - `[ASSUMPTION]` (A9) The prod Redis config is unknown: there's no `redis.conf`, `appendonly` or `maxmemory` anywhere in the monorepo. `[HIST]` The deleted prod compose ran `redis:alpine` with a `./data/redis` volume (T6 §6.2). `[GENERAL]` A stock image with no config file keeps the default RDB save points and AOF off, so the likely loss window on a crash is "since the last snapshot".
 - `[CODE]` What that window costs (T4 §4.9, R12):
   - Ready jobs in `queues:*` are lost. Summaries heal on the next hourly run because they're idempotent upserts (`app/Models/MongoDB/SummariesQuery.php:229-238`).
@@ -117,7 +117,7 @@ Pub/Sub is fire-and-forget broadcast: no storage, so a subscriber that is offlin
 - **Sharded Pub/Sub** (`SSUBSCRIBE`, Redis 7) scales Pub/Sub in Cluster mode but is still fire-and-forget.
 - **Keyspace notifications** are Pub/Sub too, so they're lossy. Don't build correctness on them.
 
-**Sokrio example:**
+**DistroSaaS example:**
 - `[LIB]` Laravel's Redis queue is the **reliable List pattern, done properly**. Ready jobs are a List, in-flight jobs move to a `:reserved` sorted set scored by "lease expires at" (`RedisQueue.php:275-286`), and expired reservations migrate back (`:244-249`). Delete = ack (`:305`), release = nack with delay (`:321`). The `retry_after` lease (9000 s, `config/queue.php:65`) plays the role of the reaper (08b Q31).
 - `[CODE]` The feature-tracking buffer is a hand-built List queue: `RPUSH` + `LTRIM -5000` + `EXPIRE 1800` (`BufferFeatureUsageListener.php:16-46`), claimed with an atomic `RENAME buffer → flushing` and re-drained if orphaned (`FlushFeatureEventsJob.php:49-51,87-95`). That's a whole-list claim instead of per-message acks: at-least-once, and duplicates are accepted for analytics (T4 §4.7).
 - `[CODE]` **No Pub/Sub anywhere.** Realtime UI goes through Pusher (`config/broadcasting.php:33-41`). The `redis` broadcaster is configured but unused (T4 §4.8). That's the right call: browser notifications need a WebSocket server, and Pub/Sub alone would lose messages for disconnected tabs anyway.
@@ -156,7 +156,7 @@ Pub/Sub is fire-and-forget broadcast: no storage, so a subscriber that is offlin
 - **Trimming vs pending:** `MAXLEN` can trim entries that are still pending. `XAUTOCLAIM` (Redis 7) then reports them as deleted. Size the cap for the backlog you must survive.
 - **Ordering:** there are no partitions. Inside a group, entries are spread across consumers, so per-key order isn't kept. For per-key order, shard into several streams by key hash yourself.
 
-**Sokrio example:** `[INFERENCE]` The feature-tracking buffer (T4 §4.7) is the natural Streams candidate. Today it's a List per tenant with a whole-list `RENAME` claim. As a Stream:
+**DistroSaaS example:** `[INFERENCE]` The feature-tracking buffer (T4 §4.7) is the natural Streams candidate. Today it's a List per tenant with a whole-list `RENAME` claim. As a Stream:
 ```php
 // listener (replaces RPUSH + LTRIM + EXPIRE)
 Redis::xAdd("ft:{$tenant}", '*', ['e' => json_encode($event)], 5000, true); // MAXLEN ~ 5000
@@ -201,7 +201,7 @@ Redis::xAck("ft:{$tenant}", 'flush', array_keys($batch["ft:{$tenant}"]));
   - A circuit breaker or bulkhead on the DB, plus a cheap fallback (stale data or a "try again" response).
   - HA for the cache tier (replica + failover) and a small in-process L1 cache.
 
-**Sokrio example:**
+**DistroSaaS example:**
 - **Breakdown, done right:** `[CODE]` `MatrixAggregator` checks the cache, takes `lock:{key}` (90 s), waits up to 60 s, then calls `Cache::remember` again inside the lock. The query is capped at 60 s so it finishes before the lease expires (`app/Services/Report/ProductGeographyMatrix/MatrixAggregator.php:162-174`, `:26-27`). Its versioned key means invalidation is a counter bump, not a `DEL`. It's the **only** stampede guard among ~192 `remember()` calls (T4 §4.4, R16).
 - **Penetration, a framework detail:** `[LIB]` Laravel's `Cache::remember` treats `null` as a miss and never stores it (`vendor/…/Cache/Repository.php:386-397`, the `is_null` check at `:393`). So any `remember()` whose closure returns `null` (an unknown domain, a deleted record) hits the database on **every** request. `[INFERENCE]` That applies to the tenant lookups (`Org::findByDomain`, `app/Models/Core/Org.php:51-80`) for unknown domains. Fix: cache a sentinel such as `false` and translate it back.
 - **Avalanche:** `[CODE]` TTLs are fixed constants (for example 3600 s in `ReportCacheMacro`, 10 080 s for Org lookups, D12), with no jitter. A deploy that flushes the cache, or a Redis restart (R12), makes every report cold at once. A Redis outage is partly handled: Org lookups fall back to the DB (`Org.php:51-80`), so tenant resolution survives.
@@ -235,7 +235,7 @@ Redis::xAck("ft:{$tenant}", 'flush', array_keys($batch["ft:{$tenant}"]));
 - **Write-behind:** good for high write rates where some loss is fine (analytics, counters). It needs a durable buffer or an accepted loss window, plus idempotent flushes.
 - **Consistency levels to name:** "eventually consistent within TTL" is the honest default. Strong consistency needs the cache inside the transaction, which defeats the purpose.
 
-**Sokrio example:**
+**DistroSaaS example:**
 - **Cache-aside everywhere:** `[CODE]` about 192 `Cache::remember` calls and 9 `rememberForever` keys that rely on explicit `forget` (T4 §4.4).
 - **Invalidation can miss (F12):** `[CODE]` `Org::updated` forgets only the key in the current namespace (`app/Models/Core/Org.php:45-48`). The same org is cached under three namespaces (web tenant prefix, bare prefix, `org_by_id`). A deactivated tenant can keep passing `EnsureTenantAccess` for up to ~2.8 h (R35). That's the "two copies, one invalidation" bug in a real system.
 - **Versioned keys instead of deletes:** `[CODE]` MatrixAggregator's `pgm:agg:v3:{db}:t{version}:…` keys: bump the version and the old entries just age out.
@@ -278,7 +278,7 @@ Redis::xAck("ft:{$tenant}", 'flush', array_keys($batch["ft:{$tenant}"]));
   - **Practical line:** for **efficiency** locks (avoid duplicate work), a single-instance lease is enough. For **correctness** locks, make the protected resource enforce it: a DB unique constraint, `SELECT … FOR UPDATE`, a version column (optimistic locking), or a fenced write. Or use a consensus system (etcd, ZooKeeper).
 - **Lease hygiene:** make the TTL comfortably longer than the work, put a timeout on the work that's shorter than the TTL, and renew (a "watchdog") for long jobs.
 
-**Sokrio example:**
+**DistroSaaS example:**
 - `[LIB]` Laravel's `Cache::lock()` on Redis is exactly the correct single-instance version: `SET key owner EX n NX` plus a Lua compare-and-delete on release (`vendor/…/Cache/RedisLock.php:38-40`). It's a lease, not Redlock, and it has no fencing token.
 - **The real-world failure is scope, not algorithm (F13):** `[CODE]` `Guest/StockUpdateController.php` takes the stock lock at `:152-153`, does a PHP read-modify-write `qty + n`, releases the lock at `:166`, but commits the transaction at `:263`. The next request gets the lock and reads the **old** quantity, because the first transaction hasn't committed yet, so one increment is lost. The atomic `increment()` is already there, commented out at `:163`. Line for the interview: *"A lock that is released before the commit protects nothing. Here the database is the real fence: an atomic increment or a row lock inside the transaction."*
 - **Lease budget done right:** `[CODE]` MatrixAggregator caps its query at 60 s under a 90 s lock (`:26-27`), so the holder can't outlive the lease (Q42).
@@ -310,7 +310,7 @@ When memory reaches `maxmemory`, the policy decides what happens. `noeviction` r
 - **What counts toward memory:** data, client output buffers, replication backlog, AOF buffer. Leave headroom (`maxmemory` ≈ 70–80 % of RAM with persistence on, because of fork copy-on-write).
 - **Monitoring:** `INFO memory` (`used_memory`, `mem_fragmentation_ratio`), `INFO stats` (`evicted_keys`, `rejected` errors), and alerts on used/max.
 
-**Sokrio example:**
+**DistroSaaS example:**
 - `[ASSUMPTION]` (A9) Prod policy unknown, but `[CODE]` there's a regression test for `OOM command not allowed when used memory > 'maxmemory'` (`tests/Unit/Kafka/KafkaProducerTest.php:231`, commit `37840a3b5`). That error only exists under `noeviction` (or `volatile-*` with nothing evictable), so prod has likely hit the ceiling at least once.
 - `[CODE]` **The design problem:** one instance holds queues (DB 0), cache (DB 1) and the Python benchmark cache (DB 0, F20). Because `maxmemory` and the policy are per instance:
   - `allkeys-lru` could evict a **queue list or a lock** → lost jobs, or two lock holders.
@@ -350,8 +350,8 @@ Sentinel is **high availability** for one primary: Sentinel processes watch it, 
 - **Other Cluster costs:** `SCAN` and `KEYS` work per node (iterate every primary); Pub/Sub broadcasts to every node unless you use sharded Pub/Sub.
 - **Write loss:** async replication means "acked then lost" is possible on failover. `WAIT` reduces it. `min-replicas-to-write` stops a primary isolated in a partition from accepting writes for long.
 
-**Sokrio example:**
-- `[CODE]` Sokrio runs a single instance: `config/database.php:193-220` has no `clusters` block and no Sentinel options. Likely a container with a volume (`[HIST]` T6 §6.2), so there's no failover at all (A5).
+**DistroSaaS example:**
+- `[CODE]` DistroSaaS runs a single instance: `config/database.php:193-220` has no `clusters` block and no Sentinel options. Likely a container with a volume (`[HIST]` T6 §6.2), so there's no failover at all (A5).
 - `[LIB]` Why Cluster would hurt: Laravel's queue Lua scripts touch the queue list, `:reserved` and `:delayed` together (`RedisQueue.php:275-286`, migrate `:244-249`), and the feature flusher `RENAME`s `buffer:{t}` → `flushing:{t}` (§4.7). Both are multi-key. In Cluster every queue name would need a hash tag (`{default}`), and the buffer keys would need `{t}` tags. `SCAN` would also have to visit every node.
 - **Recommendation (T6 §6.12):** on ElastiCache keep **cluster mode disabled** (one primary + a replica, Multi-AZ failover), which is the Sentinel model. Split queue and cache into two groups. Data volume doesn't need sharding.
 
@@ -387,7 +387,7 @@ Sentinel is **high availability** for one primary: Sentinel processes watch it, 
 - **Failure mode:** decide whether to fail open (allow traffic when Redis is down) or closed. Most APIs fail open for normal endpoints and closed for OTP or login.
 - **Distributed edge:** for very high rates, keep local token buckets per instance and sync to Redis periodically.
 
-**Sokrio example:**
+**DistroSaaS example:**
 - `[CODE]` Five named limiters: `api`, `auth`, `otp`, `otp-verify`, `bulk` (`app/Providers/RouteServiceProvider.php:66-150`), with values in `config/rate_limiting.php` (api 600/min, auth 8/min per identifier and 25/min per IP, OTP 2/min **and** 6/h, bulk 3/min and 20/h). They run after auth, keyed per user and tenant-scoped (`:253-270`).
 - `[LIB]` They use the plain `ThrottleRequests` middleware (`app/Http/Kernel.php:136`), which calls `RateLimiter::hit` → `cache->add` + `increment` with a decay timer (`vendor/…/Cache/RateLimiter.php:110-122`). That's a **fixed window** in the default cache store (DB 1).
 - `[LIB]` The Redis variant (`ThrottleRequestsWithRedis` → `DurationLimiter`) is also a fixed window, anchored at the first hit, made atomic with a Lua script (`vendor/…/Redis/Limiters/DurationLimiter.php:154-168`). It's not a sliding window (D20 corrects T4 §4.6).
@@ -435,7 +435,7 @@ Ask what the message *is*. If it's a **fact that happened** and more than one re
 
 - **Hybrid is normal:** an outbox publishes events to Kafka, and a consumer turns some of them into tasks on a queue.
 
-**Sokrio example:** Sokrio's real choices fit this framework (T3 §3.6):
+**DistroSaaS example:** DistroSaaS's real choices fit this framework (T3 §3.6):
 - **GPS tracking** is a high-volume fact stream, ordered per user (key = `user_id`) and reprocessable → **Kafka** (`TrackingController.php:62-83`). The same goes for department changes feeding Mongo, which are ideally a compacted topic (08a).
 - **Summaries, exports, SMS batches, delayed approvals** are tasks for one worker, with retries and delays → **Laravel queues on Redis** (`config/queue.php`, five queues in use).
 - **RabbitMQ: not used, on purpose.** Delays, retries and priority are covered by Laravel queues; the stream needs are covered by Kafka. The one case where a broker would really help is request/reply with the ERP, which today is a daily shared-database poll (T3 §3.3.4).
@@ -443,7 +443,7 @@ Ask what the message *is*. If it's a **fact that happened** and more than one re
 
 **Follow-up questions the interviewer may ask:**
 - Can RabbitMQ do replay now? (Stream queues (3.9+) and super streams give log semantics `[GENERAL]`, but the ecosystem around them is far smaller than Kafka's.)
-- What would make you move a Sokrio queue to Kafka? (A second team or service that needs the same events, e.g. order events for analytics, B8.)
+- What would make you move a DistroSaaS queue to Kafka? (A second team or service that needs the same events, e.g. order events for analytics, B8.)
 - What does the choice cost operationally? (Kafka: partitions, retention, lag monitoring. RabbitMQ: queue growth, memory alarms, quorum queues. Both need DLQ handling.)
 
 **Common mistakes to avoid:**
@@ -467,7 +467,7 @@ Kafka tracks one offset per partition, not one ack per message. So a slow or fai
 - **Visibility:** there's no "how many jobs are pending/failed" view per job, only lag per partition.
 - **Share Groups** `[GENERAL]`: KIP-932 introduced share groups with per-record acknowledge, release and reject plus delivery counts, and consumers beyond the partition count. They arrived as early access in Kafka 4.0. Say "check the current status" rather than quote a version as GA.
 
-**Sokrio example:** Sokrio shows both sides:
+**DistroSaaS example:** DistroSaaS shows both sides:
 - **They didn't do it.** Jobs (summaries, exports, SMS, delayed approvals) run on Laravel queues, which give per-job retries (`tries`, `backoff`), delays (`later`), `failed_jobs`, and queue-level priority. Kafka carries only the tracking and department streams.
 - **Kafka's limits still show in the stream consumers:**
   - `[CODE]` The tracking handler retries a failing tenant group 3 times with sleeps (`TrackingMessageHandler.php:23,85-116`) while every other message in the partition waits, which is head-of-line blocking. After that it falls back to per-point writes and drops bad points, so the partition isn't blocked forever (R4).
@@ -503,13 +503,13 @@ For small volumes, yes. Redis Streams give a log with consumer groups, acks and 
   - **Memory pressure** competes with your cache and queues (Q45).
 - **Signals to move:** retention needs beyond hours, more than one team consuming, replay used for reprocessing, or a bigger-than-RAM backlog during an outage.
 
-**Sokrio example:**
-- **Where Sokrio rightly uses Redis instead of Kafka:** the feature-tracking analytics buffer (T4 §4.7). Volume is small, a loss of up to 30 minutes is acceptable, and it's flushed to Mongo in minutes. Kafka would be overkill, and Streams would be the natural upgrade (Q41).
+**DistroSaaS example:**
+- **Where DistroSaaS rightly uses Redis instead of Kafka:** the feature-tracking analytics buffer (T4 §4.7). Volume is small, a loss of up to 30 minutes is acceptable, and it's flushed to Mongo in minutes. Kafka would be overkill, and Streams would be the natural upgrade (Q41).
 - **Where Redis would be wrong:** GPS tracking.
   - The value is replay: reprocessing tracking after a handler bug needs the history (T6 §6.8).
   - A consumer outage must not grow memory without bound. Today a broker-side backlog lives on Kafka disks; on Redis it would compete with queues and cache in one `maxmemory` (Q45) and could push the instance into OOM, which then fails dispatches.
   - The prod Redis likely has no AOF (A9), so a restart would lose the stream.
-- **Honest caveat:** Sokrio's Kafka doesn't yet deliver Kafka-grade durability either: acks=0 (F5), RF=1 on auto-created topics (A3, R21), a single broker. Kafka's advantages only count once those are fixed (T7 Top-5 #2). *"Choosing Kafka buys you nothing if you configure it like a cache."*
+- **Honest caveat:** DistroSaaS's Kafka doesn't yet deliver Kafka-grade durability either: acks=0 (F5), RF=1 on auto-created topics (A3, R21), a single broker. Kafka's advantages only count once those are fixed (T7 Top-5 #2). *"Choosing Kafka buys you nothing if you configure it like a cache."*
 
 **Follow-up questions the interviewer may ask:**
 - How would you size a Redis Stream for a consumer outage? (Peak rate × the longest outage you must absorb × average entry size, plus headroom; then set `MAXLEN` and alert on PEL size.)
@@ -525,7 +525,7 @@ For small volumes, yes. Redis Streams give a log with consumer groups, acks and 
 
 ## 8.8 Stream processing (Q51–Q57)
 
-> Sokrio does **batch** aggregation, not stream processing: hourly jobs per tenant recompute Mongo summaries from MySQL with idempotent upserts, and a daily resync corrects them (T1 B3). Use it as the "before" picture, then describe the streaming version.
+> DistroSaaS does **batch** aggregation, not stream processing: hourly jobs per tenant recompute Mongo summaries from MySQL with idempotent upserts, and a daily resync corrects them (T1 B3). Use it as the "before" picture, then describe the streaming version.
 
 ### Q51. Batch vs stream processing. What is the Lambda vs Kappa architecture?
 
@@ -543,7 +543,7 @@ Batch processes a bounded dataset on a schedule: high latency, simple, easy to r
   - Cons: needs long enough retention (or tiered storage) and a processor that can replay fast. Some aggregations over years of data are still easier in batch.
 - **Modern blur:** engines like Flink and Spark run the same code in batch and streaming modes, and lakehouse tables (Iceberg, Delta) let streaming jobs write tables that batch jobs read.
 
-**Sokrio example:**
+**DistroSaaS example:**
 - `[CODE]` Today is **batch with a correction pass**:
   - `secondary_order_summary` and `primary_order_summary_mongodb` run hourly over the previous hour (`app/Console/Kernel.php:149,152`). `BaseCommand` fans out one job per active tenant to the `summary` queue (`BaseCommand.php:50-70`).
   - A daily resync (`Kernel.php:155`) recomputes the day. That's Lambda's "batch layer fixes it" idea, with no speed layer.
@@ -578,7 +578,7 @@ Batch processes a bounded dataset on a schedule: high latency, simple, easy to r
 - **Late data handling:** allowed lateness (keep window state and emit an updated result), side outputs for "too late" events, and idempotent or upsert sinks so updates overwrite earlier results.
 - **Kafka timestamps:** `CreateTime` (set by the producer) or `LogAppendTime` (set by the broker) per topic, `message.timestamp.type`. Kafka Streams uses the record timestamp as event time by default, or a custom `TimestampExtractor` reading the payload.
 
-**Sokrio example:**
+**DistroSaaS example:**
 - `[CODE]` The tracking payload carries the device's `created_at` (a required key, `WriteBulkTrackingActions.php:56-61`), which is event time. Field apps can send late batches through the v2 bulk endpoint after being offline (`V2/Tracking/TrackingController.php:52-78`).
 - `[CODE]` The producer envelope has `occurred_at`, but the consumer's decode drops it along with `event_id` (`KafkaConsumer.php:360-364`). So downstream code can't tell envelope time from processing time.
 - `[INFERENCE]` The hourly summary jobs are effectively **event-time windows with one hour of fixed lateness**: they run at :45 over the previous hour's orders. Anything whose timestamp lands in an hour that has already been summarized is only picked up by the daily resync (`Kernel.php:155`). That's "allowed lateness = until tomorrow", implemented by recomputation.
@@ -615,7 +615,7 @@ Batch processes a bounded dataset on a schedule: high latency, simple, easy to r
 - **Output:** per-window results can be emitted when the window closes (final) or on every update (suppressed or not). Downstream must handle updates (upserts).
 - **Grace period / allowed lateness** applies to every window type (Q52).
 
-**Sokrio example:**
+**DistroSaaS example:**
 - **Tumbling, already there in batch:** `[CODE]` the hourly secondary and primary order summaries are tumbling 1-hour windows per tenant, computed after the fact (`Kernel.php:149,152`).
 - **Hopping, a natural feature:** `[INFERENCE]` "reps active in the last 15 minutes, refreshed every minute" from the tracking topic (key = `user_id`) for a live supervisor map. Today that's a query on `trackings` on demand.
 - **Session, the best fit for tracking data:** `[INFERENCE]` group a rep's GPS points into working sessions with a 30-minute gap. Output: session start, end, distance and outlets visited, the input for attendance and route reports. With batch you have to re-derive sessions from raw rows every time; a session window maintains them as points arrive.
@@ -649,8 +649,8 @@ Each Kafka Streams task keeps its state in a local store, RocksDB by default, on
 - **Exactly-once:** with `processing.guarantee=exactly_once_v2`, the input offset commit, the changelog writes and the output writes are one Kafka transaction. A crash rolls back all three together, so state and output never disagree.
 - **Interactive queries:** stores can be queried from the app, and the metadata API tells you which instance owns which key.
 
-**Sokrio example:**
-- `[CODE]` Sokrio's "state" is the Mongo summary collections, and its "changelog" is MySQL: the hourly and daily jobs recompute from the source rather than restoring a store (`SummariesQuery.php:229-238`). Recovery after a failure = rerun the job. It's simple and correct because the source of truth is a database, not a stream.
+**DistroSaaS example:**
+- `[CODE]` DistroSaaS's "state" is the Mongo summary collections, and its "changelog" is MySQL: the hourly and daily jobs recompute from the source rather than restoring a store (`SummariesQuery.php:229-238`). Recovery after a failure = rerun the job. It's simple and correct because the source of truth is a database, not a stream.
 - `[INFERENCE]` For a Kafka Streams version (say, sessionized tracking from Q53):
   - Input `tracking` (3 partitions, key = `user_id`), state store `rep-sessions`, changelog `…-rep-sessions-changelog`.
   - **Prerequisites from T2:** the changelog topic must not be RF=1 (R21), or one broker loss loses the state history. And `acks=0` on the input producer (F5) means events can vanish before the processor ever sees them. Exactly-once processing can't recover data that the producer never delivered.
@@ -685,7 +685,7 @@ A **KStream** is an unbounded sequence of independent events: every record is a 
   - It's bootstrapped fully before processing starts, but it isn't time-synchronized with the stream.
 - **Duality in practice:** a database table is the result of applying its changelog (the binlog). CDC turns a table into a stream; materializing a stream turns it back into a table.
 
-**Sokrio example:**
+**DistroSaaS example:**
 - **KStream:** `[CODE]` the `tracking` topic: every GPS point is a new fact, keyed by `user_id` (`TrackingController.php:62-83`).
 - **KTable:** `[CODE]` the `departments` topic is a changelog of department state keyed by `department_id`, and the handler upserts each one into Mongo (`DepartmentMessageHandler.php:87-112`). The Mongo department collection is literally a materialized KTable. As 08a noted, the topic should be compacted, and deletes need tombstones. Today there's no delete event at all (the observer publishes on `created` and `updated` only, `DepartmentChangeObserver.php:26,35`).
 - **GlobalKTable:** `[INFERENCE]` tenant (`Org`) metadata is small and needed by every partition's processing. Today each handler caches `Org` in process memory for up to 6 h with no `active` check (F18). A GlobalKTable of tenants (fed by Org change events) would give every instance a current copy, including deactivation.
@@ -723,7 +723,7 @@ A **stream-stream join** matches events from two streams that share a key **with
   - If the keys differ, Kafka Streams repartitions: `selectKey`/`map` and then the join writes through an internal `-repartition` topic, which costs a full extra hop through Kafka.
   - Kafka Streams checks partition counts at startup but **can't** check that producers used the same partitioner.
 
-**Sokrio example:**
+**DistroSaaS example:**
 - **Enrich tracking with department (stream-table):** `[INFERENCE]` `tracking` is keyed by `user_id`, and `departments` by `department_id`. They're not co-partitioned, so a direct join is impossible. Options:
   1. Re-key tracking by the user's department (a repartition topic), then join the KTable.
   2. Make departments a GlobalKTable (it's small) and join on a key extracted from each point.
@@ -767,8 +767,8 @@ A **stream-stream join** matches events from two streams that share a key **with
   - Recovery restores every operator's state and rewinds the sources (Kafka offsets) to the checkpoint.
 - **"Exactly-once" means exactly-once *state effects*.** Records may be processed twice internally. External side effects (HTTP calls, emails) are at-least-once unless they're idempotent.
 
-**Sokrio example:**
-- **Where Sokrio is:** `[CODE]` no stream processor; PHP consumers do per-message work with manual commits (D8) and at-least-once delivery, while the summaries are batch jobs.
+**DistroSaaS example:**
+- **Where DistroSaaS is:** `[CODE]` no stream processor; PHP consumers do per-message work with manual commits (D8) and at-least-once delivery, while the summaries are batch jobs.
 - **What I'd pick if streaming became necessary:** `[INFERENCE]` Kafka Streams (or a managed Flink service on AWS) for something like sessionized tracking (Q53). Kafka Streams is lighter because there's no cluster, but either way it's a new JVM runtime for a PHP and Python team, and that's the real decision.
 - **Exactly-once starts at the producer:** with `acks=0` (F5) and RF=1 (R21), events can be lost **before** any processor sees them. With the consumer decode dropping `event_id` (`KafkaConsumer.php:360-364`), nothing downstream can deduplicate either. The order of work would be:
   1. `acks=1` (or all), RF=3.
@@ -791,7 +791,7 @@ A **stream-stream join** matches events from two streams that share a key **with
 
 ### ✅ Quality check
 - [x] All 20 questions (Q38–Q57) answered with the exact 5 renderer labels from `README_2.md:227-231`
-- [x] Redis examples reuse verified refs (F12, F13, F14, F20, D12, A9, R11, R12, R16, R17, R35, the 9 lock sites, `RedisLock`, `RedisQueue` Lua); comparisons reuse T3 §3.6 and T6 §6.8/§6.12; stream processing says plainly that Sokrio is batch (T1 B3) and marks every streaming design `[INFERENCE]`
+- [x] Redis examples reuse verified refs (F12, F13, F14, F20, D12, A9, R11, R12, R16, R17, R35, the 9 lock sites, `RedisLock`, `RedisQueue` Lua); comparisons reuse T3 §3.6 and T6 §6.8/§6.12; stream processing says plainly that DistroSaaS is batch (T1 B3) and marks every streaming design `[INFERENCE]`
 - [x] Two new `[LIB]` reads of vendored Laravel (read only): `Cache::remember` never caches `null` (`Repository.php:386-397`), and both Laravel rate limiters are fixed windows (`RateLimiter.php:110-122`, `DurationLimiter.php:154-168`). New conflict **D20** corrects T4 §4.6's "Lua sliding window"
 - [x] Version-dependent facts tagged `[GENERAL]` (KIP-932 share groups, XAUTOCLAIM 6.2, multi-part AOF 7, sharded Pub/Sub 7, unaligned checkpoints, KIP-441/447)
 - [x] `### Q<n>.` headings kept for the T11 renderer; no literal bold labels in this list

@@ -10,7 +10,7 @@ tags: [lld, behavioral]
 updated: 2026-11-14
 ---
 
-> Tracker ID: DP-13 · Generated: 2026-10-15 · Answers: **DP-Q13** (TRK-02 Phase 8) · Source: GoF + sokrio-server code (`Support/QaSeed/ScenarioSeeder` + `ScenarioRunner`, `Models/Order/TargetAchiever`, `Support/Traits/ReportableJobService`) · Runnable: `04-design-patterns-lld/code/template-method.ts` (✅ ran + strict tsc 2026-10-15) · Status: 🟡 generated
+> Tracker ID: DP-13 · Generated: 2026-10-15 · Answers: **DP-Q13** (TRK-02 Phase 8) · Source: GoF + api-server code (`Support/QaSeed/ScenarioSeeder` + `ScenarioRunner`, `Models/Order/TargetAchiever`, `Support/Traits/ReportableJobService`) · Runnable: `04-design-patterns-lld/code/template-method.ts` (✅ ran + strict tsc 2026-10-15) · Status: 🟡 generated
 
 # DP-Q13: Several reports share the same steps but differ in one part. How do you avoid copy-paste?
 
@@ -147,7 +147,7 @@ PHP-তে `final` দিয়ে template method override আটকানো �
 **মূল উত্তর (৪৫ সেকেন্ড):**
 > "If the steps and their order are the same and only one part differs, I'd use Template Method. A base class has one `generate` method that fixes the sequence: validate, fetch with tenant and date scoping, transform, add totals, cache. Subclasses only implement the transform step, and optional hooks have defaults. The big win is that the risky parts, like tenant scoping, live in one place and can't be forgotten. If the varying parts are independent and I want to mix them at runtime, I'd use Strategy instead and pass the transformer in. Template Method is inheritance and fixes the order; Strategy is composition and is more flexible."
 
-**Sokrio উদাহরণ (তোমার নিজের, সবচেয়ে শক্তিশালী):**
+**DistroSaaS উদাহরণ (তোমার নিজের, সবচেয়ে শক্তিশালী):**
 > "I built this for our QA Test Lab. An abstract `ScenarioSeeder` defines the lifecycle: profile the tenant's data, plan scenarios, apply them through a journal, compute the expected results, and verify. A runner calls those steps in order and writes each stage to a scenario pack. Each module, like memo target or visit target, is one subclass that implements those steps. A new module's seeder gets the runner, journaling and revert for free, and it can't skip the journal."
 
 ---
@@ -164,9 +164,9 @@ PHP-তে `final` দিয়ে template method override আটকানো �
 
 ---
 
-🔗 **Sokrio link:** (কোডে যাচাই করা)
+🔗 **DistroSaaS link:** (কোডে যাচাই করা)
 - ⭐ **তোমার নিজের (A6):** `app/Support/QaSeed/ScenarioSeeder.php` (`abstract class`): abstract `module()`, `code()`, `catalogue()`, `profile(array)`, `plan(array)`, `apply(array $plan, QaJournal $journal)`, `expected(array)`, `verify(array)`। `ScenarioRunner` ক্রমে ডাকে (`expected.json` লেখে, `apply` journal-এর ভেতরে)। subclass: `database/seeders/Qa/MemoTarget/`, `VisitTarget/`। `app/Support/QaSeed/`-এর একমাত্র লেখক Komol।
   - DP-Q01-এর খোলা প্রশ্ন এখনো বাকি: base class আগে বানিয়েছিলে, নাকি দুটো seeder লেখার পরে মিল দেখে বের করেছ? `[Komol পূরণ করবে]` (দ্বিতীয়টা হলে "rule of three" গল্প হিসেবে আরো শক্তিশালী)
 - **টিমের উদাহরণ:** `app/Models/Order/TargetAchiever.php` (abstract) → Product/Invoice/Delivery/Visit TargetAchiever (Tanmay, sumaisa); `app/Support/Traits/ReportableJobService.php`: export-এর পুরো ধাপ trait-এ, প্রতিটা job `removeCache()` abstract আর `reportServiceClass` দেয় (sihab)। সৎ নোট: trait + abstract method = PHP-তে Template Method-এর একটা রূপ।
 
-📚 আরো: `04-design-patterns-lld/oop/` · সম্পর্কিত: [03-strategy.md](03-strategy.md) · [01-principles.md](../01-principles.md) · [02-sokrio-pattern-map.md](../02-sokrio-pattern-map.md)
+📚 আরো: `04-design-patterns-lld/oop/` · সম্পর্কিত: [03-strategy.md](03-strategy.md) · [01-principles.md](../01-principles.md) · [02-distrosaas-pattern-map.md](../02-distrosaas-pattern-map.md)

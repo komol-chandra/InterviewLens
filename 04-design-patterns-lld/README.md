@@ -17,7 +17,7 @@ GoF প্যাটার্ন, SOLID, রানযোগ্য TS কোড �
 | # | ফাইল | কী আছে | status | conf | tier |
 |---|---|---|---|---|---|
 | 01 | [01-principles.md](01-principles.md) | DP-Q01: What is a design pattern? When does using one make code worse? | draft | 0 | starter |
-| 02 | [02-sokrio-pattern-map.md](02-sokrio-pattern-map.md) | DP-02: Sokrio কোডে যে Design Pattern আছে (১ পাতা) | draft | 0 | starter |
+| 02 | [02-distrosaas-pattern-map.md](02-distrosaas-pattern-map.md) | DP-02: DistroSaaS কোডে যে Design Pattern আছে (১ পাতা) | draft | 0 | starter |
 | — | [architectural/](architectural/README.md) | সাব-ফোল্ডার | | | |
 | — | [behavioral/](behavioral/README.md) | সাব-ফোল্ডার | | | |
 | — | [creational/](creational/README.md) | সাব-ফোল্ডার | | | |

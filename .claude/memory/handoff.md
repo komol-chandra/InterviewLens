@@ -60,8 +60,11 @@ updated: 2026-11-14
 
 ## পরের সেশনে প্রথম কাজ
 
-1. Komol commit করবে (Work 05)। নতুন Claude Code সেশনে `lens-brain` MCP অনুমোদন চাইবে।
-2. Public-safe scrub (Komol "হ্যাঁ" বললে): ১১০টা ফাইল, ৪টা রিনেম + লিংক → `python3 scripts/health.py` leak ০ → `lens index`।
+1. ✅ Work 05 commit হয়েছে (`85c4548`)।
+2. ✅ **Public-safe scrub শেষ (২০২৬-১১-১৪, uncommitted):** ১০৮টা ফাইল + ৪টা `git mv` রিনেম (`*-in-distrosaas.md`, `02-distrosaas-pattern-map.md`, id `lld-distrosaas-pattern-map`)। repo নাম → `api-server`/`app-frontend`/`admin-frontend`/`benchmark-python`; server path → `/home/deploy/`; client domain → `tenant-a.distrosaas.example`। leak ০, broken link ০, HTML rebuild, `lens index` হয়েছে।
+   - Exempt (আসল employer নাম লাগে): `12-career/cv-by-role/build-*.js`, `12-career/templates/email-template.txt` → `health.py`-এর `LEAK_EXEMPT_FILES`-এ।
+   - ⚠️ ল্যাব: `labs/bin/php.sh` এখন `APP_VENDOR=/path/to/api-server/vendor` env চায় (আগে sibling path ধরে নিত)।
+   - বাকি (এই পাসে ধরা হয়নি): টিমমেট/ক্লায়েন্টের নাম, আসল ক্লাস/ফাইল নাম + লাইন নম্বর (`FlushFeatureEventsJob.php:68`)। দরকার হলে আলাদা পাস।
 3. প্রথম `/study-start`: `weak-areas.md`-এর `Now` ভরা, তারপর **Starter ① Problem Solving** (W1 = ১১-১৬)।
 
 ## Komol-এর কাছে অপেক্ষমাণ

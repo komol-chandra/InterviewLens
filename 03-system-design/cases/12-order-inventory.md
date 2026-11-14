@@ -10,7 +10,7 @@ tags: [system-design, cases]
 updated: 2026-11-14
 ---
 
-> Tracker ID: SD-29 · Generated: 2026-10-15 · Answers: **SD-Q12** (TRK-02 Phase 9) · Source: general SD knowledge + `03-system-design/00-notes.md` §১ + sokrio-server code (`Services/VanSales/VanLoadOutStockService.php`, `Http/Controllers/Guest/StockUpdateController.php`, `Requests/VanSales/StoreVanOrderRequest.php`, `git log`) · Format: 7-ধাপ · Status: ✅ generated
+> Tracker ID: SD-29 · Generated: 2026-10-15 · Answers: **SD-Q12** (TRK-02 Phase 9) · Source: general SD knowledge + `03-system-design/00-notes.md` §১ + api-server code (`Services/VanSales/VanLoadOutStockService.php`, `Http/Controllers/Guest/StockUpdateController.php`, `Requests/VanSales/StoreVanOrderRequest.php`, `git log`) · Format: 7-ধাপ · Status: ✅ generated
 
 # SD-Q12: Design order + inventory for a distribution company. How do you prevent overselling?
 
@@ -20,7 +20,7 @@ updated: 2026-11-14
 
 ## ১. Requirements
 
-**Functional (FMCG ডিস্ট্রিবিউশন, Sokrio-র মতো):**
+**Functional (FMCG ডিস্ট্রিবিউশন, DistroSaaS-এর মতো):**
 1. Sales rep / retailer অর্ডার দেয় (মোবাইল, কখনো অফলাইন)
 2. Distributor (depot) অর্ডার approve → challan → ডেলিভারি
 3. স্টক প্রতি depot × product × batch; ফ্যাক্টরি থেকে স্টক আসে (stock-in), ভ্যানে লোড হয় (transfer)
@@ -135,8 +135,8 @@ Client অর্ডারের একটা unique `code` বানায় �
 **মূল উত্তর (৬০ সেকেন্ড):**
 > "Overselling happens when two orders read 'in stock' at the same time and both subtract. So the check and the update must be one atomic step. My default is a conditional update: add to reserved only where on-hand minus reserved is at least the quantity, and check affected rows. For multi-line B2B orders I'd lock the stock rows with SELECT FOR UPDATE inside one short transaction, always in the same order to avoid deadlocks. I separate on-hand from reserved, so stock is held from approval until delivery and released on cancel or by an expiry job. Every change is also written to a stock movement ledger for audit. And a client-generated order code with a unique constraint stops mobile retries from creating duplicate orders."
 
-**Sokrio:**
-> "In Sokrio's van-sales module, confirming a van load-out locks the depot's stock rows with lockForUpdate, ordered by product, and computes available stock as quantity minus what's already in transit before allowing the transfer. Van orders also carry a client-generated code used as an idempotency key."
+**DistroSaaS:**
+> "In DistroSaaS's van-sales module, confirming a van load-out locks the depot's stock rows with lockForUpdate, ordered by product, and computes available stock as quantity minus what's already in transit before allowing the transfer. Van orders also carry a client-generated code used as an idempotency key."
 
 ## ফলো-আপ প্রশ্ন
 
@@ -149,7 +149,7 @@ Client অর্ডারের একটা unique `code` বানায় �
 
 ---
 
-🔗 **Sokrio link:** (কোডে যাচাই করা, 2026-10-15; সব **টিমের লেখা**)
+🔗 **DistroSaaS link:** (কোডে যাচাই করা, 2026-10-15; সব **টিমের লেখা**)
 - **Pessimistic lock + available হিসাব:** `app/Services/VanSales/VanLoadOutStockService.php`: `Cache::lock("van_load_out_confirm_{id}")` (একই load-out দুবার confirm না) → `Stock::lockForUpdate()->...->orderBy('product_id')` → `available = qty − on_transit_send` → কম হলে `ValidationException`। লেখক **Rakib** (১০ commit)।
 - **Idempotency key:** `Requests/VanSales/StoreVanOrderRequest.php`: van order-এর client-generated `code` = idempotency key (Rakib)।
 - **Challan-প্রতি lock:** `Guest/StockUpdateController.php` (stock-in API): `Cache::lock({domain}_stock_update_{challan_no})` → একই challan দুবার process হয় না (429)। লেখক **sihab** (2026-02-24)।

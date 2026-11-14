@@ -12,12 +12,12 @@ updated: 2026-10-26
 
 # 08a · Interview Q&A — Foundations, Guarantees, Kafka Internals (Q1–Q19)
 
-> **Snapshot:** `sokrio-server` @ `master` · HEAD `d14c0ebb2` · written 2026-10-26.
-> Paths are relative to `sokrio-server/`. Library paths are shortened to `phpkafka/…` = `vendor/longlang/phpkafka/src/…` (v1.2.5).
+> **Snapshot:** `api-server` @ `master` · HEAD `d14c0ebb2` · written 2026-10-26.
+> Paths are relative to `api-server/`. Library paths are shortened to `phpkafka/…` = `vendor/longlang/phpkafka/src/…` (v1.2.5).
 > Tags: `[CODE]` verified in app code · `[LIB]` verified in the vendored client · `[GENERAL]` industry knowledge · `[INFERENCE]` reasoned, needs a lab · `[ASSUMPTION]` best guess plus how to verify.
-> Questions come from `../interview-questions.md` §1–§3 (wording unchanged). Sokrio examples reuse facts proven in sections 00–07; finding ids (F1–F24), conflicts (D1–D18) and runbooks (R1–R35) point back to those sections.
+> Questions come from `../interview-questions.md` §1–§3 (wording unchanged). DistroSaaS examples reuse facts proven in sections 00–07; finding ids (F1–F24), conflicts (D1–D18) and runbooks (R1–R35) point back to those sections.
 
-**How to use this file:** say the *Short answer* out loud in under 30 seconds. Then pick **one** Sokrio example and tell it as a story. Interviewers remember a real bug you found far longer than a textbook definition.
+**How to use this file:** say the *Short answer* out loud in under 30 seconds. Then pick **one** DistroSaaS example and tell it as a story. Interviewers remember a real bug you found far longer than a textbook definition.
 
 ---
 
@@ -43,14 +43,14 @@ A queue puts a buffer between "something happened" and "do the work". That gives
   6. *Observability:* a request now spans processes, so you need correlation ids, lag and queue-age metrics.
   7. *Ops:* brokers need replication, disks, upgrades and alerting.
 
-**Sokrio example:**
+**DistroSaaS example:**
 - `[CODE]` Tracking v1 publishes the GPS point and returns **202**, so the phone isn't blocked by MySQL + Mongo writes (`app/Http/Controllers/Tracking/TrackingController.php:62-83`). That is async UX plus load leveling.
 - `[CODE]` Summary fan-out: the scheduler fires one command per hour (`app/Console/Kernel.php:149`) that dispatches one `SecondaryOrderSummaryJob` per active tenant onto the `summary` queue (`BaseCommand.php:50-70`, `SecondaryOrderSummary.php:33-36`). The queue spreads heavy Mongo rebuilds over workers instead of running them in the scheduler.
 - The new problems are real here too: tracking inserts aren't idempotent (`WriteBulkTrackingActions.php:67-78`), observers dual-write inside transactions (F8), and nothing alerts on consumer lag or queue age (T6 §6.9).
 
 **Follow-up questions the interviewer may ask:**
 - When would you *not* use a queue? (When the caller needs the result now, e.g. a payment authorization; or when the volume is tiny and a cron + DB table is simpler.)
-- How do you tell the user their async work finished? (Polling, WebSocket push, email. Sokrio uses Pusher for export progress.)
+- How do you tell the user their async work finished? (Polling, WebSocket push, email. DistroSaaS uses Pusher for export progress.)
 - What do you monitor on a queue? (Depth, age of the oldest message, consumer lag, DLQ size, processing time.)
 
 **Common mistakes to avoid:**
@@ -72,11 +72,11 @@ Point-to-point: each message goes to **one** consumer out of a pool, for work di
 - **Kafka:** one log per topic; each **consumer group** keeps its own offsets, so groups are subscribers; partitions are split among members of a group, so members are competing consumers.
 - **Redis:** `PUBLISH`/`SUBSCRIBE` is fire-and-forget pub/sub (no storage); lists (`LPUSH`/`BRPOP`) are a queue; Streams with consumer groups are both.
 
-**Sokrio example:**
+**DistroSaaS example:**
 - `[CODE]` **Point-to-point:** every Laravel queue (`summary`, `default`, `order-approved`, `sequential`, `feature-tracking`). One `SecondaryOrderSummaryJob` is popped by exactly one worker via the Redis Lua pop (`vendor/…/Queue/RedisQueue.php:275-286`).
 - `[CODE]` **Kafka, used as a queue today:** each topic has exactly one consumer group (`ConsumeCommand.php:97-107`: tracking = bare `KAFKA_GROUP`, others `{KAFKA_GROUP}-{topic}`). So `tracking.events.v1` has a single subscriber.
 - **Pub/sub done right:** adding a second consumer of `departments.events.v1` (say, a search index) would just need a new group id. The producer (`DepartmentChangeObserver.php:26-46`) doesn't change. That's the main reason to keep departments on Kafka instead of a Laravel job.
-- `[CODE]` **Pub/sub to browsers:** Pusher broadcasts (`ReportProgressUpdated`, `ReportNotification`) to the React app via `sokrio-app-frontend/src/lib/echo.ts`.
+- `[CODE]` **Pub/sub to browsers:** Pusher broadcasts (`ReportProgressUpdated`, `ReportNotification`) to the React app via `app-frontend/src/lib/echo.ts`.
 
 **Follow-up questions the interviewer may ask:**
 - How do you get "each event processed once per service, but load-balanced inside the service"? (One consumer group per service.)
@@ -109,10 +109,10 @@ A broker (RabbitMQ, SQS, a Redis list) owns delivery state: it hands a message t
 - Why it matters in design: for **event sourcing, CDC, rebuilding a read model, or adding a new consumer later**, you need a log. For **task distribution with per-task retries and delays**, a broker fits better.
 - A log can't "retry just this one message" on its own. You build retry topics. A broker can't "replay last Tuesday" on its own. You build an archive.
 
-**Sokrio example:**
+**DistroSaaS example:**
 - `[CODE]` Laravel's Redis queue is a broker: the job is deleted on success (`RedisQueue.php:305`), released back on retry (`:321`), and parked in `failed_jobs` (`config/queue.php:82-86`). There is no history once it's gone.
 - `[CODE]` Kafka is the log. The consumer commits its own offset after each flush (`KafkaConsumer.php:301-339`, `autoCommit false :69`), so a crash replays the batch.
-- Sokrio doesn't use the log's best feature yet. Departments publish full snapshots keyed by `department_id`, so a compacted `departments.events.v1` could rebuild the Mongo collection by replay. Today that job is the manual `tenant:department_sync_with_mongodb` (F1).
+- DistroSaaS doesn't use the log's best feature yet. Departments publish full snapshots keyed by `department_id`, so a compacted `departments.events.v1` could rebuild the Mongo collection by replay. Today that job is the manual `tenant:department_sync_with_mongodb` (F1).
 
 **Follow-up questions the interviewer may ask:**
 - Is Redis Streams a broker or a log? (A log with consumer groups and a pending-entries list, so it has both a cursor *and* per-message acks.)
@@ -140,10 +140,10 @@ Push: the broker sends messages to the consumer as they arrive. That gives low l
   - Kafka fixes this with **long polling**: `fetch.min.bytes` + `fetch.max.wait.ms` make the broker hold the request until data arrives or the wait expires.
 - In practice both converge: push systems add credit windows; pull systems add long polls.
 
-**Sokrio example:**
+**DistroSaaS example:**
 - `[CODE]` Kafka consumers **pull** in a loop (`KafkaConsumer.php:206-267`) and flush in batches. One side effect of pull in this PHP client: heartbeats ride on fetches, so a slow flush means no heartbeat and an eviction (F9, R3).
 - `[CODE]` Laravel `queue:work` is also **pull**: it pops with a Lua script (`RedisQueue.php:275-286`), and when the queue is empty it sleeps. The 2024 worker config used `--sleep=3` `[HIST]`, so an idle worker can add up to ~3 s of latency to the first job after a quiet period.
-- `[CODE]` Pusher is **push** to the browser (`sokrio-app-frontend/src/lib/echo.ts`), which is why export progress appears instantly without the UI polling.
+- `[CODE]` Pusher is **push** to the browser (`app-frontend/src/lib/echo.ts`), which is why export progress appears instantly without the UI polling.
 
 **Follow-up questions the interviewer may ask:**
 - How does Kafka avoid busy-polling? (Long poll with `fetch.max.wait.ms`.)
@@ -168,7 +168,7 @@ Backpressure is how a system pushes back when the consumer can't keep up, instea
 - **Redis Pub/Sub:** no storage; if a subscriber's output buffer passes `client-output-buffer-limit pubsub`, Redis **disconnects** it and the messages are lost.
 - **The design question** for any producer: when the system pushes back, does the request path **wait, fail, or fall back**?
 
-**Sokrio example:**
+**DistroSaaS example:**
 - `[CODE]` Tracking chose **fall back, then fail fast**: if the publish fails, write synchronously; if that fails too, return **503 + `Retry-After: 5`** so the phone backs off (`TrackingController.php:70-81`, D9). That is backpressure surfaced to the client.
 - `[CODE]` Redis OOM was hardened in commit `37840a3b5` and is tested (`tests/Unit/Kafka/KafkaProducerTest.php:231`). With `noeviction` (A9), a full Redis **rejects** `dispatch()` instead of evicting jobs.
 - Risk: queues and cache share one Redis (DB0/DB1, `config/database.php:202-219`), so a cache spike can block job dispatch, and the Python benchmark also writes to DB0 (F20).
@@ -197,7 +197,7 @@ At-most-once: commit or ack **before** processing, so a crash loses the message 
 - **The weakest hop wins.** An at-least-once consumer behind a fire-and-forget producer is an at-most-once pipeline.
 - "Exactly-once" in practice = **at-least-once delivery + idempotent processing** ("effectively-once").
 
-**Sokrio example:** `[CODE]` the hop-by-hop proof from T2 §2.6:
+**DistroSaaS example:** `[CODE]` the hop-by-hop proof from T2 §2.6:
 
 | Hop | Guarantee | Proof |
 |---|---|---|
@@ -230,8 +230,8 @@ Exactly-once **delivery** over an unreliable network is impossible: the sender c
 - **Consumers** with `read_committed` only see records up to the Last Stable Offset (LSO), so aborted writes are skipped.
 - **The boundary:** if your consumer writes to MySQL, Kafka's transaction doesn't include MySQL. Then you need idempotent writes (Q8), or store the offset in the same DB transaction as the result.
 
-**Sokrio example:**
-- `[LIB]` Sokrio has **neither** piece. The phpkafka producer sends `producerId = -1` (no idempotent producer), and nothing uses transactions (T2 library facts). The consumer writes to MySQL/Mongo, so Kafka EOS wouldn't cover it anyway.
+**DistroSaaS example:**
+- `[LIB]` DistroSaaS has **neither** piece. The phpkafka producer sends `producerId = -1` (no idempotent producer), and nothing uses transactions (T2 library facts). The consumer writes to MySQL/Mongo, so Kafka EOS wouldn't cover it anyway.
 - `[CODE]` Departments already get effectively-once the cheap way: a full-snapshot `$set` upsert keyed by `department_id` (`DepartmentMessageHandler.php:87-112`). Replays are harmless.
 - `[CODE]` Tracking does not: plain inserts, no unique key (`2020_08_18_074138_create_trackings_table.php:18,24`). The fix is a natural key `(user_id, created_at)` + `insertOrIgnore`, **not** Kafka transactions (R5 interview angle).
 - `[CODE]` The decoder drops `event_id` (`KafkaConsumer.php:360-364`), so even a dedup table would have nothing to key on today.
@@ -258,7 +258,7 @@ An idempotent consumer gives the same result whether it processes a message once
 3. **Optimistic version / state guard:** only apply if the current state is the expected "before" state. It also protects against out-of-order delivery (an older version can't overwrite a newer one).
 - Bonus: **store the offset with the result** (same DB transaction), then on restart seek to the stored offset. That's exactly-once into that DB.
 
-**Sokrio example:** Sokrio has one of each pattern, plus one gap:
+**DistroSaaS example:** DistroSaaS has one of each pattern, plus one gap:
 - `[CODE]` **Upsert (natural):** departments `$set` a full snapshot with `upsert` (`DepartmentMessageHandler.php:87-112`). Summaries use `updateOne` + `$set`/`$setOnInsert` + upsert (`app/Models/MongoDB/SummariesQuery.php:229-238`), so hourly re-runs are safe.
 - `[CODE]` **State guard:** delayed `ApproveOrder` only acts on `pending()` orders (`app/Jobs/ApproveOrder.php:53`; primary `app/Jobs/PrimaryOrder/ApproveOrder.php:47`), so a double run after a `retry_after` re-delivery is harmless.
 - `[CODE]` **Dedup key:** the Task Manager uses `Idempotency-Key` headers (`app/Support/Concerns/HandlesIdempotency.php`), the HTTP version of the inbox table.
@@ -287,7 +287,7 @@ Kafka orders only **within a partition**, so you pick a key (say `order_id`) tha
 - **Retry/DLQ:** a message parked in a retry topic is overtaken by later ones.
 - **Defense in depth:** don't rely on order alone. Put a version or timestamp in the event and make the consumer reject stale updates (Q8, method 3).
 
-**Sokrio example:** `[CODE]` from T2 §2.8:
+**DistroSaaS example:** `[CODE]` from T2 §2.8:
 - Keys: tracking = `user_id` (`TrackingController.php:62-83`), departments = `department_id` (`DepartmentChangeObserver.php:104-145`). The default would be tenant id (`KafkaProducer.php:58,76`, D4). It was overridden so one big tenant can't make a hot partition (R2 angle).
 - Inside a flush, the handler groups by tenant (`TrackingMessageHandler.php:50-71`). Order between tenants changes, order within a key is kept.
 - Where it breaks and doesn't matter: the tracking fallback writes directly while older points sit in Kafka (`TrackingController.php:70-71`). Reports sort by the device's `created_at`, so it's harmless.
@@ -323,7 +323,7 @@ A dual write updates two systems, the DB and the broker, with no shared transact
   - Event sourcing (the log *is* the DB).
   - "Listen to yourself": publish first, and have the service update its own DB from the topic.
 
-**Sokrio example:**
+**DistroSaaS example:**
 - `[CODE]` **Window (b) is live (F8):** `DepartmentBulkDataUpdateController.php:41-52` runs `->update()` per department inside `DB::beginTransaction()`. The `updated` observer publishes immediately (`DepartmentChangeObserver.php:35-46`). A rollback leaves Mongo with a territory MySQL never committed.
 - `[CODE]` **Window (a) is live too:** with the broker down, the department publish is swallowed and logged (`app/Observers/Concerns/PublishesKafkaMessage.php:11-26`). There's no fallback, and the full resync is manual only (F1).
 - `[CODE]` **A third form:** `Department::upsert()` bypasses observers entirely, so ERP codes never reach Mongo (F2, `DepartmentErpCodeSyncJob.php:71`).
@@ -358,7 +358,7 @@ A poison message fails every time, e.g. bad JSON, a missing field, or a bug in t
 - **Laravel:** `$tries`/`$backoff`/`failed_jobs` + `queue:retry`.
 - A DLQ is useless without an **alert, an owner and a replay tool** (R15 angle).
 
-**Sokrio example:**
+**DistroSaaS example:**
 - `[CODE]` **Malformed envelopes:** warn, skip, commit (`KafkaConsumer.php:347-365`). The partition isn't blocked, but the message is gone.
 - `[CODE]` **Handler failures:** 3 bulk retries with a linear sleep (`TrackingMessageHandler.php:85-116`) → per-point fallback (`:125-158`) → drop + `report()` + commit. A missing required key (`user_id, lat, long, address, created_at`, `WriteBulkTrackingActions.php:56-61`) costs ~3 s of sleeps and then a drop. Those sleeps also starve heartbeats (F9).
 - **No DLQ topic exists.** The T2 §2.9 proposal: `tracking.events.v1.dlq` / `departments.events.v1.dlq` with acks=1, commit only after the DLQ write succeeds, classify errors before retrying, a `kafka:replay-dlq` command, and a "DLQ depth > 0" Slack alert.
@@ -401,7 +401,7 @@ flowchart LR
 - **Leader / follower:** followers fetch from the leader like consumers do. Those that keep up form the **ISR** (Q14). The **controller** (KRaft quorum, Q17) picks new leaders.
 - **Producers** pick the partition (key hash or sticky). **Consumers** in a group split partitions among themselves.
 
-**Sokrio example:**
+**DistroSaaS example:**
 - `[CODE]` Two live topics: `tracking.events.v1` and `departments.events.v1`, with a `.{APP_ENV}` suffix outside prod (`app/Services/Kafka/TopicRegistry.php:18-24,51-58`).
 - `[CODE]` Auto-created with **3 partitions, RF=1** (`config/kafka.php:74-75`, `TopicProvisioner.php:52-81`). So each partition has one replica, which is also the leader, with no follower to fail over to (A3 open: confirm with `kafka-topics.sh --describe`).
 - `[CODE]` Brokers come from the `KAFKA_BROKERS` env var (`config/kafka.php:5`). Whether that's MSK or self-hosted is still A4 `[ASSUMPTION]`; the evidence leans self-hosted (T6).
@@ -430,12 +430,12 @@ flowchart LR
 - **No per-message acks:** a commit is a single offset per partition.
 - **Scale-out:** partitions spread load across brokers and consumers.
 
-**Sokrio example:**
-- `[LIB]` Sokrio's pure-PHP client uses only some of this:
+**DistroSaaS example:**
+- `[LIB]` DistroSaaS's pure-PHP client uses only some of this:
   - **Batching yes:** `publishBatch` packs one `RecordBatch` per partition per call (F7 context).
   - **Compression no** (T2 library facts).
   - **Fetch:** partition `maxBytes = 0` (`phpkafka/Protocol/Fetch/FetchPartition.php:45`) probably means ~1 batch per fetch `[INFERENCE]`.
-- At Sokrio's volume (GPS points from field reps), Kafka's speed isn't the bottleneck. The MySQL/Mongo writes in the handler are. That's why heartbeats starve during slow flushes (F9).
+- At DistroSaaS's volume (GPS points from field reps), Kafka's speed isn't the bottleneck. The MySQL/Mongo writes in the handler are. That's why heartbeats starve during slow flushes (F9).
 - If volume grows, `ext-rdkafka` (librdkafka) brings compression, a background heartbeat thread, an idempotent producer and proper offset tracking (T2 §2.10).
 
 **Follow-up questions the interviewer may ask:**
@@ -461,7 +461,7 @@ The ISR is the set of replicas that are caught up with the leader (within `repli
 - RF=2 / min.insync=2 means any single broker restart blocks writes. RF=2 / min.insync=1 means a write can sit on one disk.
 - Producer `retries` + idempotence make the retries after `NotEnoughReplicas` safe.
 
-**Sokrio example:** Sokrio has the weakest combination possible:
+**DistroSaaS example:** DistroSaaS has the weakest combination possible:
 - `[LIB]` **acks=0** (F5): the library default `ProducerConfig.php:36`, never overridden. `Producer.php:159-163` doesn't even read a response, so a broker-side rejection is invisible and the client got its 202.
 - `[CODE]` **RF=1** auto-created topics (`config/kafka.php:74-75`): one broker disk loss = every unconsumed event gone. A broker restart = a produce outage. Tracking falls back to sync writes; departments lose events (R21, R25).
 - **Fix ladder** (R1/R26 angle):
@@ -491,14 +491,14 @@ If every in-sync replica of a partition is down, Kafka can either wait for one o
 - It's the CAP choice per topic: availability (unclean on) vs consistency/durability (off).
 - Recent Kafka allows a per-topic override and, in KRaft, recovery tooling. ELR (Eligible Leader Replicas, KIP-966) tracks replicas that are safe to elect even after leaving the ISR.
 
-**Sokrio example:**
+**DistroSaaS example:**
 - With **RF=1** (A3), unclean election is moot: there is only one replica. If that broker's disk dies, there's nothing to elect, clean or unclean. The data is gone, and the partition stays offline until the broker returns (R21).
 - The availability side is covered in the app instead: tracking's sync fallback keeps the phone working while Kafka is down (`TrackingController.php:70-81`). Departments have no such cover (F1, R25).
-- Recommended setting for Sokrio after moving to RF=3: keep unclean election **off** for `departments.events.v1` (state you report on). For `tracking.events.v1` it could arguably be on, since GPS gaps are tolerable, but with the request-path fallback it isn't needed.
+- Recommended setting for DistroSaaS after moving to RF=3: keep unclean election **off** for `departments.events.v1` (state you report on). For `tracking.events.v1` it could arguably be on, since GPS gaps are tolerable, but with the request-path fallback it isn't needed.
 
 **Follow-up questions the interviewer may ask:**
 - How can you detect that data was lost after an unclean election? (Consumer offsets ahead of the log end → OFFSET_OUT_OF_RANGE; broker logs; metric `UncleanLeaderElectionsPerSec`.)
-- What does the consumer do with OFFSET_OUT_OF_RANGE? (Applies `auto.offset.reset`. In Sokrio's library it jumps to latest−1 and silently skips the gap: F6, R27.)
+- What does the consumer do with OFFSET_OUT_OF_RANGE? (Applies `auto.offset.reset`. In DistroSaaS's library it jumps to latest−1 and silently skips the gap: F6, R27.)
 
 **Common mistakes to avoid:**
 - Thinking acks=all protects you if unclean election is on. It doesn't: the promoted replica may never have had the record.
@@ -518,9 +518,9 @@ LEO is the offset of the next record a replica will write: its own log end. The 
 - With transactions, `read_committed` consumers stop even earlier, at the **LSO** (Last Stable Offset): the first offset of a still-open transaction.
 - Consumer lag = HW (or LSO) − committed offset.
 
-**Sokrio example:**
+**DistroSaaS example:**
 - With RF=1 and one replica, the ISR is just the leader, so HW = LEO almost immediately. The HW gives no extra safety because there is nothing to replicate to.
-- `[LIB]` The HW shows up in Sokrio's offset handling: OFFSET_OUT_OF_RANGE triggers a ListOffsets for "latest" (timestamp −1), which returns the **HW-based log end**. The library then uses `latest − 1` (`phpkafka/Consumer/OffsetManager.php:140,150`, F6).
+- `[LIB]` The HW shows up in DistroSaaS's offset handling: OFFSET_OUT_OF_RANGE triggers a ListOffsets for "latest" (timestamp −1), which returns the **HW-based log end**. The library then uses `latest − 1` (`phpkafka/Consumer/OffsetManager.php:140,150`, F6).
 - Lag monitoring (missing today, AL list in T6 §6.9) would compute HW − committed offset per partition, e.g. via `kafka-consumer-groups.sh --describe`.
 
 **Follow-up questions the interviewer may ask:**
@@ -552,8 +552,8 @@ Kafka used to keep cluster metadata (brokers, topics, partition leaders, ACLs) i
 - **Timeline** `[GENERAL]`: KRaft production-ready in 3.3; ZK mode deprecated in 3.5; migration path in 3.6+; **Kafka 4.0 is KRaft-only**.
 - **Ops changes:** `kafka-storage.sh format` with a cluster id; controller vs broker roles (combined mode for small clusters); clients connect to brokers only, as before (`--bootstrap-server`, not `--zookeeper`).
 
-**Sokrio example:**
-- Unknown for Sokrio: the broker version and mode aren't in any repo (no compose file provides Kafka, D15; A4 still open).
+**DistroSaaS example:**
+- Unknown for DistroSaaS: the broker version and mode aren't in any repo (no compose file provides Kafka, D15; A4 still open).
 - `[LIB]` The client doesn't care: phpkafka talks only to brokers over the Kafka protocol (`KAFKA_BROKERS`, `config/kafka.php:5`).
 - What would matter: the topic-creation path (`TopicProvisioner.php:52-81`) uses the CreateTopics API, which works in both modes. Any ops script still using `--zookeeper` flags would break on a 4.0 upgrade.
 - For a new self-hosted cluster I'd pick KRaft, 3 combined nodes (or 3 controllers + 3 brokers). On MSK, AWS runs the controllers.
@@ -581,7 +581,7 @@ Retention (`cleanup.policy=delete`) drops whole old segments once they pass a ti
 - `compact,delete` combines both: latest per key, but nothing older than the retention.
 - **Use cases:** current state per entity (a KTable source), CDC tables, rebuilding a cache or read model on startup, service config.
 
-**Sokrio example:**
+**DistroSaaS example:**
 - `[CODE]` Both live topics use broker default retention (no `retention.ms` set, T2 §2.5).
 - **Compaction fits departments perfectly.** Every message is a **full snapshot** (the observer `load()`s 8 relations, `DepartmentChangeObserver.php:111-125`), keyed by `department_id`, and the consumer does a full `$set` upsert (`DepartmentMessageHandler.php:87-112`). A compacted `departments.events.v1` *is* the department table. A new consumer, or a rebuilt Mongo collection, could replay it from offset 0. That would replace the manual full resync (F1).
 - Caveat: a deleted department needs a tombstone (a `null` value), which the observer doesn't emit today (it only publishes on `created`/`updated`, `:26,:35`).
@@ -615,7 +615,7 @@ Partitions cap consumer parallelism: one group can't use more consumers than the
 - **Too few:** no room to scale consumers; hot partitions are harder to dilute.
 - **Changing later:** `hash(key) % N` changes → per-key order across the boundary isn't guaranteed until the old backlog drains. Plan: create a new topic with the new count and migrate, or add partitions during a quiet period with the consumers caught up.
 
-**Sokrio example:**
+**DistroSaaS example:**
 - `[CODE]` 3 partitions per topic (`config/kafka.php:74-75`). The real ceiling is lower: each stream runs **numprocs=1** (`README.md:178-212`), and the static `group.instance.id = ""` means a second process would **fence** the first (`KafkaConsumer.php:79-95`, D1, R22). So today parallelism is 1, not 3.
 - To scale: give each process a unique instance id (e.g. hostname + process number), then run up to 3 per group.
 - `[CODE]` Keying by `user_id` instead of `tenant_id` (D4) is what makes 3 partitions usable at all. Keyed by tenant, one big tenant would put most traffic on one partition.
@@ -635,8 +635,8 @@ Partitions cap consumer parallelism: one group can't use more consumers than the
 
 ### ✅ Quality check
 - [x] All 19 questions (Q1–Q19) answered with the exact 5 renderer labels from `README_2.md:227-231`
-- [x] Every Sokrio example has a `file:line` already verified in MEMORY / sections 00–07, or says what Sokrio doesn't do and how it would
+- [x] Every DistroSaaS example has a `file:line` already verified in MEMORY / sections 00–07, or says what DistroSaaS doesn't do and how it would
 - [x] Reused the T2 §2.6–2.10 takeaways (Q6–Q11) and the T7 interview angles (R1, R2, R3, R5, R15, R21, R22, R25–R27)
-- [x] `[GENERAL]` facts that depend on a Kafka version (KRaft timeline, idempotence default, ELR) labelled; Sokrio's broker version left unknown (A4)
+- [x] `[GENERAL]` facts that depend on a Kafka version (KRaft timeline, idempotence default, ELR) labelled; DistroSaaS's broker version left unknown (A4)
 - [x] `### Q<n>.` headings and the bold "Short answer" / "Deep answer" / … labels kept exact for the T11 renderer
 - [x] No secrets: env var names only, no hosts or IPs

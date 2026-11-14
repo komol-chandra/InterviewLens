@@ -49,7 +49,7 @@ updated: 2026-11-14
 
 **Backend design-in-code (~১০ মিনিট)**
 > Work Order status-কে TypeScript discriminated union দিয়ে মডেল করো (`draft | published | assigned | checked_in | checked_out | approved | paid | cancelled`), আর একটা `transition(current, next)` ফাংশন লেখো যেটা অবৈধ ট্রানজিশনে একটা কাস্টম error (409-সমতুল্য) থ্রো করে।
-> 🔗 Sokrio link: সরাসরি অভিজ্ঞতা নেই এই ঠিক ফর্মে — এভাবে বলো: "Sokrio-তে order/task status-এর মতো state machine সামলেছি Eloquent lifecycle hooks দিয়ে; TS discriminated union একই আইডিয়া, কম্পাইল-টাইমে চেক করে দেয়।"
+> 🔗 DistroSaaS link: সরাসরি অভিজ্ঞতা নেই এই ঠিক ফর্মে — এভাবে বলো: "DistroSaaS-এে order/task status-এর মতো state machine সামলেছি Eloquent lifecycle hooks দিয়ে; TS discriminated union একই আইডিয়া, কম্পাইল-টাইমে চেক করে দেয়।"
 
 ---
 
@@ -64,7 +64,7 @@ updated: 2026-11-14
 - Ranking score: precompute vs per-request compute; fairness (একই technician-কে বারবার পিং না করা)
 - Async flow: `WorkOrderPublished` event → matching worker → `ProvidersNotified` (এখানে S1-এর RabbitMQ অভিজ্ঞতা টানো)
 
-🔗 Sokrio link: S1 (event-driven pipeline), S9 (technician/field-force ডোমেইন পরিচিতি) — কিন্তু বড়-স্কেল geo-matching নতুন টপিক, সততার সাথে স্বীকার করো।
+🔗 DistroSaaS link: S1 (event-driven pipeline), S9 (technician/field-force ডোমেইন পরিচিতি) — কিন্তু বড়-স্কেল geo-matching নতুন টপিক, সততার সাথে স্বীকার করো।
 
 ---
 

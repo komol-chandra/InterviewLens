@@ -3,7 +3,7 @@ type: story
 updated: 2026-09-28
 source: 99-archive/fieldnation-2026-10/Komol_CV_FieldNation_Software_Engineer.docx
 id: beh-story-bank
-title: "Story Bank — Sokrio STAR স্টোরি"
+title: "Story Bank — DistroSaaS STAR স্টোরি"
 track: behavioral
 status: draft
 conf: 0
@@ -11,7 +11,7 @@ tier: starter
 tags: [behavioral]
 ---
 
-# Story Bank — Sokrio STAR স্টোরি
+# Story Bank — DistroSaaS STAR স্টোরি
 
 প্রতিটা স্টোরির **ফ্যাক্ট শুধু CV থেকে নেওয়া**। `[Komol পূরণ করবে]` মানে CV-তে নেই। ইন্টারভিউয়ার ঠিক এই জায়গাগুলোতেই খোঁচাবে, তাই Day 1–3-এর মধ্যে ভরাট করো। মূল বাক্যগুলো ইংরেজিতে, কারণ ইন্টারভিউতে এগুলোই বলবে।
 
@@ -39,7 +39,7 @@ tags: [behavioral]
 
 ## S1 — Monolith → Event-driven Microservices
 
-- **Situation:** Sokrio ছিল একটা Laravel 8 + Vue.js 2 monolith। `[Komol পূরণ করবে: কী ব্যথা ছিল? স্লো deploy? লোড? টিমের সাইজ?]`
+- **Situation:** DistroSaaS ছিল একটা Laravel 8 + Vue.js 2 monolith। `[Komol পূরণ করবে: কী ব্যথা ছিল? স্লো deploy? লোড? টিমের সাইজ?]`
 - **Task:** মাইগ্রেশন লিড করা, ডাউনটাইম ছাড়া।
 - **Action (CV):** Laravel core REST API + আলাদা React tenant ও admin অ্যাপ + Report, Notification ও SOP সার্ভিস, **RabbitMQ** দিয়ে কমিউনিকেশন, MongoDB + Redis। **দুই সিস্টেম প্যারালালে চালিয়ে** zero-downtime cutover।
 - **Result (CV):** সার্ভার লোড ~২০% কমেছে।

@@ -10,7 +10,7 @@ tags: [system-design, concepts]
 updated: 2026-11-14
 ---
 
-> Tracker ID: SD-11 · Generated: 2026-10-15 · Answers: **SD বোনাস** "How do you make a system reliable?" (TRK-02) · Source: general SRE knowledge + sokrio code (`tenant_fanout.py`, `cache.py`, `ResendFailedSmsBatch.php`, `SMSGateway.php`, `config/rate_limiting.php`) · Status: ✅ generated
+> Tracker ID: SD-11 · Generated: 2026-10-15 · Answers: **SD বোনাস** "How do you make a system reliable?" (TRK-02) · Source: general SRE knowledge + DistroSaaS code (`tenant_fanout.py`, `cache.py`, `ResendFailedSmsBatch.php`, `SMSGateway.php`, `config/rate_limiting.php`) · Status: ✅ generated
 
 # SD বোনাস: How do you make a system reliable?
 
@@ -75,7 +75,7 @@ class CircuitBreaker {
 **মূল উত্তর (৬০ সেকেন্ড):**
 > "I assume every dependency will fail and design so failures stay small, get noticed fast, and heal on their own. To contain them: a timeout on every network call, retries with exponential backoff and jitter only for idempotent operations, circuit breakers so we fail fast instead of piling up on a dead dependency, bulkheads to cap concurrency per dependency, and graceful degradation, meaning partial but honest answers instead of a broken page. To detect them: SLOs on latency and error rate, alerts on user-facing symptoms, structured logs with request ids. To recover: redundancy, idempotent retries with dead-letter queues, safe deploys with quick rollback, tested backups, and blameless postmortems."
 
-**Sokrio (তোমার কাজ থেকে ৩টা উদাহরণ):**
+**DistroSaaS (তোমার কাজ থেকে ৩টা উদাহরণ):**
 > "Three examples from my own work. In the benchmark service, the cross-tenant fan-out has a per-tenant timeout, a total time budget and bounded concurrency, and it returns which tenants degraded rather than a silently wrong total. Degraded results are never cached, so the next request retries instead of serving the failure for hours. In SMS resend, after the first provider failure the rest of the batch isn't attempted, so an outage costs one timeout per batch, not per message, which is a simple circuit breaker. And the gateway separates 'never connected' from 'no answer', so a retry can never double-send."
 
 ## ৩. ফলো-আপ প্রশ্ন
@@ -89,9 +89,9 @@ class CircuitBreaker {
 
 ---
 
-🔗 **Sokrio link:** (কোডে যাচাই করা, 2026-10-15)
+🔗 **DistroSaaS link:** (কোডে যাচাই করা, 2026-10-15)
 - ⭐ **তোমার নিজের:**
-  - Bulkhead + timeout + degradation: `sokrio-benchmark-python/app/common/tenant_fanout.py::gather_tenants()` (semaphore, 12s per-tenant, 30s wall budget, `degraded_domains`)
+  - Bulkhead + timeout + degradation: `benchmark-python/app/common/tenant_fanout.py::gather_tenants()` (semaphore, 12s per-tenant, 30s wall budget, `degraded_domains`)
   - Failed ফল cache না: `app/common/cache.py` `should_cache`
   - Circuit-breaker-এর মতো: `ResendFailedSmsBatch` provider ডাউন হলে বাকি ব্যাচ skip; `SMSGateway::resend()` connect timeout ৫s + provider timeout, "never connected" vs "delivery unknown"; `failed()` hook-এ crash recovery
 - **টিমের:** `config/rate_limiting.php` + `RATE_LIMITING_ENABLED` kill switch (sihab); structured JSON-lines log (A3: `log_event()` → tenant, duration_ms, cache_hit, error_code, request_id)।

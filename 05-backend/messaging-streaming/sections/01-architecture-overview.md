@@ -1,6 +1,6 @@
 ---
 id: be-messaging-streaming-sections-01-architecture-overview
-title: "01 · Architecture Overview — Why Sokrio Needs Messaging"
+title: "01 · Architecture Overview — Why DistroSaaS Needs Messaging"
 track: backend
 type: topic
 status: draft
@@ -10,17 +10,17 @@ tags: [backend, messaging-streaming]
 updated: 2026-10-29
 ---
 
-# 01 · Architecture Overview — Why Sokrio Needs Messaging
+# 01 · Architecture Overview — Why DistroSaaS Needs Messaging
 
-> **Snapshot:** `sokrio-server` @ `master` · HEAD `d14c0ebb2` · written 2026-10-26.
-> Paths are relative to `sokrio-server/`. Tags: `[CODE]` verified in code · `[NOTES]` from my blog/PR notes · `[GENERAL]` industry knowledge · `[ASSUMPTION]` best guess plus how to verify.
+> **Snapshot:** `api-server` @ `master` · HEAD `d14c0ebb2` · written 2026-10-26.
+> Paths are relative to `api-server/`. Tags: `[CODE]` verified in code · `[NOTES]` from my blog/PR notes · `[GENERAL]` industry knowledge · `[ASSUMPTION]` best guess plus how to verify.
 > Builds on `00-inventory.md`. Facts already proven there are reused, not re-proven.
 
 ---
 
 ## 1.1 The one-paragraph answer
 
-`[CODE]` Sokrio is a multi-tenant Laravel 9 monolith. Most work happens inside a request or in a scheduled batch. Messaging appears wherever one of three pressures shows up:
+`[CODE]` DistroSaaS is a multi-tenant Laravel 9 monolith. Most work happens inside a request or in a scheduled batch. Messaging appears wherever one of three pressures shows up:
 
 1. **Volume.** GPS pings arrive all day from every field rep.
 2. **Latency.** The mobile app or the web UI must not wait for slow work, such as report exports, summaries or PDFs.
@@ -40,7 +40,7 @@ Kafka handles the two **event streams** (tracking, departments). Laravel queues 
 | B2 | **Outlet (department) master data → Mongo**: reports read a denormalised department document | Kafka `departments.events.v1`, key `department_id` | It keeps the 8-relation transform and the Mongo write out of the save path. It replaced a synchronous `syncWithMongoDB` call, which is now commented out | `DepartmentChangeObserver.php:26-46,104-145` → `kafka:consume departments` → `DepartmentMessageHandler.php:66-122` | `[CODE]` |
 | B3 | **Sales summaries / KPI reports**: dashboards read pre-aggregated Mongo collections | Scheduler → one Redis-queue job per tenant on queue `summary` → Mongo `bulkWrite` upserts | Aggregating every tenant's orders is too heavy for a request. It is a periodic batch by nature | `Kernel.php:111-190` → `BaseCommand.php:50-70` → e.g. `SecondaryOrderSummaryJob.php:52-85` | `[CODE]` |
 | B4 | **Feature-usage analytics**: which tenant uses which screen | Queued listener → Redis list buffer → `FlushFeatureEventsJob` → Mongo | Analytics must never slow down or break the user's request | `BufferFeatureUsageListener.php:16-46`, `FlushFeatureEventsJob.php:18-127`, `Kernel.php:180-181` | `[CODE]` |
-| B5 | **Realtime notifications**: export ready, report progress, order and payment approved | Laravel broadcasting → Pusher → `laravel-echo` in `sokrio-app-frontend` | Tells the UI about work finished in the background, without polling | `app/Events/*` (17 `ShouldBroadcast*`), `ReportProgress.php:12`, `NotifyUserOfCompleteExport.php:69`, `sokrio-app-frontend/src/lib/echo.ts` | `[CODE]` |
+| B5 | **Realtime notifications**: export ready, report progress, order and payment approved | Laravel broadcasting → Pusher → `laravel-echo` in `app-frontend` | Tells the UI about work finished in the background, without polling | `app/Events/*` (17 `ShouldBroadcast*`), `ReportProgress.php:12`, `NotifyUserOfCompleteExport.php:69`, `app-frontend/src/lib/echo.ts` | `[CODE]` |
 | B6 | **Deferred report exports**: big Excel/PDF exports | DB table `sequential_jobs` + a `Cache::lock` → queue `sequential`, one at a time | Exports can take minutes. Running them one at a time protects the report DB | `SequentialJob.php:32-44`, `SequentialJobDispatcher.php:13-68`, `config/deferred-jobs.php:19` | `[CODE]` |
 | B7 | **Delayed order approval**: auto-approve an order N minutes after placement | Redis delayed job on queue `order-approved` | Native "run later" support. No cron polling needed | `Order.php:240-243` → `ApproveOrder.php:20-53` | `[CODE]` |
 | B8 | (Planned) **near-real-time order/delivery summaries** | Kafka `order-summaries.events.v1` / `delivery-summaries.events.v1` | Hourly summaries are up to ~1h stale | Publish calls commented out (`OrderObserver.php:21-24`, `DeliveryObserver.php:21-24`); plan in `old-resource/primary-order-delivery-kafka-plan.md` | `[CODE]` + `[NOTES]` |
@@ -273,7 +273,7 @@ Claims checked and confirmed `[CODE]`:
 ---
 
 ### ✅ Quality check
-- [x] Every Sokrio claim has a `file:line` or a tag
+- [x] Every DistroSaaS claim has a `file:line` or a tag
 - [x] No secrets: env var names only, no hosts or IPs
 - [x] 3 Mermaid sequence diagrams (tracking, department, scheduler → summary)
 - [x] Business problems B1–B8 mapped to mechanisms, with a "should have been" note where the choice is undocumented

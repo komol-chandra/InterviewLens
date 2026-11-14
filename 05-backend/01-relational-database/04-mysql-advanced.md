@@ -22,7 +22,7 @@ InnoDB-তে composite index `(a, b, c)` একটা single B-tree, যেখ�
 
 কখন ইনডেক্স ব্যবহার হয় **না**: column-এর ওপর ফাংশন (`WHERE YEAR(created_at)=2026`), leading `%LIKE`, implicit type cast (varchar column-কে int দিয়ে compare)।
 
-🔗 Sokrio link: S2 — রিপোর্ট অপ্টিমাইজেশনে composite index যোগ করে ৮৫% পর্যন্ত লোড টাইম কমানো।
+🔗 DistroSaaS link: S2 — রিপোর্ট অপ্টিমাইজেশনে composite index যোগ করে ৮৫% পর্যন্ত লোড টাইম কমানো।
 
 ## Q2. EXPLAIN আউটপুট কীভাবে পড়বে?
 
@@ -33,7 +33,7 @@ InnoDB-তে composite index `(a, b, c)` একটা single B-tree, যেখ�
 
 **Covering index** = query-র সব কলাম ইনডেক্সেই আছে, টেবিলে ফিরে যেতে হয় না।
 
-🔗 Sokrio link: S2 — "কোন index যোগ করেছিলে, EXPLAIN-এ কী দেখেছিলে" এটা Defend লাইনে আছে, নিজের আসল উদাহরণ দিয়ে ভরাট করো: `[Komol পূরণ করবে: EXPLAIN-এর আগে/পরে rows আর Extra কেমন ছিল]`
+🔗 DistroSaaS link: S2 — "কোন index যোগ করেছিলে, EXPLAIN-এ কী দেখেছিলে" এটা Defend লাইনে আছে, নিজের আসল উদাহরণ দিয়ে ভরাট করো: `[Komol পূরণ করবে: EXPLAIN-এর আগে/পরে rows আর Extra কেমন ছিল]`
 
 ## Q3. Window function দিয়ে "প্রতি অঞ্চলে টপ ৩ provider" কীভাবে লিখবে?
 
@@ -52,13 +52,13 @@ WHERE rn <= 3;
 
 `ROW_NUMBER`, `RANK`, `LAG`/`LEAD` — running total বা "আগের রো"-র সাথে তুলনার জন্য।
 
-🔗 Sokrio link: MongoDB aggregation দিয়ে সমতুল্য কাজ করেছি (S2), কিন্তু MySQL window function-এর সরাসরি প্রোডাকশন উদাহরণ নেই — এভাবে বলো: "Sokrio-তে এই ধরনের ranking MongoDB aggregation দিয়ে করতাম, কিন্তু MySQL-এ window function-এর সিনট্যাক্স আমি জানি এবং প্র্যাকটিস করেছি।"
+🔗 DistroSaaS link: MongoDB aggregation দিয়ে সমতুল্য কাজ করেছি (S2), কিন্তু MySQL window function-এর সরাসরি প্রোডাকশন উদাহরণ নেই — এভাবে বলো: "DistroSaaS-এে এই ধরনের ranking MongoDB aggregation দিয়ে করতাম, কিন্তু MySQL-এ window function-এর সিনট্যাক্স আমি জানি এবং প্র্যাকটিস করেছি।"
 
 ## Q4. CTE (সাধারণ ও recursive) কোথায় লাগে?
 
 সাধারণ CTE readability-র জন্য (subquery-র বদলে নাম দেওয়া)। **Recursive CTE** — territory/region hierarchy ট্রি ট্রাভার্স করতে (parent → child → grandchild)।
 
-🔗 Sokrio link: territory-scoped RBAC (S3)-এ hierarchy আছে, কিন্তু ওটা MongoDB-তে aggregation দিয়ে — এভাবে বলো: "আমাদের territory hierarchy MongoDB-তে ছিল, recursive CTE MySQL-এ একই প্যাটার্নের সমাধান হতো।"
+🔗 DistroSaaS link: territory-scoped RBAC (S3)-এ hierarchy আছে, কিন্তু ওটা MongoDB-তে aggregation দিয়ে — এভাবে বলো: "আমাদের territory hierarchy MongoDB-তে ছিল, recursive CTE MySQL-এ একই প্যাটার্নের সমাধান হতো।"
 
 ## Q5. Transaction isolation levels — REPEATABLE READ vs READ COMMITTED
 
@@ -82,13 +82,13 @@ WHERE id = ? AND status = 'published';
 2. **SELECT ... FOR UPDATE** — transaction-এর ভেতর row lock নিয়ে read-then-write (pessimistic)।
 3. **Optimistic locking** — `version` column, `UPDATE ... WHERE id=? AND version=?`, affected_rows=0 মানে conflict, retry করো।
 
-🔗 Sokrio link: সরাসরি এই exact race condition নেই — এভাবে বলো: "আমার কাছে conditional-UPDATE + affected_rows চেক করার প্যাটার্ন পরিচিত, কারণ multi-tenant order status transition-এও একই রেসের ঝুঁকি ছিল, যেখানে queue job আর user action একসাথে একই order আপডেট করতে পারত।" `[Komol পূরণ করবে: এমন কোনো নির্দিষ্ট Sokrio ঘটনা থাকলে]`
+🔗 DistroSaaS link: সরাসরি এই exact race condition নেই — এভাবে বলো: "আমার কাছে conditional-UPDATE + affected_rows চেক করার প্যাটার্ন পরিচিত, কারণ multi-tenant order status transition-এও একই রেসের ঝুঁকি ছিল, যেখানে queue job আর user action একসাথে একই order আপডেট করতে পারত।" `[Komol পূরণ করবে: এমন কোনো নির্দিষ্ট DistroSaaS ঘটনা থাকলে]`
 
 ## Q8. N+1 সমস্যা কী, কীভাবে ধরবে/ঠিক করবে?
 
 লুপে প্রতিটা আইটেমের জন্য আলাদা query চালানো (১ + N)। ধরার উপায়: query log/Telescope-এ একই প্যাটার্নের বহু query। ঠিক করা: eager loading (`with()`/`JOIN`), batch loading (dataloader প্যাটার্ন)।
 
-🔗 Sokrio link: S2 — রিপোর্ট অপ্টিমাইজেশনে N+1 দূর করা CV-তে সরাসরি আছে।
+🔗 DistroSaaS link: S2 — রিপোর্ট অপ্টিমাইজেশনে N+1 দূর করা CV-তে সরাসরি আছে।
 
 ## প্র্যাকটিস SQL (নিজে লেখো, `01-problem-solving/dsa/14-sql`-এও প্র্যাকটিস করো)
 

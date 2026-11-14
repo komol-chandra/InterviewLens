@@ -96,4 +96,4 @@ console.log([1, 2, 3].map(() => handle(api, 7, 42)));
 // Follow-ups: distributed = same logic in Redis (Lua script or INCR + EXPIRE for
 // fixed window) so all app servers share one counter; memory = evict idle keys
 // (LRU, see lru-cache.ts); fail open vs fail closed if Redis is down.
-// Sokrio: Laravel RateLimiter::for(...) named limiters, e.g. the SMS resend limiters.
+// DistroSaaS: Laravel RateLimiter::for(...) named limiters, e.g. the SMS resend limiters.

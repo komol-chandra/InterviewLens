@@ -10,7 +10,7 @@ tags: [system-design, cases]
 updated: 2026-11-14
 ---
 
-> Tracker ID: SD-24 · Generated: 2026-10-15 · Answers: **SD-Q15** (TRK-02 Phase 4) · Source: `99-archive/fieldnation-2026-10/0-now/hm-qbank.md` A2 + sokrio code (`sokrio-benchmark-python/app/common/tenant_fanout.py`, `app/common/cache.py`; `sokrio-server/app/Jobs/Reports/`, `reconnect('read')`, `git log`) · Format: 7-ধাপ, তোমার নিজের সিস্টেম হিসেবে · Status: ✅ generated
+> Tracker ID: SD-24 · Generated: 2026-10-15 · Answers: **SD-Q15** (TRK-02 Phase 4) · Source: `99-archive/fieldnation-2026-10/0-now/hm-qbank.md` A2 + DistroSaaS code (`benchmark-python/app/common/tenant_fanout.py`, `app/common/cache.py`; `api-server/app/Jobs/Reports/`, `reconnect('read')`, `git log`) · Format: 7-ধাপ, তোমার নিজের সিস্টেম হিসেবে · Status: ✅ generated
 
 # SD-Q15: Heavy reports are slow and time out. Design a reporting pipeline that stays fast as data grows.
 
@@ -102,8 +102,8 @@ flowchart LR
 **মূল উত্তর (৯০ সেকেন্ড, নিজের সিস্টেম হিসেবে):**
 > "Reports get slow because every request rescans raw data that keeps growing. I'd fix it in layers, after measuring. First, pre-aggregate: keep report-friendly summaries next to the transactional data, and roll them up per month on a schedule, so a six-month report reads thousands of rows instead of tens of millions. Second, cache the results in Redis with tenant-scoped keys and TTLs that match how fast the data really changes. Third, keep heavy reads off the write database, on a read replica or a separate store. Fourth, anything big runs as an async export job: it returns immediately, reports progress, writes chunked files, zips them and notifies the user. Plus guardrails: bounded date ranges and pagination."
 
-**Sokrio (A2, তোমার কাজ):**
-> "That's close to what we did in Sokrio. Our cross-tenant market benchmark fanned out over every tenant's database and timed out. I measured first and found the fan-out itself was the cost, not a single query. I built a bounded fan-out helper: adaptive concurrency based on tenant count, a 12-second per-tenant timeout and a 30-second total budget, and it reports which tenants degraded instead of returning a silently wrong total. Then shorter default lookback windows with a hard cap, a cache TTL raised from 10 minutes to 3 hours since monthly data doesn't change hourly, the missing indexes with a check script, and finally monthly rollups written by a scheduled job. I chose scheduled over event-driven so the Python service didn't need hooks inside Laravel's order flow."
+**DistroSaaS (A2, তোমার কাজ):**
+> "That's close to what we did in DistroSaaS. Our cross-tenant market benchmark fanned out over every tenant's database and timed out. I measured first and found the fan-out itself was the cost, not a single query. I built a bounded fan-out helper: adaptive concurrency based on tenant count, a 12-second per-tenant timeout and a 30-second total budget, and it reports which tenants degraded instead of returning a silently wrong total. Then shorter default lookback windows with a hard cap, a cache TTL raised from 10 minutes to 3 hours since monthly data doesn't change hourly, the missing indexes with a check script, and finally monthly rollups written by a scheduled job. I chose scheduled over event-driven so the Python service didn't need hooks inside Laravel's order flow."
 
 ## ফলো-আপ প্রশ্ন
 
@@ -116,7 +116,7 @@ flowchart LR
 
 ---
 
-🔗 **Sokrio link:** (কোডে যাচাই করা, 2026-10-15)
+🔗 **DistroSaaS link:** (কোডে যাচাই করা, 2026-10-15)
 - ⭐ **তোমার নিজের (Python benchmark, `git log`-এ একমাত্র লেখক Komol):**
   - `app/common/tenant_fanout.py::gather_tenants()`: `asyncio.Semaphore` + `_adaptive_concurrency(n)` (`[8, 24]`), প্রতি টেন্যান্ট `_MB_PER_QUERY_SEC = 12`, মোট `_MB_WALL_BUDGET_SEC = 30`, `degraded_domains` ফেরত দেয়
   - `app/common/cache.py::cache_remember(should_cache=...)`: timeout/degraded ফল cache করে না

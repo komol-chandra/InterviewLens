@@ -10,7 +10,7 @@ tags: [lld, behavioral]
 updated: 2026-11-14
 ---
 
-> Tracker ID: DP-12 · Generated: 2026-10-15 · Answers: **DP-Q12** (TRK-02 Phase 7) · Source: GoF + sokrio-server code (`Models/Order/Order.php` guard methods, `Models/Order/OrderStatus.php` 9 constants + `order_statuses` history) · Runnable: `04-design-patterns-lld/code/state.ts` (✅ ran + strict tsc 2026-10-15) · Machine-coding version: `04-design-patterns-lld/machine-coding/work-order-lifecycle.ts` · Status: 🟡 generated
+> Tracker ID: DP-12 · Generated: 2026-10-15 · Answers: **DP-Q12** (TRK-02 Phase 7) · Source: GoF + api-server code (`Models/Order/Order.php` guard methods, `Models/Order/OrderStatus.php` 9 constants + `order_statuses` history) · Runnable: `04-design-patterns-lld/code/state.ts` (✅ ran + strict tsc 2026-10-15) · Machine-coding version: `04-design-patterns-lld/machine-coding/work-order-lifecycle.ts` · Status: 🟡 generated
 
 # DP-Q12: An order moves through Pending → Approved → Shipped → Delivered. How do you avoid status `if/else` everywhere?
 
@@ -165,7 +165,7 @@ public function transitionTo(OrderStatus $to, int $by): void
 **মূল উত্তর (৪৫ সেকেন্ড):**
 > "I'd put the lifecycle in one place. Usually I start with a transition table: for each status, which actions are allowed and where they lead. The model has one `transitionTo` method that checks the table, updates the status with a conditional update so two concurrent changes can't both win, and writes a history row with who and when. Everything else calls that method, never sets the status directly. If each state grows real behaviour, like releasing stock on cancel or calculating fees, I move to the State pattern: one class per state, where every action is forbidden by default and each state only implements what it allows."
 
-**Sokrio উদাহরণ (সৎভাবে):**
+**DistroSaaS উদাহরণ (সৎভাবে):**
 > "Our orders keep a status history table, with nine status constants from pending through delivered, return and delivery-rejected. The rules live in guard methods on the order model, like `acceptable()`, `cancellable()` and `deliverable()`. It works, but the rules are spread across methods rather than one table, so if I redesigned it I'd centralize the allowed transitions and route every change through one method."
 
 ---
@@ -182,7 +182,7 @@ public function transitionTo(OrderStatus $to, int $by): void
 
 ---
 
-🔗 **Sokrio link:** (কোডে যাচাই করা)
+🔗 **DistroSaaS link:** (কোডে যাচাই করা)
 - **Status + history:** `app/Models/Order/OrderStatus.php`: `STATUS_PENDING`, `ON_THE_WAY`, `ACCEPTED`, `REJECTED`, `CANCELLED`, `DELIVERED`, `RETURN_BACK`, `READY_TO_DISPATCH`, `DELIVERY_REJECTED` (৯টা)। `Order::statuses()` relation = history (প্রতিটা বদলে নতুন row, `created_by`, `remarks`)। লেখক sihab, shihab; **তোমার ৩টা commit** এই ফাইলে।
 - **Guard methods (ছড়ানো নিয়ম):** `app/Models/Order/Order.php`: `acceptable()` (invoice নেই, বা invoice `RETURN_BACK`), `rejectable()`, `cancellable()` (history-তে আগে না থাকলে), `deliverable()` (invoice আছে, `delivered_at` null), সাথে `wantsToAccept/Reject/Cancel/Deliver/Ship($status)`।
 - **State pattern class নেই** (DP-02-এও লেখা)। `Task`, `StockHistory`, `Message`, `ReturnModel` ইত্যাদিতেও constant দিয়ে status। এটা সৎভাবে বলো, আর "কীভাবে উন্নত করতাম" দেখাও (ওপরের লাইন)।

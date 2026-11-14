@@ -8,7 +8,7 @@ foreach ([null, 1] as $acks) {
     $cfg->setAutoCreateTopic(false);
     if ($acks !== null) $cfg->setAcks($acks);
     $p = new Producer($cfg);
-    $label = 'acks=' . $cfg->getAcks() . ($acks === null ? ' (library default, = Sokrio)' : '');
+    $label = 'acks=' . $cfg->getAcks() . ($acks === null ? ' (library default, = DistroSaaS)' : '');
     try {
         $p->send('small', str_repeat('x', 5000), 'k1');
         echo "$label: send() returned normally\n";

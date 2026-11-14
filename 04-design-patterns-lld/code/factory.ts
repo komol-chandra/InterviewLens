@@ -38,7 +38,7 @@ function makeExporter(format: string): Exporter {
 
 // ---------- 2. Factory Method: subclass decides what to create ----------
 // The base class runs the job; one abstract method creates the "product".
-// (Same shape as Sokrio's ReportableJobService::createReportService().)
+// (Same shape as DistroSaaS's ReportableJobService::createReportService().)
 interface ReportService {
   rows(): Row[];
 }

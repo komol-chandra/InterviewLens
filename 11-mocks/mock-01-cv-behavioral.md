@@ -55,14 +55,14 @@ updated: 2026-11-14
 
 > "Sure. I'm a full-stack software engineer with over five years of backend experience in PHP, Laravel and Node.js, and about three years of React and TypeScript.
 >
-> Right now I work at **Sokrio**, a multi-tenant SaaS for distribution and order management. It's used by more than 100 enterprise clients. A few things I'm proud of: I **led the migration from a Laravel monolith to event-driven microservices** over RabbitMQ with zero downtime, I made our **heaviest reports up to 85% faster**, and I'm the **primary on-call engineer** for six production apps, where we use SLOs to catch problems early.
+> Right now I work at **DistroSaaS**, a multi-tenant SaaS for distribution and order management. It's used by more than 100 enterprise clients. A few things I'm proud of: I **led the migration from a Laravel monolith to event-driven microservices** over RabbitMQ with zero downtime, I made our **heaviest reports up to 85% faster**, and I'm the **primary on-call engineer** for six production apps, where we use SLOs to catch problems early.
 >
 > I also work a lot with clients and distributed teams in English, through Slack, Jira and PR reviews.
 >
-> I'm excited about Field Nation because the domain is very close to what I've built: I built **field-force modules at Sokrio**, with task tracking, attendance and GPS-spoofing detection. And your move toward Node.js microservices is exactly the kind of work I've done."
+> I'm excited about Field Nation because the domain is very close to what I've built: I built **field-force modules at DistroSaaS**, with task tracking, attendance and GPS-spoofing detection. And your move toward Node.js microservices is exactly the kind of work I've done."
 
 **Follow-ups to expect:**
-- "Why are you leaving Sokrio?" → *"I've learned a lot there, and I'm proud of what we built. Now I want a bigger engineering team, a larger scale, and a product where my field-force experience matters directly."* **Never complain about your current company.**
+- "Why are you leaving DistroSaaS?" → *"I've learned a lot there, and I'm proud of what we built. Now I want a bigger engineering team, a larger scale, and a product where my field-force experience matters directly."* **Never complain about your current company.**
 - "What are you learning right now?" → *"Go, system design and SRE practices. I'm also getting deeper into NestJS, which I'd use for Node microservices."*
 
 ---
@@ -83,7 +83,7 @@ Priority: 🔴 = they will almost certainly ask · 🟠 = likely · 🟡 = maybe
 **Opening:** *"Tell me about the biggest technical project you've led."*
 
 **Model answer:**
-> **S:** "At Sokrio we had a Laravel 8 and Vue.js 2 monolith. [FILL: the real pain, e.g. slow deploys, one heavy report slowing down the whole app, teams blocking each other.]
+> **S:** "At DistroSaaS we had a Laravel 8 and Vue.js 2 monolith. [FILL: the real pain, e.g. slow deploys, one heavy report slowing down the whole app, teams blocking each other.]
 > **T:** I was asked to lead the migration to a more scalable architecture, **without any downtime**, because 100+ clients use it every day.
 > **A:** We split it into a Laravel core REST API, two separate React apps (one for tenants, one for admin), and three services (Report, Notification and SOP) that talk over **RabbitMQ**, with MongoDB and Redis. The key decision was to **run both systems in parallel** and move traffic step by step, so we could roll back at any point.
 > **R:** We cut over with zero downtime, and server load dropped by about 20%."
@@ -213,7 +213,7 @@ Priority: 🔴 = they will almost certainly ask · 🟠 = likely · 🟡 = maybe
 
 **Opening:** *"What feature are you most proud of?"*
 
-> "I built the field-force side of Sokrio: **Task Manager** (plan, approval, achievement tracking), **Van Sales**, **Vehicle Feedback** and **Van Attendance**, all syncing in real time with the core platform. The interesting part was **GPS-spoofing detection**, because field staff could fake their location to mark attendance. We detected it by [FILL: mock-location flag from the device? impossible speed or distance jumps between points?]. These modules contributed to the company's 27% revenue growth. And this is why Field Nation excites me: technician check-in, location proof and work-order approval are the same kind of problem."
+> "I built the field-force side of DistroSaaS: **Task Manager** (plan, approval, achievement tracking), **Van Sales**, **Vehicle Feedback** and **Van Attendance**, all syncing in real time with the core platform. The interesting part was **GPS-spoofing detection**, because field staff could fake their location to mark attendance. We detected it by [FILL: mock-location flag from the device? impossible speed or distance jumps between points?]. These modules contributed to the company's 27% revenue growth. And this is why Field Nation excites me: technician check-in, location proof and work-order approval are the same kind of problem."
 
 **Careful:** Say "**contributed to** 27% revenue growth", not "caused". Be ready for: "What was *your* part of that 27%?"
 
@@ -344,7 +344,7 @@ Interviewers in the US often ask **"How did you measure that?"** If you can't an
 
 ## Live Mock Prompt (paste into Claude)
 
-> Act as a Senior Technical Interviewer from a US company, evaluating me for a Full-Stack Software Engineer role at Field Nation. My CV is at `/home/kiri2ka/code/sokrio/_komol/InterviewLens/Komol_CV_FieldNation_Software_Engineer.docx` and my prep file is `11-mocks/mock-01-cv-behavioral.md`.
+> Act as a Senior Technical Interviewer from a US company, evaluating me for a Full-Stack Software Engineer role at Field Nation. My CV is at `Komol_CV_FieldNation_Software_Engineer.docx` and my prep file is `11-mocks/mock-01-cv-behavioral.md`.
 >
 > Let's begin **Mock Interview 1: CV Deep Dive & Behavioral**. Start with a short warm-up, then "tell me about yourself", then CV deep-dive questions (C1–C9) with realistic follow-ups, then 3 behavioral questions (D1–D5). **Ask one question at a time.** After each answer:
 > 1. Rate me 1–10 using the rubric in the prep file

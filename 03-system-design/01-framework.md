@@ -130,7 +130,7 @@ HM রাউন্ড পুরো SD রাউন্ড না। তখন:
 
 1. **৩০ সেকেন্ড:** scope + scale এক বাক্যে ("~X tenants, mostly reads, reports must be fresh within minutes")
 2. **৫ মিনিট:** HLD বক্স আঁকো + একটা request-এর পথ
-3. **৫ মিনিট:** **তোমার করা** একটা কঠিন সিদ্ধান্ত + trade-off (Sokrio থেকে: A1 multi-tenant, A2 report cache)
+3. **৫ মিনিট:** **তোমার করা** একটা কঠিন সিদ্ধান্ত + trade-off (DistroSaaS থেকে: A1 multi-tenant, A2 report cache)
 4. **১ মিনিট:** "What I'd change at 10x"
 
 > নিজের সিস্টেম বলার সময় **Honesty Rule**: যা তুমি নিজে বানিয়েছ আর যা টিম বানিয়েছে, আলাদা করে বলো ("I designed…" vs "our team used…")। Receipt card-এর সংখ্যার বাইরে কোনো সংখ্যা বলবে না।
@@ -153,7 +153,7 @@ HM রাউন্ড পুরো SD রাউন্ড না। তখন:
 
 1. ⬜ §১-এর টেবিল না দেখে খাতায় ৭ ধাপ + মিনিট লেখো
 2. ⬜ §৩.৪-এর অঙ্ক নিজে করো: **"URL shortener, 100M নতুন URL/মাস, read:write = 100:1"** → write QPS, read QPS, ৫ বছরের storage (৫০০ B/URL)
-3. ⬜ §৪-এর ছোট ভার্সনে Sokrio multi-tenant ইংরেজিতে জোরে বলো, ফোনে রেকর্ড করো (১০ মিনিট)। পরের ডক SD-23 এটাকেই পূর্ণ কেস বানাবে
+3. ⬜ §৪-এর ছোট ভার্সনে DistroSaaS multi-tenant ইংরেজিতে জোরে বলো, ফোনে রেকর্ড করো (১০ মিনিট)। পরের ডক SD-23 এটাকেই পূর্ণ কেস বানাবে
 
 <details><summary>২-এর উত্তর</summary>
 
@@ -165,6 +165,6 @@ HM রাউন্ড পুরো SD রাউন্ড না। তখন:
 
 ---
 
-🔗 Sokrio link: §৪-এর ছোট ভার্সনে বলার মূল কেস = A1 (multi-tenant) আর A2 (report cache), `99-archive/fieldnation-2026-10/0-now/hm-qbank.md` থেকে। ফ্রেমওয়ার্কটা নিজে জেনেরিক, তাই সরাসরি কোনো স্টোরি নেই।
+🔗 DistroSaaS link: §৪-এর ছোট ভার্সনে বলার মূল কেস = A1 (multi-tenant) আর A2 (report cache), `99-archive/fieldnation-2026-10/0-now/hm-qbank.md` থেকে। ফ্রেমওয়ার্কটা নিজে জেনেরিক, তাই সরাসরি কোনো স্টোরি নেই।
 
 🔗 পরের ধাপ: `03-system-design/cases/23-multi-tenant-saas.md` (SD-23) · কেস ছাঁচের উদাহরণ: `99-archive/fieldnation-2026-10/system-design/` (FN-14)

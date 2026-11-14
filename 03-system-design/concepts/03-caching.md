@@ -10,7 +10,7 @@ tags: [system-design, concepts]
 updated: 2026-11-14
 ---
 
-> Tracker ID: SD-03 · Generated: 2026-10-15 · Answers: **SD-Q03** (TRK-02 Phase 1) · Source: general SD knowledge + code (`sokrio-server/app/Http/Middleware/ScopeCacheToTenant.php`, `app/Jobs/KPISummary.php`, `Guest/StockUpdateController.php`, `sokrio-benchmark-python/app/common/cache.py`) · Status: ✅ generated
+> Tracker ID: SD-03 · Generated: 2026-10-15 · Answers: **SD-Q03** (TRK-02 Phase 1) · Source: general SD knowledge + code (`api-server/app/Http/Middleware/ScopeCacheToTenant.php`, `app/Jobs/KPISummary.php`, `Guest/StockUpdateController.php`, `benchmark-python/app/common/cache.py`) · Status: ✅ generated
 
 # SD-Q03: Where would you add a cache, and how do you keep it correct?
 
@@ -129,7 +129,7 @@ Cache::lock("report-build:{$tenantId}:{$month}", 30)->block(10, function () { /*
 DB::transaction(function () use ($order) { $order->save(); });
 Cache::forget("order:{$tenantId}:{$order->id}");
 ```
-> Laravel 11+-এ `Cache::flexible()` = বিল্ট-ইন stale-while-revalidate। Sokrio Laravel 10-এ, তাই নেই।
+> Laravel 11+-এ `Cache::flexible()` = বিল্ট-ইন stale-while-revalidate। DistroSaaS Laravel 10-এ, তাই নেই।
 
 ---
 
@@ -155,15 +155,15 @@ Cache::forget("order:{$tenantId}:{$order->id}");
 |---|---|
 | "Why delete instead of update on write?" | "Two concurrent writers can finish in a different order in the cache than in the DB, leaving a stale value until TTL. Delete is idempotent and the next read rebuilds from the source of truth." |
 | "Redis goes down. What happens?" | "Cache must be optional: fall back to the DB, with a circuit breaker so we don't hammer Redis, and expect higher DB load. That's why the DB must survive a cold cache, at least briefly." |
-| "Cache a failed or partial result?" | "No. If the computation timed out or degraded, skip writing it, otherwise you serve the failure for the full TTL." (Sokrio-তে ঠিক এটাই আছে, নিচে দেখো) |
+| "Cache a failed or partial result?" | "No. If the computation timed out or degraded, skip writing it, otherwise you serve the failure for the full TTL." (DistroSaaS-এে ঠিক এটাই আছে, নিচে দেখো) |
 | "Redis vs Memcached?" | "Redis: data structures, persistence, locks, pub/sub. Memcached: simpler, pure key-value, multi-threaded. I'd default to Redis." |
 | "How do you know the cache helps?" | "Track hit rate, p95 latency with and without hit, and DB load. A cache with 20% hit rate is mostly complexity." |
 
 ---
 
-🔗 **Sokrio link:** (সব কোডে যাচাই করা, 2026-10-15)
+🔗 **DistroSaaS link:** (সব কোডে যাচাই করা, 2026-10-15)
 - **TTL সিদ্ধান্ত (A2, S2):** benchmark category cache TTL 600s → 10800s = ১৮× কম recompute; মাসিক ডেটা, ৩ ঘণ্টা staleness ব্যবসায়িকভাবে চলে।
-- **Failed result cache না করা:** `sokrio-benchmark-python/app/common/cache.py`-এর `cache_remember(..., should_cache=...)`: query timeout হয়ে খালি fallback এলে সেটা Redis-এ **লেখে না**, যাতে পরের request আবার চেষ্টা করে। খুব ভালো ইন্টারভিউ পয়েন্ট। `git log`-এ `app/common/cache.py`-এর একমাত্র লেখক **Komol** (যাচাই 2026-10-15) → *"I built"* বলতে পারো।
+- **Failed result cache না করা:** `benchmark-python/app/common/cache.py`-এর `cache_remember(..., should_cache=...)`: query timeout হয়ে খালি fallback এলে সেটা Redis-এ **লেখে না**, যাতে পরের request আবার চেষ্টা করে। খুব ভালো ইন্টারভিউ পয়েন্ট। `git log`-এ `app/common/cache.py`-এর একমাত্র লেখক **Komol** (যাচাই 2026-10-15) → *"I built"* বলতে পারো।
 - **Tenant-scoped key:** `ScopeCacheToTenant` middleware প্রতিটা টেন্যান্টের cache/session-কে আলাদা prefix দেয় (`tenant_{id}`)। **Gotcha (A1):** prefix শুধু HTTP request-এ বসে, queue job-এ না। তাই নিয়ম: key-তে tenant নিজে বসাও, middleware-এর ওপর ভরসা না।
 - **Lock (stampede/duplicate প্রতিরোধ):** `app/Jobs/KPISummary.php`-এ `Cache::lock("kpi_summary_lock:{db}")` = একই টেন্যান্টের KPI দুই worker একসাথে হিসাব করে না · `Guest/StockUpdateController.php`-এ challan-প্রতি lock = একই stock update দুবার চলে না।
 - ⚠️ **সৎ ফাঁক:** Python `cache_remember`-এ **stampede lock নেই** (কোডে দেখা)। প্রশ্ন এলে বলো: *"Our benchmark cache doesn't have stampede protection today; given the fan-out cost, the next thing I'd add is a Redis lock around the recompute plus TTL jitter."* এটা দুর্বলতা না, পরিপক্বতা দেখায়।

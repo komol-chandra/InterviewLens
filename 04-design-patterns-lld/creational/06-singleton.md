@@ -10,7 +10,7 @@ tags: [lld, creational]
 updated: 2026-11-14
 ---
 
-> Tracker ID: DP-06 · Generated: 2026-10-15 · Answers: **DP-Q06** (TRK-02 Phase 4) · Source: GoF + sokrio-server code (`Support/Tenant/TenantManager`, `Providers/KafkaServiceProvider`, `PaymentGatewayServiceProvider`, `ScopeCacheToTenant`) · Runnable: `04-design-patterns-lld/code/singleton.ts` (✅ ran + strict tsc 2026-10-15) · Status: 🟡 generated
+> Tracker ID: DP-06 · Generated: 2026-10-15 · Answers: **DP-Q06** (TRK-02 Phase 4) · Source: GoF + api-server code (`Support/Tenant/TenantManager`, `Providers/KafkaServiceProvider`, `PaymentGatewayServiceProvider`, `ScopeCacheToTenant`) · Runnable: `04-design-patterns-lld/code/singleton.ts` (✅ ran + strict tsc 2026-10-15) · Status: 🟡 generated
 
 # DP-Q06: Why is Singleton often called an anti-pattern? What do you use instead?
 
@@ -40,7 +40,7 @@ function smsEnabled() { return Config.get().read('sms.enabled') === 'true'; } //
 | **Single Responsibility ভাঙে** | class নিজের কাজ + নিজের lifetime দুটোই সামলায় |
 | **Concurrency / multi-tenant** | long-running process (queue worker, Octane, Node server)-এ একটা global instance **request-এর মধ্যে শেয়ার** হয়। এক tenant-এর state আরেক tenant-এ চলে যেতে পারে |
 
-> শেষ পয়েন্টটা Sokrio-তে আসল: PHP-FPM-এ প্রতিটা request নতুন process state পায়, কিন্তু **queue worker** একই process-এ অনেক job চালায়। static/singleton-এ tenant রাখলে পরের job ভুল tenant দেখতে পারে।
+> শেষ পয়েন্টটা DistroSaaS-এে আসল: PHP-FPM-এ প্রতিটা request নতুন process state পায়, কিন্তু **queue worker** একই process-এ অনেক job চালায়। static/singleton-এ tenant রাখলে পরের job ভুল tenant দেখতে পারে।
 
 ## ৩. বিকল্প: DI + container-managed lifetime
 
@@ -104,7 +104,7 @@ $this->app->instance(MessageProducerInterface::class, new FakeProducer());
 **মূল উত্তর (৪৫ সেকেন্ড):**
 > "Having one instance is fine. The problem with the classic Singleton is that the class makes itself globally reachable. Dependencies become invisible, state leaks between tests, and you can't swap it for a fake. In long-running processes like queue workers it's worse: a global holding per-request data can leak from one job to the next, which in a multi-tenant app means one tenant's state showing up for another. So I keep the single instance but let the DI container own its lifetime and inject it through the constructor. In Laravel that's `singleton()` for stateless shared things like a Kafka producer, and `scoped()` for anything per request."
 
-**Sokrio উদাহরণ (সৎভাবে):**
+**DistroSaaS উদাহরণ (সৎভাবে):**
 > "Our Kafka producer, consumer factory and topic registry are container singletons, injected by interface. Tenant switching goes through a `TenantManager` with a private constructor and a static `tenant()` entry point, which is singleton-like, so we're careful to switch the connection back after each tenant."
 
 ---
@@ -121,7 +121,7 @@ $this->app->instance(MessageProducerInterface::class, new FakeProducer());
 
 ---
 
-🔗 **Sokrio link:** (কোডে যাচাই করা)
+🔗 **DistroSaaS link:** (কোডে যাচাই করা)
 - **Container singletons:** `app/Providers/KafkaServiceProvider.php`: `MessageProducerInterface`, `ConsumerFactoryInterface`, `MessageConsumerInterface`, `TopicRegistryInterface`, `TopicProvisionerInterface` সব `singleton(...)`। `PaymentGatewayServiceProvider`-এও একটা। `app/Providers`-এ মোট ৬টা `singleton(` কল। টিমের (sihab, Tanmay)।
 - **Singleton-ধরনের static manager:** `app/Support/Tenant/TenantManager.php`: `private function __construct(Tenantable $tenant)`, `public static function tenant(Tenantable $tenant)`। CLAUDE.md-এর নিয়ম "TenantManager switch করলে সবসময় landlord-এ ফেরত যাও" ঠিক এই global state-এর ঝুঁকির কারণে। লেখক Tanmay; তোমার ৫টা commit (S3)।
 - **Process-wide state-এর আসল উদাহরণ (Truth-safe):** `app/Http/Middleware/ScopeCacheToTenant.php` cache prefix প্রতি tenant-এ বদলায় `config(['cache.prefix' => ...])` দিয়ে, কিন্তু শুধু **HTTP request-এ**। Queue job এই prefix দেখে না, তাই request-এ লেখা cache key job পড়তে পারে না (তোমার মেমরিতে লেখা পর্যবেক্ষণ)। "Global state in long-running workers" প্রশ্নে এটা ভালো উদাহরণ।

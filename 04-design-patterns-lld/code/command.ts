@@ -42,7 +42,7 @@ class CommandQueue {
 }
 
 // ---------- Invoker 2: a journal that can undo a whole run in reverse order ----------
-// (Sokrio QA Test Lab: QaJournal records every write with before/after,
+// (DistroSaaS QA Test Lab: QaJournal records every write with before/after,
 //  QaReverter undoes the run newest-first.)
 class Journal {
   private entries: Command[] = [];

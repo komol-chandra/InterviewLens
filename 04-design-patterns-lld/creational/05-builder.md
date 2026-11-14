@@ -10,7 +10,7 @@ tags: [lld, creational]
 updated: 2026-11-14
 ---
 
-> Tracker ID: DP-05 · Generated: 2026-10-15 · Answers: **DP-Q05** (TRK-02 Phase 4) · Source: GoF + Effective Java (Item 2) + sokrio-server code (`Models/Report/PeriodBuilder`, `CoordinateBuilder`, Laravel Query Builder) · Runnable: `04-design-patterns-lld/code/builder.ts` (✅ ran + strict tsc 2026-10-15) · Status: 🟡 generated
+> Tracker ID: DP-05 · Generated: 2026-10-15 · Answers: **DP-Q05** (TRK-02 Phase 4) · Source: GoF + Effective Java (Item 2) + api-server code (`Models/Report/PeriodBuilder`, `CoordinateBuilder`, Laravel Query Builder) · Runnable: `04-design-patterns-lld/code/builder.ts` (✅ ran + strict tsc 2026-10-15) · Status: 🟡 generated
 
 # DP-Q05: An object needs many optional fields. How do you avoid a constructor with 10 parameters?
 
@@ -160,7 +160,7 @@ new ReportRequest(from: $from, to: $to, format: 'xlsx');
 
 ---
 
-🔗 **Sokrio link:** (কোডে যাচাই করা)
+🔗 **DistroSaaS link:** (কোডে যাচাই করা)
 - **Query Builder:** প্রতিটা রিপোর্ট/লিস্ট এন্ডপয়েন্টে Eloquent Builder। `app/Support/Macros/BuilderMacro` Builder-এ নিজস্ব method যোগ করে (টিমের)। তুমি প্রতিদিন এটা ব্যবহার করো: সৎভাবে "I use it daily" বলতে পারো।
 - **Custom builder-ধরনের class:** `app/Models/Report/PeriodBuilder.php`: constructor-এ `($interval, $range)` নিয়ে Carbon period বানায়, `fill($data)` দিয়ে খালি দিন/সপ্তাহ/মাস ভরে (daily/weekly/monthly/quarterly/yearly format)। পাশে `CoordinateBuilder`। লেখক Tanmay। সৎ নোট: এটা পুরো GoF Builder না (fluent step নেই), বরং "complex object একবারে বানানো" class।
 - **টেস্ট-ডেটা builder:** Laravel model factory + state, আর তোমার QA Test Lab-এর scenario plan (A6)। প্রশ্ন এলে বলো factory state = test data builder।

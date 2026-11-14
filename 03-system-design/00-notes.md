@@ -86,7 +86,7 @@ sequenceDiagram
 **মনে রাখার পয়েন্ট:**
 - কখনোই sync না — request-এ শুধু report job dispatch + report_id return; ইউজার পরে status poll করে বা notification পায় (async report pattern)
 - Job-এ data chunk করে process: `chunkById()`/`cursor()` — পুরো dataset মেমোরিতে না তুলে; ফাইল বানিয়ে S3-তে রেখে signed URL দেওয়া
-- ভারী aggregation রাতে pre-compute করে summary টেবিলে রাখা (daily rollup) — রিপোর্ট তখন summary টেবিল পড়ে, raw টেবিল নয় (আমরা Sokrio-তে MongoDB summary collection এভাবেই চালাই)
+- ভারী aggregation রাতে pre-compute করে summary টেবিলে রাখা (daily rollup) — রিপোর্ট তখন summary টেবিল পড়ে, raw টেবিল নয় (আমরা DistroSaaS-এে MongoDB summary collection এভাবেই চালাই)
 - Report query read replica-তে চালানো — main DB-র write traffic-এ চাপ না পড়ে
 - Cache layer: একই parameter-এর রিপোর্ট `Cache::remember` — key-তে tenant + filter scope; TTL business freshness অনুযায়ী (যেমন ১ ঘণ্টা)
 - Progress + failure: reports টেবিলে status (queued → processing → done/failed) + percentage; fail হলে retry policy আর ইউজারকে জানানো — silent fail সবচেয়ে খারাপ

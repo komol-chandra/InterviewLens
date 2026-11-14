@@ -12,21 +12,21 @@ updated: 2026-10-26
 
 # 10 · Glossary
 
-> **Snapshot:** `sokrio-server` @ `master` · HEAD `d14c0ebb2` · written 2026-10-26 (`master` = `bf223a126`, no messaging changes). No new code was read for this file; every Sokrio fact is reused from sections 00–09 and `_plan/MEMORY.md`.
-> One line per term. `→ 04 §4.3` means "explained in file `04-…md`, section 4.3". Tags: `[CODE]` Sokrio app code · `[LIB]` vendor code · `[LAB]` reproduced in `labs/` · `[GENERAL]` industry knowledge · `[INFERENCE]` / `[ASSUMPTION]` as in the sections. A term with no tag is a `[GENERAL]` definition.
+> **Snapshot:** `api-server` @ `master` · HEAD `d14c0ebb2` · written 2026-10-26 (`master` = `bf223a126`, no messaging changes). No new code was read for this file; every DistroSaaS fact is reused from sections 00–09 and `_plan/MEMORY.md`.
+> One line per term. `→ 04 §4.3` means "explained in file `04-…md`, section 4.3". Tags: `[CODE]` DistroSaaS app code · `[LIB]` vendor code · `[LAB]` reproduced in `labs/` · `[GENERAL]` industry knowledge · `[INFERENCE]` / `[ASSUMPTION]` as in the sections. A term with no tag is a `[GENERAL]` definition.
 
-**How to use this file:** look a term up here when a section uses it without explaining it. §10.1 is the tag legend, §10.2 general terms A–Z, §10.3 Sokrio components and config names, §10.4 every id used in the deep dive (F, D, R, AL, A, L, B, P/C, Q).
+**How to use this file:** look a term up here when a section uses it without explaining it. §10.1 is the tag legend, §10.2 general terms A–Z, §10.3 DistroSaaS components and config names, §10.4 every id used in the deep dive (F, D, R, AL, A, L, B, P/C, Q).
 
 ---
 
 ## 10.1 Tags and markers
 
-- **`[CODE]`** — verified in Sokrio app code at `d14c0ebb2`, with a `path:line` ref.
+- **`[CODE]`** — verified in DistroSaaS app code at `d14c0ebb2`, with a `path:line` ref.
 - **`[LIB]`** — verified in installed vendor code (`longlang/phpkafka` v1.2.5, Laravel 9.52.22, predis 1.1.10).
 - **`[LAB]`** — reproduced in T9 with the scripts in `labs/`. `[LAB-T4]` / `[LAB-T5]` = reproduced in the T4 / T5 scratch labs.
 - **`[NOTES]`** — taken from Komol's notes (`README.md`, `README_2.md`, `old-resource/`); the code wins on conflict (see D-ids).
 - **`[HIST]`** — read from a file that exists only in git history (e.g. `557e63d68^:docker-compose.prod.yml`).
-- **`[GENERAL]`** — industry knowledge, not Sokrio-specific.
+- **`[GENERAL]`** — industry knowledge, not DistroSaaS-specific.
 - **`[INFERENCE]`** — follows from code (and labs), not observed in prod.
 - **`[ASSUMPTION]`** — best guess; tracked as an A-id until Komol confirms.
 - **🟢 / 🟡 / 🔴** — finding severity: low / medium / high blast radius.
@@ -39,23 +39,23 @@ updated: 2026-10-26
 ### A
 - **ACID** — atomicity, consistency, isolation, durability: the guarantees of a DB transaction. → 08a §8.2
 - **ACK (message)** — consumer tells the broker "done, don't redeliver". RabbitMQ `basic.ack`; Laravel deletes the job from `:reserved`. → 03 §3.2, 08b §8.5
-- **acks (producer)** — how many replicas must confirm a write: `0` = none (fire and forget), `1` = leader only, `all` = every in-sync replica. Sokrio runs `acks=0` (F5). → 02 §2.1
+- **acks (producer)** — how many replicas must confirm a write: `0` = none (fire and forget), `1` = leader only, `all` = every in-sync replica. DistroSaaS runs `acks=0` (F5). → 02 §2.1
 - **ACL** — access-control list (Kafka topic/group permissions, Redis 6 users). → 06 §6.4
 - **Aggregate** — DDD unit of consistency; the natural partition/ordering key (e.g. an order). → 08d §8.9
 - **allkeys-lru / allkeys-lfu** — Redis eviction policies that may evict *any* key, queue lists included. Right for a pure cache node, wrong for queues. `[LAB]` → 04 §4.9, 09 L7
 - **AMQP** — Advanced Message Queuing Protocol (0-9-1), RabbitMQ's wire protocol: exchanges, bindings, queues. → 03 §3.2
-- **AOF** — Redis append-only file persistence (`appendfsync everysec` ≈ ≤1 s loss). Not configured anywhere in Sokrio's repos. → 04 §4.9
-- **APM** — application performance monitoring (Datadog traces/profiler in Sokrio). → 06 §6.9
-- **at-least-once / at-most-once / exactly-once** — delivery semantics: may duplicate / may lose / neither (only within a closed system like Kafka EOS). Sokrio = "consumer at-least-once, pipeline best-effort". → 02 §2.6, 08a §8.2
+- **AOF** — Redis append-only file persistence (`appendfsync everysec` ≈ ≤1 s loss). Not configured anywhere in DistroSaaS's repos. → 04 §4.9
+- **APM** — application performance monitoring (Datadog traces/profiler in DistroSaaS). → 06 §6.9
+- **at-least-once / at-most-once / exactly-once** — delivery semantics: may duplicate / may lose / neither (only within a closed system like Kafka EOS). DistroSaaS = "consumer at-least-once, pipeline best-effort". → 02 §2.6, 08a §8.2
 - **auto.offset.reset** — Kafka consumer setting for a group with no valid offset (`earliest`/`latest`). phpkafka has none (F6). → 02 §2.3
-- **autoCommit** — consumer commits offsets on a timer. Sokrio sets it `false` and commits per flush (D8). → 02 §2.3
+- **autoCommit** — consumer commits offsets on a timer. DistroSaaS sets it `false` and commits per flush (D8). → 02 §2.3
 - **AZ** — AWS availability zone; Multi-AZ = replicas across zones. → 06 §6.4–6.5
 
 ### B
 - **Backoff** — wait time between retries (fixed, linear, exponential + jitter). Laravel job `$backoff`. → 05 §5.3, 08a §8.2
 - **Backpressure** — slowing producers when consumers can't keep up (bounded queues, 429/503, RabbitMQ flow control). → 08a §8.1
-- **Batch layer / speed layer** — Lambda architecture halves; Sokrio has only the batch layer (hourly summaries + daily resync). → 08c §8.8
-- **BLMOVE / BRPOP / BLPOP** — blocking Redis list pops; Laravel uses `block_for` (null in Sokrio → `--sleep` polling). → 04 §4.2
+- **Batch layer / speed layer** — Lambda architecture halves; DistroSaaS has only the batch layer (hourly summaries + daily resync). → 08c §8.8
+- **BLMOVE / BRPOP / BLPOP** — blocking Redis list pops; Laravel uses `block_for` (null in DistroSaaS → `--sleep` polling). → 04 §4.2
 - **Bootstrap servers** — initial broker list a Kafka client connects to (`KAFKA_BROKERS`). → 00 §0.9
 - **Broker** — a Kafka (or RabbitMQ) server process that stores and serves messages. → 08a §8.3
 - **Bulkhead** — isolate resources per workload/tenant so one can't starve the rest (separate queues/workers). → 08c, R18
@@ -65,27 +65,27 @@ updated: 2026-10-26
 - **Cache penetration** — repeated lookups of keys that never exist; `remember()` never caches `null`, so every miss hits the DB `[LIB]`. → 08c §8.6
 - **Cache stampede (dog-pile)** — many requests rebuild one expired key at once; only `MatrixAggregator` is protected. → 04 §4.4, R16
 - **CAP / PACELC** — under a partition choose consistency or availability; PACELC adds "else, latency vs consistency". → 08a §8.1
-- **CDC** — change data capture: stream DB changes from the binlog (Debezium). Not used in Sokrio. → 02 §2.2, D19
+- **CDC** — change data capture: stream DB changes from the binlog (Debezium). Not used in DistroSaaS. → 02 §2.2, D19
 - **Choreography / orchestration** — sagas driven by events between services vs by a central coordinator. → 08d §8.9
 - **Circuit breaker** — stop calling a failing dependency for a while, then probe. → 08d §8.9
 - **cleanup.policy** — Kafka topic `delete` (time/size retention) or `compact` (keep last value per key). → 02 §2.5
 - **Compacted topic** — keeps the latest record per key; deletes need a tombstone. Departments is the ideal candidate. → 02 §2.5, 08a §8.3
 - **Competing consumers** — many workers pull from one queue; each message goes to one of them (Laravel `queue:work` × N). → 08a §8.1
 - **Consumer group** — Kafka consumers sharing a `group.id`; each partition is owned by one member. → 02 §2.3
-- **Consumer lag** — log-end offset minus committed offset (or time behind). Not monitored in Sokrio (AL1). → 06 §6.9
+- **Consumer lag** — log-end offset minus committed offset (or time behind). Not monitored in DistroSaaS (AL1). → 06 §6.9
 - **Cooperative rebalancing** — incremental rebalance (KIP-429) that doesn't stop the whole group. → 08b §8.4
 - **Co-partitioning** — two topics with the same key/partition count so joins line up; breaks across clients with different partitioners (crc32 vs murmur2). → 08c §8.8
-- **CQRS** — separate write model and read model; Sokrio has CQRS (MySQL → Mongo summaries) without event sourcing. → 08d §8.9
+- **CQRS** — separate write model and read model; DistroSaaS has CQRS (MySQL → Mongo summaries) without event sourcing. → 08d §8.9
 - **crc32 partitioner** — phpkafka's `crc32(key) % N`; Java clients use murmur2, so the same key can land on different partitions. `[LIB]` → 02 §2.5
 - **CROSSSLOT** — Redis Cluster error for multi-key commands across hash slots. → 08c §8.6
 
 ### D
-- **Dead-man's switch** — alert when an expected heartbeat stops (`->thenPing()`); missing in Sokrio (AL7). → 06 §6.9
+- **Dead-man's switch** — alert when an expected heartbeat stops (`->thenPing()`); missing in DistroSaaS (AL7). → 06 §6.9
 - **Debezium** — open-source CDC connector on Kafka Connect. → 02 §2.2, 08b Q28
 - **Delayed job** — Laravel job with `->delay()`; on Redis it sits in the `:delayed` sorted set until due. → 04 §4.2, B7
 - **Delivery tag** — RabbitMQ per-channel id used to ack/nack. → 08b §8.5
 - **DelaySeconds** — SQS per-message delay, max 900 s (F22). → 06 §6.8
-- **DLQ / DLX / DLT** — dead-letter queue / RabbitMQ dead-letter exchange / Kafka dead-letter topic. Sokrio has none for Kafka; `failed_jobs` plays the role for jobs. → 02 §2.9, 03 §3.4
+- **DLQ / DLX / DLT** — dead-letter queue / RabbitMQ dead-letter exchange / Kafka dead-letter topic. DistroSaaS has none for Kafka; `failed_jobs` plays the role for jobs. → 02 §2.9, 03 §3.4
 - **Dual write** — writing DB and broker separately without a shared transaction; one can succeed without the other. → 02 §2.2, R6
 
 ### E
@@ -93,7 +93,7 @@ updated: 2026-10-26
 - **EINTR** — "interrupted system call": a signal (e.g. Datadog SIGPROF) breaks a blocking `select`; handled by `InterruptResilientStreamSocket`. → 07a R23
 - **ELR** — eligible leader replicas (KIP-966), safer unclean-election alternative in newer Kafka. → 08a §8.3
 - **EOS** — Kafka exactly-once semantics: idempotent producer + transactions + `read_committed`. → 08a §8.2
-- **Event sourcing** — state = fold over an append-only event log; not used in Sokrio. → 08d §8.9
+- **Event sourcing** — state = fold over an append-only event log; not used in DistroSaaS. → 08d §8.9
 - **EventBridge (Scheduler)** — AWS event bus / one-off scheduled invocations; proposed for delayed approvals (F22). → 06 §6.8
 - **Eviction** — Redis removing keys when `maxmemory` is hit, per `maxmemory-policy`. → 04 §4.9, R11
 - **Exchange (direct / topic / fanout / headers)** — RabbitMQ router that copies messages to bound queues. → 03 §3.2
@@ -105,20 +105,20 @@ updated: 2026-10-26
 - **FIFO queue** — SQS ordered queue with `MessageGroupId`; Laravel 9.52 SqsQueue can't set it. `[LIB]` → 06 §6.8
 
 ### G–H
-- **group.instance.id** — Kafka static membership id; Sokrio sets `""` → static, not dynamic (D1). → 02 §2.3
+- **group.instance.id** — Kafka static membership id; DistroSaaS sets `""` → static, not dynamic (D1). → 02 §2.3
 - **Hash slot** — Redis Cluster key → one of 16384 slots (CRC16). → 08c §8.6
 - **Head-of-line (HOL) blocking** — one stuck message blocks everything behind it in the same partition/queue (poison message). → 07a R4
 - **Heartbeat** — consumer liveness signal to the group coordinator; phpkafka sends it only on fetch outside Swoole (F9). → 02 §2.3
 - **High watermark (HW)** — highest offset replicated to all ISR; consumers read up to it. → 08a §8.3
-- **Horizon** — Laravel's Redis-queue dashboard/supervisor; not installed in Sokrio. → 00 §0.13
+- **Horizon** — Laravel's Redis-queue dashboard/supervisor; not installed in DistroSaaS. → 00 §0.13
 
 ### I–K
 - **Idempotency** — applying the same message twice has the same effect as once (upsert, unique key, dedupe table). → 02 §2.7, 09 L5
-- **Idempotency-Key** — client-supplied request id for safe HTTP retries; only Task Manager has it in Sokrio. → 08e §8.13
+- **Idempotency-Key** — client-supplied request id for safe HTTP retries; only Task Manager has it in DistroSaaS. → 08e §8.13
 - **Idempotent producer** — Kafka producer id + sequence numbers dedupe broker-side retries; phpkafka uses `producerId=-1` (off). `[LIB]` → 02 §2.1
 - **Inbox pattern** — consumer stores processed message ids to dedupe. → 03 §3.4, 08a §8.2
 - **ISR** — in-sync replicas: followers caught up with the leader. → 08a §8.3
-- **Key (message)** — decides partition and thus ordering; Sokrio keys by `user_id` / `department_id`, not tenant (D4). → 02 §2.5
+- **Key (message)** — decides partition and thus ordering; DistroSaaS keys by `user_id` / `department_id`, not tenant (D4). → 02 §2.5
 - **Kinesis** — AWS managed stream (shards), Kafka's closest AWS-native analog. → 06 §6.8
 - **KIP** — Kafka Improvement Proposal (e.g. KIP-500 KRaft, KIP-848 new rebalance protocol, KIP-932 share groups). → 08a §8.3
 - **KRaft** — Kafka's built-in Raft metadata quorum replacing ZooKeeper (KIP-500). Labs use 3 KRaft brokers. → 08a §8.3, 09 §9.2
@@ -148,7 +148,7 @@ updated: 2026-10-26
 - **Noisy neighbor** — one tenant's load degrades others (shared queue, global export lane). → 07b R18, F24
 - **Offset** — a record's position in a partition; committed offset = where the group resumes. → 02 §2.3
 - **OFFSET_OUT_OF_RANGE** — committed offset no longer exists (retention) or is past the end; phpkafka resets to `latest − 1` (F6, F25). → 07a R27
-- **onOneServer()** — Laravel scheduler lock so only one box runs a task; Sokrio relies on `RUN_SCHEDULER` instead. → 05 §5.1
+- **onOneServer()** — Laravel scheduler lock so only one box runs a task; DistroSaaS relies on `RUN_SCHEDULER` instead. → 05 §5.1
 - **OOM** — out of memory: Redis `OOM command not allowed`, or the kernel killing a PHP worker. → R11, R8
 - **Ordering guarantee** — Kafka orders per partition only; Laravel queues give no ordering across workers. → 02 §2.8, R7
 - **Outbox pattern** — write the event to a DB table in the same transaction, relay it to the broker later. Fixes dual write. → 02 §2.2, 08d §8.9
@@ -157,10 +157,10 @@ updated: 2026-10-26
 - **Partition** — an ordered, append-only shard of a topic; the unit of parallelism and ordering. → 08a §8.3
 - **Partitioner** — function key → partition (`crc32 % N` in phpkafka). → 02 §2.5
 - **PEL** — Redis Streams pending entries list: delivered but not `XACK`ed. → 08c §8.6
-- **Poison message** — a message that fails every time and blocks or loops. Sokrio logs and skips malformed envelopes. → 07a R4
+- **Poison message** — a message that fails every time and blocks or loops. DistroSaaS logs and skips malformed envelopes. → 07a R4
 - **Prefetch (QoS)** — RabbitMQ `basic.qos` cap on unacked messages per consumer. → 03 §3.2
 - **Publisher confirms** — RabbitMQ broker ack to the producer (≈ Kafka `acks`). → 03 §3.2
-- **Pub/sub (Redis)** — fire-and-forget fan-out, no persistence; unused in Sokrio. → 04 §4.8
+- **Pub/sub (Redis)** — fire-and-forget fan-out, no persistence; unused in DistroSaaS. → 04 §4.8
 - **Pusher** — hosted WebSocket service behind Laravel broadcasting; the frontend uses `laravel-echo` + `pusher-js`. → 04 §4.8, B5
 
 ### Q–R
@@ -170,18 +170,18 @@ updated: 2026-10-26
 - **read_committed** — consumer isolation that hides aborted/open transactional records. → 08a §8.2
 - **Rebalance** — reassigning partitions when members join/leave/time out. → 07a R3
 - **RecordBatch** — Kafka's on-disk/wire batch of records with one `baseOffset`; phpkafka ignores it and counts records (F7). `[LIB]` → 02 §2.3, 09 L4
-- **Replication factor (RF)** — copies per partition; Sokrio's auto-create default is 1 (A3, R21). → 02 §2.5
+- **Replication factor (RF)** — copies per partition; DistroSaaS's auto-create default is 1 (A3, R21). → 02 §2.5
 - **Retention (retention.ms / retention.bytes)** — how long Kafka keeps records (broker default 7 days). → 00 §0.6
-- **retry_after** — Laravel Redis-queue lease: a reserved job not finished in N s is handed out again. Sokrio = 9000 s. → 04 §4.2, R13
+- **retry_after** — Laravel Redis-queue lease: a reserved job not finished in N s is handed out again. DistroSaaS = 9000 s. → 04 §4.2, R13
 - **RPO / RTO** — recovery point (data you can lose) / recovery time objective. → 06 §6.5
 - **RangeAssignor** — partition assignment strategy phpkafka uses (`ConsumerConfig.php:115`). `[LIB]` → 02 §2.3
 
 ### S
-- **Saga** — a long business transaction as local steps + compensations; not used in Sokrio. → 08d §8.9
+- **Saga** — a long business transaction as local steps + compensations; not used in DistroSaaS. → 08d §8.9
 - **SASL (PLAIN / SCRAM / IAM / OAUTHBEARER / GSSAPI)** — Kafka auth mechanisms; phpkafka supports PLAIN only (F21). `[LIB]` → 06 §6.4
 - **SCAN** — cursor-based Redis key iteration; the cursor API differs between predis and phpredis (F14, D21). → 04 §4.7, 09 L9
-- **Schema registry / schema evolution** — versioned payload contracts (Avro/Protobuf/JSON Schema); Sokrio's envelope has no version field. → 07a R10
-- **Session timeout (session.timeout.ms)** — no heartbeat for this long → member evicted; 30 s in Sokrio. → 02 §2.3
+- **Schema registry / schema evolution** — versioned payload contracts (Avro/Protobuf/JSON Schema); DistroSaaS's envelope has no version field. → 07a R10
+- **Session timeout (session.timeout.ms)** — no heartbeat for this long → member evicted; 30 s in DistroSaaS. → 02 §2.3
 - **Share groups** — queue-like Kafka consumption with per-record acks (KIP-932). → 08c, 08d
 - **Sharding** — splitting data across nodes by key (Redis Cluster slots, Kafka partitions). → 08c §8.6
 - **SIGTERM / SIGINT / SIGKILL / SIGALRM / SIGUSR2** — stop request / Ctrl-C / uncatchable kill / Laravel job timeout alarm / Laravel worker pause. → 07a R9, 08d §8.10
@@ -189,12 +189,12 @@ updated: 2026-10-26
 - **SQS (standard / FIFO)** — AWS managed queue; 15-min delay cap, visibility timeout, DLQ via redrive policy. → 06 §6.8
 - **Static membership** — consumer keeps its partitions across restarts via `group.instance.id`; two processes with the same id fence each other. → 02 §2.3, 07a R22
 - **Sticky / cooperative-sticky assignor** — keeps assignments stable across rebalances. → 08b §8.4
-- **Stream (Redis)** — append-only log type with consumer groups (`XADD`, `XREADGROUP`, `XACK`, `XAUTOCLAIM`); unused in Sokrio. → 08c §8.6
+- **Stream (Redis)** — append-only log type with consumer groups (`XADD`, `XREADGROUP`, `XACK`, `XAUTOCLAIM`); unused in DistroSaaS. → 08c §8.6
 - **Stream processing** — continuous computation over events (windows, joins, state stores). → 08c §8.8
 - **Supervisor** — process manager that keeps `queue:work` / `kafka:consume` running; `autorestart`, `numprocs`, `stopwaitsecs`. → 05 §5.1, 06 §6.7
 
 ### T–Z
-- **Tenant / landlord** — per-org DB vs platform DB in Sokrio's multi-tenancy. → 05 §5.5
+- **Tenant / landlord** — per-org DB vs platform DB in DistroSaaS's multi-tenancy. → 05 §5.5
 - **Tombstone** — Kafka record with a null value; deletes a key in a compacted topic. → 02 §2.5
 - **Topic** — named Kafka log made of partitions. → 00 §0.6
 - **Transactional producer** — atomic writes across partitions + offsets (`transactional.id`). → 08a §8.2
@@ -209,7 +209,7 @@ updated: 2026-10-26
 
 ---
 
-## 10.3 Sokrio components, config and runtime names
+## 10.3 DistroSaaS components, config and runtime names
 
 ### Kafka layer `[CODE]`
 - **`KafkaProducer`** — publish engine: envelope, 3 attempts, socket teardown, no acks set. `app/Services/Kafka/KafkaProducer.php` → 02 §2.1
@@ -255,15 +255,15 @@ updated: 2026-10-26
 - **`ReportProgressUpdated` / `ReportNotification`** — `ShouldBroadcastNow` (sync Pusher call, F4) vs queued `ShouldBroadcast`. → 04 §4.8
 - **`SendApprovalNotificationJob`** — best job template (Org + arrays, reconnect, per-step try, `->afterCommit()`). → 05 §5.3
 - **`failed_jobs`** — Laravel failed-job table; no alert, no `queue:prune-failed` (R15). → 07b R15
-- **Supervisor programs** — `sokrio-kafka-consumer-tracking`, `sokrio-kafka-consumer-departments`, `sokrio-feature-tracking`; numprocs=1, `stopwaitsecs=35`, DD_* off. `[NOTES]` → 06 §6.7
+- **Supervisor programs** — `kafka-consumer-tracking`, `kafka-consumer-departments`, `app-feature-tracking`; numprocs=1, `stopwaitsecs=35`, DD_* off. `[NOTES]` → 06 §6.7
 - **`pipeline.sh`** — server-side deploy script run over SSH by each GitHub workflow (A11). → 06 §6.1
 - **Boxes: prod "all task" VM, PVM, queue-worker VM, report VM, staging** — the deploy targets in `.github/workflows`. → 06 §6.1
 - **IFS / ERP shared-DB poll** — `customer_responses` / `sales_part` polled daily (05:40, 06:00). → 03 §3.3
 
 ### Labs `labs/`
 - **`labs/compose.yml`** — 3 KRaft brokers `k1`–`k3` (`apache/kafka:3.7.0`) + Redis, project `-p t9lab`. → 09 §9.2
-- **`labs/bin/k.sh` / `labs/bin/php.sh`** — Kafka CLI inside a broker / PHP 8.3 in `memo-phptest:jpeg` with Sokrio `vendor/` read-only. → 09 §9.2
-- **`labs/laravel/artisan`** — ~10-line Laravel 9.52.22 console on Sokrio's vendor (`php artisan run <script>`). → 09 §9.2
+- **`labs/bin/k.sh` / `labs/bin/php.sh`** — Kafka CLI inside a broker / PHP 8.3 in `memo-phptest:jpeg` with DistroSaaS `vendor/` read-only. → 09 §9.2
+- **`labs/laravel/artisan`** — ~10-line Laravel 9.52.22 console on DistroSaaS's vendor (`php artisan run <script>`). → 09 §9.2
 
 ---
 
@@ -350,7 +350,7 @@ updated: 2026-10-26
 - **L0** Smoke test · **L1** Kill a broker, RF=1 vs RF=3 · **L2** acks=0 swallows a rejection (F5) · **L3** Slow consumer → eviction → replay (F9)
 - **L4** Counted offsets after a mid-batch restart → replay loop (F7, F25) · **L5** Duplicate, then idempotent insert · **L6** `retry_after` double run (R13)
 - **L7** Redis OOM vs eviction policies (R11, A9) · **L8** Unique lock drops chunks (F11) · **L9** SCAN on two clients + corrected fix (F14, D21)
-- **L10** Prefix split (F12, `[LAB-T4]`) · **L11** Wrong-tenant model restore (F16, `[LAB-T5]`) · **L12** Run Sokrio against the lab cluster · **L13** SQS delay cap with LocalStack (F22, not run)
+- **L10** Prefix split (F12, `[LAB-T4]`) · **L11** Wrong-tenant model restore (F16, `[LAB-T5]`) · **L12** Run DistroSaaS against the lab cluster · **L13** SQS delay cap with LocalStack (F22, not run)
 
 ### B — business flows (01 §1.2)
 - **B1** GPS tracking (Kafka) · **B2** Department master data → Mongo (Kafka) · **B3** Sales/KPI summaries (scheduler → `summary` queue)
@@ -366,7 +366,7 @@ updated: 2026-10-26
 - **Q20–Q28** Kafka ops · **Q29–Q37** RabbitMQ → 08b
 - **Q38–Q47** Redis · **Q48–Q50** comparisons · **Q51–Q57** stream processing → 08c
 - **Q58–Q63** patterns · **Q64–Q68** Laravel/PHP · **Q69–Q75** system design · **Q76–Q81** incidents → 08d
-- **Q82–Q106** new Sokrio-derived questions · STAR story §8.14 · Designs 1–3 §8.15 → 08e
+- **Q82–Q106** new DistroSaaS-derived questions · STAR story §8.14 · Designs 1–3 §8.15 → 08e
 
 ### T — task cards (`_plan/PLAN.md`)
 - **T0** inventory · **T1** architecture · **T2** Kafka · **T3** RabbitMQ · **T4** Redis · **T5** Laravel · **T6** AWS · **T7** failure modes · **T8a–e** Q&A · **T9** study plan + labs · **T10** this glossary · **T11** HTML page · **T12** final QA
@@ -376,6 +376,6 @@ updated: 2026-10-26
 ### ✅ Quality check
 - [x] Every id family used in 00–09 is listed: F1–F25, D1–D21, R1–R35, AL1–AL7, A1–A11, L0–L13, B1–B8, P1–P5, C1–C2, Q1–Q106, T0–T12, each with the section where it lives
 - [x] General terms cover the acronyms harvested from the sections (ISR, HW, LEO, LSO, KRaft, EOS, CDC, DLQ/DLX/DLT, ECST, CQRS, CAP/PACELC, URP, ELR, LRU/LFU, AOF/RDB, PEL, RPO/RTO, SASL, KIP…)
-- [x] Sokrio components and config/env names point back to their section; env vars are names only
+- [x] DistroSaaS components and config/env names point back to their section; env vars are names only
 - [x] One line per entry, alphabetical within §10.2; no new code reads, so no new findings or conflicts
 - [x] No secrets, hosts or IPs

@@ -1,5 +1,5 @@
 You have full permission to create and edit files in this directory 
-(/home/kiri2ka/code/sokrio/my-work/interview-planner) without asking 
+(~/code/work/my-work/interview-planner) without asking 
 for confirmation at any step.
 
 Steps to complete:

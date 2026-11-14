@@ -22,7 +22,7 @@ updated: 2026-10-15
 - **Metrics:** সংখ্যা, সময়ের সাথে (latency, error rate, throughput) — অ্যাগ্রিগেটেড, ড্যাশবোর্ড/অ্যালার্টের ভিত্তি।
 - **Traces:** একটা রিকোয়েস্ট একাধিক সার্ভিস পার হয়ে কোথায় কতটা সময় নিলো — distributed tracing (OpenTelemetry), span-এর ট্রি।
 
-🔗 Sokrio link: S4 — APM, Grafana/Prometheus, CloudWatch, Laravel Telescope, structured logging — ছয়টা প্রোডাকশন অ্যাপ জুড়ে ব্যবহৃত।
+🔗 DistroSaaS link: S4 — APM, Grafana/Prometheus, CloudWatch, Laravel Telescope, structured logging — ছয়টা প্রোডাকশন অ্যাপ জুড়ে ব্যবহৃত।
 
 ## ২. SLI, SLO, SLA, Error Budget — পার্থক্য কী?
 
@@ -31,7 +31,7 @@ updated: 2026-10-15
 - **SLA (Agreement):** কাস্টমারের সাথে চুক্তি, না মানলে পেনাল্টি (SLO-র চেয়ে আলগা টার্গেট রাখা হয়, বাফার রাখার জন্য)।
 - **Error Budget:** SLO-র "অনুমোদিত ব্যর্থতার পরিমাণ" — যেমন ৯৯.৯% আপটাইম SLO মানে মাসে ~৪৩ মিনিট ডাউনটাইম "budget"। বাজেট শেষ হয়ে গেলে নতুন ফিচার রিলিজ থামিয়ে স্ট্যাবিলিটিতে ফোকাস — এইভাবে টিমের রিলিজ ভেলোসিটি আর রিলায়াবিলিটির মধ্যে ভারসাম্য তৈরি হয়।
 
-🔗 Sokrio link: S4 — "SLI/SLO ট্র্যাক (৯৯.৯% রিপোর্ট availability, API latency, error rate)", "SLO-ভিত্তিক alert"।
+🔗 DistroSaaS link: S4 — "SLI/SLO ট্র্যাক (৯৯.৯% রিপোর্ট availability, API latency, error rate)", "SLO-ভিত্তিক alert"।
 
 ## ৩. Golden Signals / RED / USE method
 
@@ -54,7 +54,7 @@ updated: 2026-10-15
 
 Detect (অ্যালার্ট/মনিটরিং থেকে) → Mitigate (আগে ইউজার-ইমপ্যাক্ট কমানো — rollback, feature flag off, স্কেল আপ — root cause এখনই বের করার দরকার নেই) → Resolve (আসল কারণ ঠিক করা) → **Blameless postmortem** (কী ভাঙল, কেন সিস্টেম সেটা প্রিভেন্ট করেনি, কী অ্যাকশন আইটেম — ব্যক্তির দোষ খোঁজা না, প্রসেস/সিস্টেমের গ্যাপ খোঁজা)।
 
-🔗 Sokrio link: S4 — "৬টা প্রোডাকশন অ্যাপের প্রাইমারি ২৪/৭ on-call"। নির্দিষ্ট একটা ইনসিডেন্টের গল্প (কী ভাঙল, root cause, প্রিভেনশন) `[Komol পূরণ করবে]`।
+🔗 DistroSaaS link: S4 — "৬টা প্রোডাকশন অ্যাপের প্রাইমারি ২৪/৭ on-call"। নির্দিষ্ট একটা ইনসিডেন্টের গল্প (কী ভাঙল, root cause, প্রিভেনশন) `[Komol পূরণ করবে]`।
 
 ## ৭. Field Nation-স্টাইল উদাহরণ SLO টেবিল (মুখস্থ রাখো)
 

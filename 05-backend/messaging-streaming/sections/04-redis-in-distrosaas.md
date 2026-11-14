@@ -1,6 +1,6 @@
 ---
-id: be-messaging-streaming-sections-04-redis-in-sokrio
-title: "04 · Redis in Sokrio — Queues, Cache, Locks, Limiters, Buffer"
+id: be-messaging-streaming-sections-04-redis-in-DistroSaaS
+title: "04 · Redis in DistroSaaS — Queues, Cache, Locks, Limiters, Buffer"
 track: backend
 type: topic
 status: draft
@@ -10,15 +10,15 @@ tags: [backend, messaging-streaming]
 updated: 2026-10-29
 ---
 
-# 04 · Redis in Sokrio — Queues, Cache, Locks, Limiters, Buffer
+# 04 · Redis in DistroSaaS — Queues, Cache, Locks, Limiters, Buffer
 
-> **Snapshot:** `sokrio-server` @ `master` · HEAD `d14c0ebb2` · written 2026-10-26.
-> Paths are relative to `sokrio-server/`. Tags: `[CODE]` verified in app code · `[LIB]` verified in `vendor/` · `[LAB]` reproduced on a throwaway local Redis · `[GENERAL]` industry knowledge · `[INFERENCE]` follows from code but not observed in prod · `[ASSUMPTION]` best guess plus how to verify.
+> **Snapshot:** `api-server` @ `master` · HEAD `d14c0ebb2` · written 2026-10-26.
+> Paths are relative to `api-server/`. Tags: `[CODE]` verified in app code · `[LIB]` verified in `vendor/` · `[LAB]` reproduced on a throwaway local Redis · `[GENERAL]` industry knowledge · `[INFERENCE]` follows from code but not observed in prod · `[ASSUMPTION]` best guess plus how to verify.
 > Question bank links: Q38–Q47 (Redis), Q49 (Redis vs Kafka), Q60 (distributed locks), Q64 (cache stampede), Q71 (Laravel queues).
 
 ## 4.0 What changed our understanding (read this first)
 
-Redis does seven jobs in Sokrio: the Laravel queue, the cache, distributed locks, unique-job locks, rate limiters, the feature-usage buffer, and the session store. All seven share **one Redis server** (two logical DBs). Five new findings came out of this pass:
+Redis does seven jobs in DistroSaaS: the Laravel queue, the cache, distributed locks, unique-job locks, rate limiters, the feature-usage buffer, and the session store. All seven share **one Redis server** (two logical DBs). Five new findings came out of this pass:
 
 | # | Finding | Severity | Proof |
 |---|---|---|---|
@@ -90,7 +90,7 @@ stateDiagram-v2
 ```
 
 - `[LIB]` **`retry_after` is not a timeout.** It's the moment Redis assumes the worker is dead and hands the job to someone else. If the first worker is still running, you get two copies running at once.
-- `[CODE]` Sokrio uses **`retry_after = 9000`** (2.5 h) for every queue on the one `redis` connection (`config/queue.php:65`). That's large enough for the slowest report, but it means a crashed job comes back **2.5 h later**.
+- `[CODE]` DistroSaaS uses **`retry_after = 9000`** (2.5 h) for every queue on the one `redis` connection (`config/queue.php:65`). That's large enough for the slowest report, but it means a crashed job comes back **2.5 h later**.
 - `[CODE]` `block_for = null` (`config/queue.php:66`), so workers poll: an empty pop sleeps `--sleep` seconds (README uses `--sleep=1`, `README.md:173`). No `BLPOP` on `:notify`.
 
 ### Queues in use
@@ -113,7 +113,7 @@ stateDiagram-v2
 
 - `[LIB]` `$timeout = 0` disables the alarm: `Worker::timeoutForJob()` returns 0 and `pcntl_alarm(0)` cancels it (`vendor/…/Queue/Worker.php:229-254`).
 - `[CODE]` **Ignored properties:** `ApproveOrder::$retry_after = 600` (`app/Jobs/ApproveOrder.php:26`) and `PrimaryOrderSummaryMongoDBJob::$retries`. Laravel reads `retry_after` only from the connection config and `$tries` (not `$retries`) from the job.
-- `[CODE]` **Workers:** the only documented Supervisor program is `sokrio-feature-tracking`: `queue:work --queue=feature-tracking,default --sleep=1 --tries=3 --max-jobs=1000` (`README.md:179`). The comma list is a **strict priority**: `default` only gets served when `feature-tracking` is empty. Programs for `summary`, `order-approved` and `sequential` are not in the repo (open question from T3).
+- `[CODE]` **Workers:** the only documented Supervisor program is `app-feature-tracking`: `queue:work --queue=feature-tracking,default --sleep=1 --tries=3 --max-jobs=1000` (`README.md:179`). The comma list is a **strict priority**: `default` only gets served when `feature-tracking` is empty. Programs for `summary`, `order-approved` and `sequential` are not in the repo (open question from T3).
 - `[CODE]` No Horizon (T0). So there are no queue metrics, no per-queue autoscaling and no wait-time alerts. `failed_jobs` in MySQL is the only failure record (`config/queue.php:82-86`).
 
 **What could go wrong**
@@ -174,10 +174,10 @@ sequenceDiagram
     participant Web as Web request (tenant 7)
     participant R as Redis DB1
     participant Wk as Queue worker
-    Web->>R: SET sokrio_cache:tenant_7:report_lock:abc (TTL 1h)
-    Web->>R: SET sokrio_cache:tenant_7:report_ref:… → lock key
+    Web->>R: SET app_cache:tenant_7:report_lock:abc (TTL 1h)
+    Web->>R: SET app_cache:tenant_7:report_ref:… → lock key
     Web->>Wk: dispatch export job
-    Wk->>R: GET sokrio_cache:report_ref:…  → (nil)  ❌ wrong namespace
+    Wk->>R: GET app_cache:report_ref:…  → (nil)  ❌ wrong namespace
     Note over Wk: removeCache() does nothing
     Web->>R: user re-exports → ADD report_lock:abc fails → 429 for up to 1 h
 ```
@@ -282,7 +282,7 @@ flowchart LR
 - `[LIB]` On **predis**, Laravel forwards the variadic args and predis passes raw args through (`vendor/predis/predis/src/Command/KeyScan.php:32-40`), so it works. On **phpredis**, Laravel's wrapper is `scan($cursor, $options = [])` (`vendor/…/Redis/Connections/PhpRedisConnection.php:314-326`): `'MATCH'` lands in `$options` and the pattern is lost. phpredis also treats the string cursor `'0'` as "already finished".
 - `[LAB]` Same loop, same throwaway Redis, one buffer key present:
   ```
-  predis    keys seen: ["sokrio_database_feature_tracking:buffer:7"]  iterations: 1
+  predis    keys seen: ["app_database_feature_tracking:buffer:7"]  iterations: 1
   phpredis  keys seen: []  iterations: 1
   ```
 - **Impact if prod is phpredis:** every flush is a silent no-op. Buffers fill to 5000, then expire after 30 min, and `feature_usage_events` stays empty. **Check:** is anything in Mongo `feature_usage_events` from the last day? If yes, prod is predis and F14 is latent. Fix: pick the start cursor by client (`null` on phpredis, `'0'` on predis) and pass options as an array, `Redis::scan($cursor, ['match' => $match, 'count' => 50])`. Each half was `[LAB]`-tested at 120/120 keys. The options array alone isn't enough: phpredis with a `'0'` start still found 0/120. *(Corrected in T9, D21: an earlier version said a `null` start works on both, but predis rejects it with `ERR invalid cursor`. See 09 §9.3 L9.)*
@@ -290,7 +290,7 @@ flowchart LR
 ---
 
 ## 4.8 Broadcast / Pusher
-- `[CODE]` The broadcaster is Pusher (`config/broadcasting.php:33-41`). The `redis` broadcaster exists in config (`:44-47`) but there's no Socket.IO/Echo server for it, so it's unused. Redis is **not** a pub/sub bus in Sokrio. No `PUBLISH`/`SUBSCRIBE` anywhere.
+- `[CODE]` The broadcaster is Pusher (`config/broadcasting.php:33-41`). The `redis` broadcaster exists in config (`:44-47`) but there's no Socket.IO/Echo server for it, so it's unused. Redis is **not** a pub/sub bus in DistroSaaS. No `PUBLISH`/`SUBSCRIBE` anywhere.
 - `[CODE]` Queued broadcasts (`ShouldBroadcast`): `ReportNotification`, `UserMessageNotification`, `PasswordChanged`, `VanAlertSummaryChanged`, `OrderApproved`, `PaymentApproved/Rejected`, `WalletCollection`. They go to the `default` queue on Redis. Under the README worker, they're served only when `feature-tracking` is empty.
 - `[CODE]` Inline (`ShouldBroadcastNow`): `ReportProgressUpdated` (F4) and `SmsResendFinished`. The latter is wrapped in a try/catch (`SmsResendRun.php:135-148`).
 

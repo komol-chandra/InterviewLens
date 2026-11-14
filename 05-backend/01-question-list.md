@@ -15,7 +15,7 @@ updated: 2026-11-14
 # System Design + Design Patterns: প্রশ্নের তালিকা
 
 > **কীভাবে ব্যবহার করবে:** প্রতিটা প্রশ্নের উত্তর আলাদা ডকে জেনারেট হবে (Answer ফাইল কলামে path বসবে)। প্রশ্ন ইংরেজিতে, কারণ ইন্টারভিউ ইংরেজিতে। ক্রম = সহজ থেকে কঠিন, ওপর থেকে পড়ো।
-> Type: **C** = Concept (ধারণা) · **D** = Design case (পুরো সিস্টেম আঁকো) · **S** = Sokrio-র নিজের গল্প · **Code** = কোড লিখে দেখাও
+> Type: **C** = Concept (ধারণা) · **D** = Design case (পুরো সিস্টেম আঁকো) · **S** = DistroSaaS-এর নিজের গল্প · **Code** = কোড লিখে দেখাও
 
 ---
 
@@ -50,7 +50,7 @@ updated: 2026-11-14
 | # | Question (English) | Type | কী যাচাই করে | Answer ফাইল | Status |
 |---|---|---|---|---|---|
 | DP-Q01 | What is a design pattern? When does using one make code worse? | C | Pattern = পরিচিত সমাধান; over-engineering চেনা; SOLID-এর সাথে সম্পর্ক | `design-patterns/01-principles.md` | ✅ |
-| DP-Q02 | Which design patterns have you used in your own project? Show me where. | S | Sokrio কোডে আসল উদাহরণ (Strategy, Observer, Command, Middleware) | `design-patterns/02-sokrio-pattern-map.md` (আছে) | ✅ |
+| DP-Q02 | Which design patterns have you used in your own project? Show me where. | S | DistroSaaS কোডে আসল উদাহরণ (Strategy, Observer, Command, Middleware) | `design-patterns/02-distrosaas-pattern-map.md` (আছে) | ✅ |
 | DP-Q03 | You have many `if/else` blocks for different discount or payment types. How do you clean this up? | Code | **Strategy** pattern, Open/Closed principle | `design-patterns/behavioral/03-strategy.md` | ✅ |
 | DP-Q04 | Factory Method vs Abstract Factory: what is the difference? When do you use each? | Code | **Factory**: object তৈরি এক জায়গায় (যেমন report exporter: Excel/PDF/CSV) | `design-patterns/creational/04-factory.md` | ✅ |
 | DP-Q05 | An object needs many optional fields to build. How do you avoid a constructor with 10 parameters? | Code | **Builder** pattern, Laravel Query Builder | `design-patterns/creational/05-builder.md` | ✅ |
@@ -97,7 +97,7 @@ updated: 2026-11-14
 ## উত্তর জেনারেট করার সময় নিয়ম
 
 - এক সেশনে **২–৩টা প্রশ্ন**, সব একসাথে না (আগে ২১টা ডক একসাথে বানিয়ে একটাও পড়া হয়নি)
-- প্রতিটা উত্তর: সহজ ব্যাখ্যা → ডায়াগ্রাম/কোড (TypeScript, পাশে Laravel) → trade-off → মুখে বলার ইংরেজি লাইন → `🔗 Sokrio link:`
+- প্রতিটা উত্তর: সহজ ব্যাখ্যা → ডায়াগ্রাম/কোড (TypeScript, পাশে Laravel) → trade-off → মুখে বলার ইংরেজি লাইন → `🔗 DistroSaaS link:`
 - উত্তর তৈরি হলে এই টেবিলে Answer ফাইল + Status (✅) বসাও, আর `tracker.md`-এ সারি যোগ করো
 
 🔗 প্ল্যান: `05-backend/00-plan.md` (TRK-01)

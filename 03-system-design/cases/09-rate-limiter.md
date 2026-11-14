@@ -10,7 +10,7 @@ tags: [system-design, cases]
 updated: 2026-10-15
 ---
 
-> Tracker ID: SD-21 · Generated: 2026-10-15 · Answers: **SD-Q09** (TRK-02 Phase 6) · Source: general SD knowledge + sokrio-server code (`app/Providers/RouteServiceProvider.php`, `config/rate_limiting.php`, `git log`) · Format: 7-ধাপ · Status: ✅ generated
+> Tracker ID: SD-21 · Generated: 2026-10-15 · Answers: **SD-Q09** (TRK-02 Phase 6) · Source: general SD knowledge + api-server code (`app/Providers/RouteServiceProvider.php`, `config/rate_limiting.php`, `git log`) · Format: 7-ধাপ · Status: ✅ generated
 
 # SD-Q09: Design a rate limiter for an API
 
@@ -118,7 +118,7 @@ flowchart LR
 
 > "I'd keep a counter per client in Redis, because the limit must hold across all app servers, and update it atomically with INCR or a small Lua script to avoid races. For a general API I'd use a token bucket, since it allows short bursts but caps the average rate, which suits mobile sync clients. Sensitive endpoints like login and OTP get stricter, layered limits: per identifier and per IP. Rejected requests get a 429 with Retry-After. Coarse IP limits belong at the edge; per-user and per-plan limits in the app after authentication. If Redis is down I'd fail open for normal APIs and alert."
 
-**Sokrio (তোমার টিমের কাজ + তোমার অংশ):**
+**DistroSaaS (তোমার টিমের কাজ + তোমার অংশ):**
 > "Our API has named limiters for general API traffic, auth, OTP send and verify, and bulk endpoints. One lesson: user ids repeat across tenant databases, so every limiter key is prefixed with the tenant. Otherwise one company's traffic could throttle another's. The limiter runs after authentication, so it keys by the real user. It caps authenticated abuse; unauthenticated floods are shed at nginx. For the SMS resend feature I built, I added per-route limiters keyed by host and user."
 
 ## ফলো-আপ প্রশ্ন
@@ -132,7 +132,7 @@ flowchart LR
 
 ---
 
-🔗 **Sokrio link:** (কোডে যাচাই করা, 2026-10-15)
+🔗 **DistroSaaS link:** (কোডে যাচাই করা, 2026-10-15)
 - **Named limiters:** `app/Providers/RouteServiceProvider.php::configureRateLimiting()`: `api` (ডিফল্ট ৬০০/মিনিট, `config/rate_limiting.php`), `auth` (প্রতি identifier **এবং** প্রতি IP, দুই স্তর), `otp` (প্রতি মিনিট + প্রতি ঘণ্টা), `otp-verify`, `bulk`। **Tenant-scoped key** (`scopedKey()`), auth-এর **পরে** চলে, `RATE_LIMITING_ENABLED` = deploy ছাড়া kill switch। লেখক: **sihab** (2026-09) → বলো *"our API's limiters"*।
 - ⭐ **তোমার অংশ:** `configureSmsResendRateLimiting()` (Komol, 2026-10-05): `sms-failed-ids` ১০/মিনিট, `sms-resend-check` ১০/মিনিট, `sms-resend` ৫/মিনিট; key = route নাম + host + user id। কারণ কোডেই লেখা: plain `throttle:5,1` সব route-এ একই counter শেয়ার করে, আর user id টেন্যান্টে repeat করে।
 - এটা SD-Q03-এর "multi-tenant key" নিয়মের আরেকটা প্রমাণ (S3)।

@@ -12,12 +12,12 @@ updated: 2026-10-26
 
 # 08b · Interview Q&A — Kafka Producers/Consumers/Ops & RabbitMQ (Q20–Q37)
 
-> **Snapshot:** `sokrio-server` @ `master` · HEAD `d14c0ebb2` · written 2026-10-26.
-> Paths are relative to `sokrio-server/`. Library paths are shortened to `phpkafka/…` = `vendor/longlang/phpkafka/src/…` (v1.2.5).
+> **Snapshot:** `api-server` @ `master` · HEAD `d14c0ebb2` · written 2026-10-26.
+> Paths are relative to `api-server/`. Library paths are shortened to `phpkafka/…` = `vendor/longlang/phpkafka/src/…` (v1.2.5).
 > Tags: `[CODE]` verified in app code · `[LIB]` verified in the vendored client · `[GENERAL]` industry knowledge · `[INFERENCE]` reasoned, needs a lab · `[ASSUMPTION]` best guess plus how to verify.
-> Questions come from `../interview-questions.md` §4–§5 (wording unchanged). Sokrio examples reuse facts from sections 00–07. Finding ids (F1–F24), conflicts (D1–D19) and runbooks (R1–R35) point back to those sections.
+> Questions come from `../interview-questions.md` §4–§5 (wording unchanged). DistroSaaS examples reuse facts from sections 00–07. Finding ids (F1–F24), conflicts (D1–D19) and runbooks (R1–R35) point back to those sections.
 
-**How to use this file:** Q20–Q28 are where Sokrio gives you the strongest stories (rebalance fencing, the commit change in PR-5094, heartbeats riding on fetches). Q29–Q37 are RabbitMQ, which Sokrio **does not run** (T3). For those, answer the textbook part, then show you know the Laravel-queue equivalent you actually operate. That's more convincing than pretending.
+**How to use this file:** Q20–Q28 are where DistroSaaS gives you the strongest stories (rebalance fencing, the commit change in PR-5094, heartbeats riding on fetches). Q29–Q37 are RabbitMQ, which DistroSaaS **does not run** (T3). For those, answer the textbook part, then show you know the Laravel-queue equivalent you actually operate. That's more convincing than pretending.
 
 ---
 
@@ -42,7 +42,7 @@ In the Java client: `send()` runs interceptors, the serializer turns key and val
 - **Callback:** the `Future` / callback gets the partition and offset, or an exception after retries run out.
 - `[GENERAL]` Default `linger.ms` was 0 for years; Kafka 4.0 raised it to 5 ms (KIP-1030). Mention it as "small, version-dependent".
 
-**Sokrio example:** `[CODE]` the PHP path is synchronous and much simpler. There's no accumulator and no sender thread:
+**DistroSaaS example:** `[CODE]` the PHP path is synchronous and much simpler. There's no accumulator and no sender thread:
 1. `TrackingController.php:62-83` → `KafkaProducer::publish` (`app/Services/Kafka/KafkaProducer.php:54-68`).
 2. The envelope `{event_id, event_type, tenant_id, occurred_at, payload}` is built (`:93-102`).
 3. `sendWithRetry` (`:113-192`): `ensureTopicExists` (Redis-memoized, `TopicProvisioner.php:23,52-81`) → `sendBatch`. With **acks=0** the call returns right after the socket write (`phpkafka/Producer/Producer.php:159-163`, F5).
@@ -57,7 +57,7 @@ In the Java client: `send()` runs interceptors, the serializer turns key and val
 **Common mistakes to avoid:**
 - Saying "acks=1 means it's on disk". It's in the leader's page cache.
 - Forgetting that `send()` is asynchronous in Java. Without checking the future or callback, failures are silent.
-- Thinking every client works like Java. Sokrio's PHP client has no background thread, so the HTTP request pays the latency.
+- Thinking every client works like Java. DistroSaaS's PHP client has no background thread, so the HTTP request pays the latency.
 
 ---
 
@@ -77,9 +77,9 @@ With a key, the Java client hashes the key bytes with **murmur2** and takes it m
   4. A custom partitioner.
 - **Cross-language trap:** different clients may use different hash functions. A Java producer and a librdkafka producer with default settings can map the same key to different partitions (librdkafka offers `murmur2_random` for Java compatibility).
 
-**Sokrio example:**
+**DistroSaaS example:**
 - `[LIB]` phpkafka uses **`crc32(key) % N`** (`phpkafka/Producer/Partitioner/DefaultPartitioner.php:48-53`), not murmur2. If a Java or Python service ever produced to the same topic with the same keys, events for one user could land on different partitions, breaking per-user order. Pin the partitioner if you add a second producer language.
-- `[CODE]` Sokrio always sets a key. The default is `tenant_id` (`KafkaProducer.php:58,76`), but tracking overrides it with `user_id` (`Tracking/TrackingController.php:62-68`) and departments with `department_id` (`DepartmentChangeObserver.php:131-138`). That's D4: the notes said "key = tenant", the code deliberately avoids a hot tenant.
+- `[CODE]` DistroSaaS always sets a key. The default is `tenant_id` (`KafkaProducer.php:58,76`), but tracking overrides it with `user_id` (`Tracking/TrackingController.php:62-68`) and departments with `department_id` (`DepartmentChangeObserver.php:131-138`). That's D4: the notes said "key = tenant", the code deliberately avoids a hot tenant.
 - R2 angle: "Our key is user_id, not tenant_id, so a big tenant can't create a hot partition. Per-tenant ordering is gone, and tracking doesn't need it. Lag on one partition is a key-design problem; adding consumers doesn't fix it."
 
 **Follow-up questions the interviewer may ask:**
@@ -120,7 +120,7 @@ A consumer group shares a topic's partitions: each partition goes to exactly one
   - Keep processing per poll short.
   - `[GENERAL]` KIP-848 (new consumer protocol, GA in Kafka 4.0) moves assignment to the broker and makes rebalances incremental by default.
 
-**Sokrio example:**
+**DistroSaaS example:**
 - `[CODE]` Static membership is on, but with **one hard-coded id: `group.instance.id = ""`** (`app/Services/Kafka/KafkaConsumer.php:79-95`). The notes thought `''` meant dynamic membership (D1). It doesn't: it's a static member called "".
 - `[CODE]` **What happened:** when all topics shared one `KAFKA_GROUP`, two consumers registered the same instance id in the same group and kept fencing each other (`FENCED_INSTANCE_ID` ping-pong, comment at `KafkaConsumer.php:92-94`). The fix was one group per topic (`ConsumeCommand.php:97-107`, commit `9d902b7e8`, D2, R22).
 - `[CODE]` The join handshake is retried 5× on transport and Kafka errors (`KafkaConsumer.php:404-432`, commits `de9b53f38`/`d1cbf7c54`).
@@ -152,9 +152,9 @@ Auto-commit periodically commits the offsets the consumer has *received*, whethe
   - Store the offset in your DB in the same transaction as the result: exactly-once into that DB.
 - Committing per message is correct but slow. Per batch is the usual compromise.
 
-**Sokrio example:** this is a real before/after (D8):
+**DistroSaaS example:** this is a real before/after (D8):
 - `[NOTES]` **PR-5094** used the library's `Consumer::start()` with `autoCommit = true`. In that library the ack happened after the handler callback returned, **even when the handler had given up**, so failures were at-most-once. It also committed per message (slow).
-- `[CODE]` **Today:** `autoCommit = false` (`KafkaConsumer.php:69`). Sokrio runs its own poll loop, buffers up to 200 messages or 1 s, then flushes with signals masked (`:301-339`), and only then calls `saveOffsets` for dirty partitions (`:326-336`). Commit `a7e63f4bb`.
+- `[CODE]` **Today:** `autoCommit = false` (`KafkaConsumer.php:69`). DistroSaaS runs its own poll loop, buffers up to 200 messages or 1 s, then flushes with signals masked (`:301-339`), and only then calls `saveOffsets` for dirty partitions (`:326-336`). Commit `a7e63f4bb`.
 - **Remaining gaps:**
   - The give-up path still commits after logging (`TrackingMessageHandler.php:141-157`), so a permanently failing record is skipped, not parked. That's what a DLQ fixes (T2 §2.9).
   - The cursor counts messages instead of reading record offsets (F7 `[INFERENCE]`), so a mid-batch restart could duplicate *and* skip. That needs a lab (T9).
@@ -191,9 +191,9 @@ Lag is, per partition, the log end (high watermark) minus the group's committed 
   6. Consumer down → group state `Empty`.
   7. A spike → producer bytes-in.
 
-**Sokrio example:**
+**DistroSaaS example:**
 - `[CODE]` **No lag metric or alert exists** (T6 §6.9, AL list). It's part of Top-5 risk #5 (no alerting, T7 §7.6).
-- Lag causes specific to Sokrio, all from code:
+- Lag causes specific to DistroSaaS, all from code:
   - **Retry sleeps pause every partition:** one tenant's DB blip makes the handler sleep 1 s + 2 s (`TrackingMessageHandler.php:85-116`). Since one process owns all 3 partitions (numprocs=1), every user's tracking lags (T2 §2.8).
   - **Eviction replays:** a flush over 30 s with no heartbeat (F9) → evicted → batch replayed → lag rises *and* duplicates appear.
   - **Fetch size:** partition `maxBytes = 0` probably means about one batch per fetch (`phpkafka/Protocol/Fetch/FetchPartition.php:45`, `[INFERENCE]`), so catching up after a backlog is slow.
@@ -225,7 +225,7 @@ In the Java client, a background heartbeat thread keeps the session alive, but i
   4. Hand off to workers, but **pause** the partitions and keep polling, then commit only completed offsets.
 - Idempotent processing makes the inevitable replay harmless.
 
-**Sokrio example:** the PHP client is stricter than Java:
+**DistroSaaS example:** the PHP client is stricter than Java:
 - `[LIB]` phpkafka has **no heartbeat thread** outside Swoole (`KafkaUtil.php:45-53` → `NoopTimer`). Heartbeats are sent **only during fetches** (`phpkafka/Consumer/Consumer.php:292-294,421-427`, F9). So the effective limit is `session_timeout` = **30 s**, not 5 minutes.
 - `[CODE]` A flush can get there:
   - Tracking retries sleep 1 s + 2 s.
@@ -266,7 +266,7 @@ Use a **new consumer group**, so production's committed offsets are untouched. B
 - **Alternatives:** re-publish a filtered slice into a `*.replay` topic; or rebuild from a compacted topic (Q18); or, beyond retention, restore from tiered storage or an archive (S3 sink).
 - Resetting the **production** group is a valid recovery, but only with the consumers stopped and a written plan.
 
-**Sokrio example:**
+**DistroSaaS example:**
 - `[CODE]` Group ids come from `resolveGroupId` (`app/Console/Commands/Kafka/ConsumeCommand.php:97-107`): tracking uses bare `KAFKA_GROUP`, others `{KAFKA_GROUP}-{topic}`. A replay needs a different `KAFKA_GROUP` env value for a one-off process, or a `--group` option, which doesn't exist yet.
 - `[LIB]` A brand-new group starts at **offset 0**, the earliest retained (`phpkafka/Consumer/OffsetManager.php:107`, F6). So a fresh replay group replays *everything retained* (broker default 7 d, `[ASSUMPTION]`), not 3 days. Set the offsets with the CLI before the first start.
 - **Safety per stream:**
@@ -303,7 +303,7 @@ A schema registry stores versioned schemas (Avro, Protobuf, JSON Schema) for eac
 - **Wire format** (Confluent): magic byte + 4-byte schema id + payload.
 - Without a registry you still need the discipline: a version field in the envelope, additive-only changes, and contract tests.
 
-**Sokrio example:**
+**DistroSaaS example:**
 - `[CODE]` There's no registry and no schema version. The envelope is `{event_id, event_type, tenant_id, occurred_at, payload}` JSON (`KafkaProducer.php:93-102`). The only versioning is the `.v1` topic suffix (`TopicRegistry.php:18-24`).
 - `[CODE]` What breaks today (T7 facts):
   - **Handlers ignore `event_type`** and branch on the topic only.
@@ -344,13 +344,13 @@ Kafka Connect is a framework for moving data between Kafka and other systems wit
   - (+) No dual writes; catches writes that bypass the app.
   - (−) Another cluster to run; DB-level events leak table structure unless you use the outbox pattern; operating it needs binlog retention.
 
-**Sokrio example:**
+**DistroSaaS example:**
 - `[GENERAL]` **Correction to T2 §2.2 (D19):** the MySQL binlog is **per server, not per database**. One Debezium connector can capture every tenant DB on the same MySQL server with a `database.include.list` regex. The cost grows with the **number of MySQL servers**, not tenants. Some tenants live on a different host (the THL tenant points at a remote server), so it would be one connector per server plus routing by database name.
 - `[CODE]` **CDC would close real gaps:**
   - `Department::upsert()` and query `->update()` bypass observers, so ERP codes never reach Mongo (F2, `DepartmentErpCodeSyncJob.php:71`). Binlog capture sees every write.
   - The phantom-event bug (F8) disappears: the binlog only contains **committed** transactions.
-- `[CODE]` **A Connect-shaped job Sokrio does by hand:** the IFS ERP sync polls `{ifs_database}.customer_responses` for `fetch = 0` once a day (`DepartmentErpCodeSyncJob.php:44-73`, `Kernel.php:147`). A JDBC source connector, or Debezium on the ERP DB, would make it near-real-time, but it needs the ERP team's agreement (T3 §3.3.4).
-- Verdict for Sokrio today: an `afterCommit` observer + a scheduled `DepartmentSync`, then a table outbox. Debezium only once there are several event-producing tables.
+- `[CODE]` **A Connect-shaped job DistroSaaS does by hand:** the IFS ERP sync polls `{ifs_database}.customer_responses` for `fetch = 0` once a day (`DepartmentErpCodeSyncJob.php:44-73`, `Kernel.php:147`). A JDBC source connector, or Debezium on the ERP DB, would make it near-real-time, but it needs the ERP team's agreement (T3 §3.3.4).
+- Verdict for DistroSaaS today: an `afterCommit` observer + a scheduled `DepartmentSync`, then a table outbox. Debezium only once there are several event-producing tables.
 
 **Follow-up questions the interviewer may ask:**
 - What happens to Debezium when binlogs are purged before it reads them? (It must re-snapshot. Size binlog retention for the worst outage.)
@@ -365,7 +365,7 @@ Kafka Connect is a framework for moving data between Kafka and other systems wit
 
 ## 8.5 RabbitMQ (Q29–Q37)
 
-> `[CODE]` Sokrio doesn't use RabbitMQ: no library, no connection, no AMQP code (`config/queue.php:30-72` lists only `sync`, `database`, `beanstalkd`, `sqs` stub, `redis`; T3 §3.1). Each Sokrio example below is the **Laravel-on-Redis equivalent** or "here is how it would look".
+> `[CODE]` DistroSaaS doesn't use RabbitMQ: no library, no connection, no AMQP code (`config/queue.php:30-72` lists only `sync`, `database`, `beanstalkd`, `sqs` stub, `redis`; T3 §3.1). Each DistroSaaS example below is the **Laravel-on-Redis equivalent** or "here is how it would look".
 
 ### Q29. Explain the AMQP model: producer → exchange → binding → queue → consumer. Why doesn't the producer publish directly to a queue?
 
@@ -386,10 +386,10 @@ Producers publish to an **exchange** with a routing key. **Bindings** are rules 
   - DLX policies applied without code changes.
 - An unroutable message is dropped silently unless the producer sets `mandatory` (it gets a `basic.return`) or the exchange has an alternate exchange.
 
-**Sokrio example:**
+**DistroSaaS example:**
 - `[CODE]` Laravel's Redis queue is the "publish directly to a queue" model. `dispatch(...)->onQueue('order-approved')` pushes onto a Redis list named after the queue (`app/Models/Order/Order.php:240-243`). There's no exchange, no routing, no fan-out. The producer must know the queue name.
 - That's exactly how F10 happened: `PrimaryOrder::approveAfter` dispatches with **no** `onQueue` (`app/Models/MongoDB/PrimaryOrder/PrimaryOrder.php:199-203`), so the job lands on `default`. In AMQP, a binding would have routed `order.approve.*` to one queue regardless of which model published it.
-- Where Sokrio *does* fan out, it uses Kafka consumer groups (Q2).
+- Where DistroSaaS *does* fan out, it uses Kafka consumer groups (Q2).
 
 **Follow-up questions the interviewer may ask:**
 - What happens to a message published to an exchange with no bindings? (Dropped, unless `mandatory` or an alternate exchange.)
@@ -419,7 +419,7 @@ Producers publish to an **exchange** with a routing key. **Bindings** are rules 
   - Consistent-hash exchange plugin (sharding like Kafka partitions).
   - Delayed-message exchange plugin (Q34).
 
-**Sokrio example:** how Sokrio's flows would map (T3, "how it would look"):
+**DistroSaaS example:** how DistroSaaS's flows would map (T3, "how it would look"):
 - **Direct:** `order.approve` → `order-approved` workers. Today: a named Laravel queue (`Order.php:243`).
 - **Fanout:** `department.changed` → Mongo sync + (future) search index. Today: Kafka topic `departments.events.v1` with one group (`DepartmentChangeObserver.php:26-46`).
 - **Topic:** `tenant.<org_id>.summary.<type>` → lets a "big tenants" queue bind `tenant.42.#` for isolation (T3 §3.3.3 fairness). Today: one FIFO `summary` queue for everyone (`BaseCommand.php:50-70`).
@@ -449,9 +449,9 @@ Producers publish to an **exchange** with a routing key. **Bindings** are rules 
 - **Consumer ack timeout** (`consumer_timeout`, default 30 min): a consumer that holds a message too long gets its channel closed and the message requeued.
 - `multiple=true` acks or nacks everything up to that delivery tag.
 
-**Sokrio example:** `[CODE]` the Laravel analogs, and the big difference:
+**DistroSaaS example:** `[CODE]` the Laravel analogs, and the big difference:
 
-| AMQP | Laravel on Redis | Sokrio ref |
+| AMQP | Laravel on Redis | DistroSaaS ref |
 |---|---|---|
 | ack | job deleted after `handle()` returns | `vendor/…/Queue/RedisQueue.php:305` |
 | nack requeue with delay | `$this->release($seconds)` / `backoff` | `RedisQueue.php:321` |
@@ -481,7 +481,7 @@ Prefetch is the maximum number of unacked messages the broker pushes to a consum
 - **Interaction with priority:** a consumer that already holds 100 low-priority messages won't see a new high-priority one until it drains them (T3 §3.3.3).
 - **Quorum queues:** prefetch also bounds the redelivery burst after a consumer dies.
 
-**Sokrio example:**
+**DistroSaaS example:**
 - `[CODE]` A Laravel worker is effectively **prefetch = 1**: it pops one job (Lua pop, `RedisQueue.php:275-286`), runs it, then pops the next. That's fair, and it's why one 900 s summary job holds a worker while small tenants wait. Fairness between tenants is a *queue design* problem, not a prefetch one (R18).
 - `[CODE]` The Kafka consumer is the opposite: a pull-based "prefetch" of 200 messages or 1 s per flush (`KafkaConsumer.php:206-267`). That's high throughput, but one slow tenant in the batch delays every other tenant in it (Q24).
 - If SMS ever moved to RabbitMQ, T3 §3.3.2 sizes prefetch from the **provider's rate limit**, not CPU.
@@ -510,8 +510,8 @@ Turn on **publisher confirms** on the channel. The broker then acks each publish
 - **Full durability chain:** durable exchange + durable/quorum queue + `delivery_mode=2` + confirms + `mandatory`. For quorum queues the confirm arrives after a majority of replicas have the message.
 - **The DB side:** confirms don't solve dual writes (Q10). You still need an outbox to survive a crash between the commit and the publish.
 
-**Sokrio example:**
-- `[LIB]` Kafka's equivalent of confirms is `acks`. Sokrio runs **acks=0** (F5), i.e. "publish without confirms". The publish returns after the socket write (`phpkafka/Producer/Producer.php:159-163`), so a broker-side rejection is invisible behind a 202. R26 angle: "acks=0 is fire-and-forget. It's fine for metrics, wrong for anything you report on. It was a library default nobody chose."
+**DistroSaaS example:**
+- `[LIB]` Kafka's equivalent of confirms is `acks`. DistroSaaS runs **acks=0** (F5), i.e. "publish without confirms". The publish returns after the socket write (`phpkafka/Producer/Producer.php:159-163`), so a broker-side rejection is invisible behind a 202. R26 angle: "acks=0 is fire-and-forget. It's fine for metrics, wrong for anything you report on. It was a library default nobody chose."
 - `[CODE]` Laravel's Redis dispatch is synchronous: `RPUSH` returns or throws, so "reached Redis" is confirmed. But durability depends on Redis persistence (AOF unknown, A9). A Redis restart can lose jobs, including `:delayed` approvals (R12).
 
 **Follow-up questions the interviewer may ask:**
@@ -539,8 +539,8 @@ Classic approach: a **DLX + TTL retry ladder**. On failure the consumer rejects 
   - No mandatory or return handling while delayed.
 - Retry only **transient** errors. Permanent ones go straight to the parking lot (Q11).
 
-**Sokrio example:**
-- `[CODE]` SMS today: **no automatic retry**. A user resends failed rows from the UI (`app/Services/SMS/MessageResendService.php:111-198`). The batch job has `tries=1` on purpose (`app/Jobs/SMS/ResendFailedSmsBatch.php:37-41`), with Sokrio's own cap `max_retry=5` (`config/sms.php:15`).
+**DistroSaaS example:**
+- `[CODE]` SMS today: **no automatic retry**. A user resends failed rows from the UI (`app/Services/SMS/MessageResendService.php:111-198`). The batch job has `tries=1` on purpose (`app/Jobs/SMS/ResendFailedSmsBatch.php:37-41`), with DistroSaaS's own cap `max_retry=5` (`config/sms.php:15`).
 - **The textbook breaks on side effects:** `SmsDeliveryUnknownException` means the SMS *may* have been sent (`app/Services/SMSSender.php:12-19`). Auto-retrying it can **double-send and double-charge**. Only `ProviderUnavailableException` is safe to retry (T3 §3.3.2).
 - **Cheaper Laravel design (T3):** a `SendSmsJob` on an `sms` queue with `$tries = 4` and `backoff() { return [30, 300, 1800]; }`. It calls `release()` only for provider-unavailable, and `failed()` marks the row `failed`, so the existing resend screen *is* the parking lot. Laravel's `backoff` uses the same Redis delayed sorted set as a DLX+TTL ladder.
 
@@ -575,10 +575,10 @@ Classic approach: a **DLX + TTL retry ladder**. On failure the consumer rejects 
 - Quorum queues use more disk and memory per message and have higher latency than classic queues, but they're the safe default.
 - `[GENERAL]` Since 3.12, classic queues store messages on disk lazily by default (v2 storage), so "lazy queues" as a separate mode are obsolete (Q37).
 
-**Sokrio example:** how T3 would map Sokrio's work if RabbitMQ were added:
+**DistroSaaS example:** how T3 would map DistroSaaS's work if RabbitMQ were added:
 - **Quorum:** delayed approvals and SMS sends. Losing them costs money or orders (Top-5 #4).
 - **Classic:** nothing important. Maybe Pusher progress fan-out.
-- **Stream:** department change events, but Sokrio already has Kafka for that, so there's no reason to add one.
+- **Stream:** department change events, but DistroSaaS already has Kafka for that, so there's no reason to add one.
 - The ops cost is the deciding factor: quorum queues need 3 nodes, i.e. a third stateful cluster next to Kafka and Redis on hand-run EC2 VMs (T3 §3.5, T6). Verdict: don't add it.
 
 **Follow-up questions the interviewer may ask:**
@@ -604,8 +604,8 @@ When the nodes split into groups that can't see each other, each side may keep r
 - **Clients:** connect through a load balancer, or list all nodes; reconnect and redeclare topology on failure; publish with confirms so a paused node shows up as a nack or timeout, not silent loss.
 - **Deployment:** 3 nodes across 3 AZs. Never stretch one cluster across regions; use federation or shovel for that.
 
-**Sokrio example:**
-- Not applicable directly (no RabbitMQ). The honest analog is R20 (AZ failure on AWS). Sokrio runs **single-node** Kafka (RF=1, A3) and **single-node** Redis (A5, `[ASSUMPTION]` self-hosted). There can be no split brain because there's no second node, which also means **any** node or AZ loss is a full outage of that component.
+**DistroSaaS example:**
+- Not applicable directly (no RabbitMQ). The honest analog is R20 (AZ failure on AWS). DistroSaaS runs **single-node** Kafka (RF=1, A3) and **single-node** Redis (A5, `[ASSUMPTION]` self-hosted). There can be no split brain because there's no second node, which also means **any** node or AZ loss is a full outage of that component.
 - R20 angle: "I describe our current state honestly: single-AZ, single-node. Then the order I'd fix it in: data durability first (RF=3, AOF, sweepers), then availability (Multi-AZ), because losing data is worse than being down."
 
 **Follow-up questions the interviewer may ask:**
@@ -637,8 +637,8 @@ RabbitMQ protects itself from running out of memory or disk. When memory use pas
   - Size memory and disk for the backlog you must survive.
 - **It's backpressure (Q5):** RabbitMQ chooses to block the producer rather than crash.
 
-**Sokrio example:**
-- `[CODE]` The equivalent in Sokrio is Redis at `maxmemory`. If the policy is `noeviction` (A9, likely given the OOM test `tests/Unit/Kafka/KafkaProducerTest.php:231`), every write fails. That includes `dispatch()`, cache writes, and the Kafka producer's topic-memo check (`TopicProvisioner.php:23`). The producer treats a Redis exception as "Kafka failed" and returns `false` (`KafkaProducer.php` catch `Predis\PredisException | RedisException`, commit `37840a3b5`), so tracking falls back to sync writes instead of hanging.
+**DistroSaaS example:**
+- `[CODE]` The equivalent in DistroSaaS is Redis at `maxmemory`. If the policy is `noeviction` (A9, likely given the OOM test `tests/Unit/Kafka/KafkaProducerTest.php:231`), every write fails. That includes `dispatch()`, cache writes, and the Kafka producer's topic-memo check (`TopicProvisioner.php:23`). The producer treats a Redis exception as "Kafka failed" and returns `false` (`KafkaProducer.php` catch `Predis\PredisException | RedisException`, commit `37840a3b5`), so tracking falls back to sync writes instead of hanging.
 - Two Redis roles share one instance (queues DB0, cache DB1, `config/database.php:202-219`), plus the Python benchmark on DB0 (F20). A cache spike can therefore block job dispatch, the same "producers suddenly block" story with a different broker (R11).
 - R19 angle: "RabbitMQ's flow control blocks producers, and Redis `noeviction` fails them. Both are backpressure. The design question is whether your request path should wait, fail, or fall back. We chose fall back for tracking."
 
@@ -654,7 +654,7 @@ RabbitMQ protects itself from running out of memory or disk. When memory use pas
 
 ### ✅ Quality check
 - [x] All 18 questions (Q20–Q37) answered with the exact 5 renderer labels from `README_2.md:227-231`
-- [x] Kafka examples reuse verified refs (F5, F6, F7, F9, D1, D2, D4, D8, R2, R3, R8, R10, R22, R26). RabbitMQ examples say plainly that Sokrio doesn't use it and give the Laravel equivalent (T3)
+- [x] Kafka examples reuse verified refs (F5, F6, F7, F9, D1, D2, D4, D8, R2, R3, R8, R10, R22, R26). RabbitMQ examples say plainly that DistroSaaS doesn't use it and give the Laravel equivalent (T3)
 - [x] New conflict **D19**: T2 §2.2 said "one binlog per tenant DB". The binlog is per MySQL server; Debezium cost scales with servers, not tenants (Q28)
 - [x] Version-dependent facts tagged `[GENERAL]` (linger.ms 4.0, KIP-848, mirroring removed 4.0, quorum priorities 4.0+, classic v2 3.12, Khepri)
 - [x] `### Q<n>.` headings kept for the T11 renderer; no literal bold labels in this list

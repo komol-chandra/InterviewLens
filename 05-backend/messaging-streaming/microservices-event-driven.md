@@ -18,7 +18,7 @@ updated: 2026-10-15
 
 DDD-এর bounded context ধরে — একটা বিজনেস ক্যাপাবিলিটি নিজের ডেটা আর লজিক নিয়ে স্বাধীন থাকে। Field Nation-এর সম্ভাব্য বাউন্ডারি: Work Orders, Providers, Payments, Notifications, Ratings। নিয়ম: যদি দুটো জিনিস সবসময় একসাথে বদলায় বা একই ট্রানজ্যাকশনে লাগে, তারা সম্ভবত একই সার্ভিসে থাকা উচিত — অকারণে ভাঙলে distributed transaction-এর ব্যথা বাড়ে।
 
-🔗 Sokrio link: S1 — মনোলিথ ভেঙে Report, Notification, SOP আলাদা সার্ভিসে সরানো হয়েছিল কারণ এগুলোর স্কেলিং/ডিপ্লয় প্যাটার্ন কোর অর্ডার সিস্টেম থেকে আলাদা ছিল।
+🔗 DistroSaaS link: S1 — মনোলিথ ভেঙে Report, Notification, SOP আলাদা সার্ভিসে সরানো হয়েছিল কারণ এগুলোর স্কেলিং/ডিপ্লয় প্যাটার্ন কোর অর্ডার সিস্টেম থেকে আলাদা ছিল।
 
 ## ২. Sync (REST/gRPC) বনাম Async (event) — কখন কোনটা?
 
@@ -30,7 +30,7 @@ RabbitMQ = message broker/task queue (exchange → binding → queue, ব্য�
 - RabbitMQ ভালো: complex routing (topic/direct/fanout exchange), task distribution, DLQ দরকার হলে।
 - Kafka ভালো: high-throughput event stream, একাধিক consumer একই ডেটা replay করতে চাইলে, event sourcing।
 
-🔗 Sokrio link: S1 — RabbitMQ প্রোডাকশনে ব্যবহৃত হয়েছে সার্ভিস-টু-সার্ভিস কমিউনিকেশনে। Kafka শুধু "basics" লেভেলে জানা (weak-areas.md অনুযায়ী), গভীর প্রশ্নে সৎভাবে বলো: "Kafka হাতে-কলমে প্রোডাকশনে ব্যবহার করিনি, কিন্তু concept (partition, offset, consumer group) স্পষ্ট।"
+🔗 DistroSaaS link: S1 — RabbitMQ প্রোডাকশনে ব্যবহৃত হয়েছে সার্ভিস-টু-সার্ভিস কমিউনিকেশনে। Kafka শুধু "basics" লেভেলে জানা (weak-areas.md অনুযায়ী), গভীর প্রশ্নে সৎভাবে বলো: "Kafka হাতে-কলমে প্রোডাকশনে ব্যবহার করিনি, কিন্তু concept (partition, offset, consumer group) স্পষ্ট।"
 
 ## ৪. At-least-once delivery মানে কী, আর তার সমস্যা কী?
 
@@ -40,7 +40,7 @@ RabbitMQ = message broker/task queue (exchange → binding → queue, ব্য�
 
 প্রতিটা ইভেন্টের একটা ইউনিক `event_id`। Consumer প্রসেস করার আগে একটা "processed_events" টেবিলে (বা Redis set-এ) চেক করে — থাকলে স্কিপ, না থাকলে প্রসেস করে ID সেভ করে (একই ট্রানজ্যাকশনে বিজনেস আপডেট + ID ইনসার্ট, যাতে ক্র্যাশে ইনকনসিসটেন্সি না হয়)।
 
-🔗 Sokrio link: S5 — payment webhook-এ একই ধরনের idempotency key প্যাটার্ন ব্যবহৃত হয়েছে ("একই webhook দুবার এলে ডাবল-চার্জ হবে না")। এখানে সেই একই আইডিয়া কনজিউমার সাইডে।
+🔗 DistroSaaS link: S5 — payment webhook-এ একই ধরনের idempotency key প্যাটার্ন ব্যবহৃত হয়েছে ("একই webhook দুবার এলে ডাবল-চার্জ হবে না")। এখানে সেই একই আইডিয়া কনজিউমার সাইডে।
 
 ## ৬. Transactional outbox pattern কী, কেন দরকার?
 
@@ -73,4 +73,4 @@ RabbitMQ-তে একটা single queue-তে অর্ডার বজায
 
 ## ১০. Monolith থেকে event-driven-এ migrate করার সময় সবচেয়ে বড় ঝুঁকি কী ছিল?
 
-🔗 Sokrio link: S1 — "প্যারালাল রানে ডেটা সিঙ্ক কীভাবে হতো?", "সার্ভিস বাউন্ডারি কীভাবে ঠিক করেছিলে?" — এই ডিফেন্ড প্রশ্নগুলোর উত্তর `[Komol পূরণ করবে]` (story-bank-এ চিহ্নিত গ্যাপ)। বলার লাইন: "I led the move from a Laravel/Vue monolith to a core API plus separate Report, Notification and SOP services talking over RabbitMQ. We ran old and new in parallel and cut over with zero downtime. Server load dropped by about 20%."
+🔗 DistroSaaS link: S1 — "প্যারালাল রানে ডেটা সিঙ্ক কীভাবে হতো?", "সার্ভিস বাউন্ডারি কীভাবে ঠিক করেছিলে?" — এই ডিফেন্ড প্রশ্নগুলোর উত্তর `[Komol পূরণ করবে]` (story-bank-এ চিহ্নিত গ্যাপ)। বলার লাইন: "I led the move from a Laravel/Vue monolith to a core API plus separate Report, Notification and SOP services talking over RabbitMQ. We ran old and new in parallel and cut over with zero downtime. Server load dropped by about 20%."

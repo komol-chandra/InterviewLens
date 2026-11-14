@@ -10,7 +10,7 @@ tags: [system-design, concepts]
 updated: 2026-11-14
 ---
 
-> Tracker ID: SD-07 · Generated: 2026-10-15 · Answers: **SD-Q07** (TRK-02 Phase 3) · Source: general SD knowledge + `05-backend/09-kafka-redis-rabbitmq/` + sokrio-server code (`config/queue.php`, `app/Jobs/SMS/ResendFailedSmsBatch.php`, `app/Contracts/Kafka/`, `git log`) · Status: ✅ generated
+> Tracker ID: SD-07 · Generated: 2026-10-15 · Answers: **SD-Q07** (TRK-02 Phase 3) · Source: general SD knowledge + `05-backend/09-kafka-redis-rabbitmq/` + api-server code (`config/queue.php`, `app/Jobs/SMS/ResendFailedSmsBatch.php`, `app/Contracts/Kafka/`, `git log`) · Status: ✅ generated
 
 # SD-Q07: When and why would you use a message queue? How do you handle failures in it?
 
@@ -113,7 +113,7 @@ flowchart LR
 
 ---
 
-🔗 **Sokrio link:** (কোডে যাচাই করা, 2026-10-15)
+🔗 **DistroSaaS link:** (কোডে যাচাই করা, 2026-10-15)
 - ⭐ **তোমার নিজের:** `app/Services/SMS/MessageResendService.php` + `app/Jobs/SMS/ResendFailedSmsBatch.php` (Komol, 2026-10-05…08):
   - status দিয়ে claim (`failed → pending → processing`) = idempotent; ডাবল ক্লিক → 409
   - `$tries = 1`, নিজের `retry_count` (`config/sms.php` `max_retry` = 5) → ইচ্ছাকৃত retry
@@ -122,6 +122,6 @@ flowchart LR
   - আলাদা queue `sms-resend`, batch size 100
 - **Laravel queue:** `config/queue.php` Redis connection; `app/Jobs/`-এ ১৩২টা job ফাইল (সাবফোল্ডার সহ), তার ৭৬টায় `$tries`/`backoff`/`ShouldBeUnique`/`failed()` কিছু আছে।
 - **Kafka (টিমের):** `app/Contracts/Kafka/` (Producer/Consumer/Factory/TopicRegistry), tracking action → লেখক sihab (১৯), Rakib (১৩) → বলো *"our team's Kafka layer; I worked with it"*।
-- ⚠️ **RabbitMQ:** লোকাল কোনো Sokrio রিপোতে RabbitMQ কোড নেই (handoff-এর ঝুঁকি), অথচ CV/S1 বলে RabbitMQ। ইন্টারভিউর আগে **Truth Audit**-এ ঠিক করো কী বলবে: `[Komol পূরণ করবে]`।
+- ⚠️ **RabbitMQ:** লোকাল কোনো DistroSaaS রিপোতে RabbitMQ কোড নেই (handoff-এর ঝুঁকি), অথচ CV/S1 বলে RabbitMQ। ইন্টারভিউর আগে **Truth Audit**-এ ঠিক করো কী বলবে: `[Komol পূরণ করবে]`।
 
 📚 আরো: `05-backend/09-kafka-redis-rabbitmq/01-notes.md` · আগে: [06-cap-consistency.md](06-cap-consistency.md)

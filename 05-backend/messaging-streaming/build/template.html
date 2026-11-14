@@ -227,7 +227,7 @@ main { margin-left: 300px; padding: 72px 32px 80px; }
   const TAGS = ["CODE", "LIB", "GENERAL", "INFERENCE", "ASSUMPTION", "LAB", "NOTES", "HIST"];
   const TAG_RE = new RegExp("\\[(" + TAGS.join("|") + ")\\]|(🟢|🟡|🔴)", "g");
   const REF_RE = /^[\w@~.\/-]+\.[A-Za-z]{1,5}:\d+([-–,:]\d+)*$/;
-  const LABELS = ["Short answer", "Deep answer", "Sokrio example", "Follow-up questions", "Common mistakes"];
+  const LABELS = ["Short answer", "Deep answer", "DistroSaaS example", "Follow-up questions", "Common mistakes"];
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 

@@ -61,7 +61,7 @@ US interviewers like answers that start with the conclusion. Use this order:
 **Opening:** *"Tell me about the biggest technical project you've led."*
 
 **Model answer (STAR, ~2 min):**
-> **S:** "At Sokrio we had a Laravel 8 and Vue.js 2 monolith serving 100+ enterprise clients. [FILL: the real pain — e.g. one heavy report could slow down the whole app / every small change needed a full deploy / the frontend and backend were tightly coupled.]
+> **S:** "At DistroSaaS we had a Laravel 8 and Vue.js 2 monolith serving 100+ enterprise clients. [FILL: the real pain — e.g. one heavy report could slow down the whole app / every small change needed a full deploy / the frontend and backend were tightly coupled.]
 > **T:** I was asked to lead the migration to a more scalable architecture — **without any downtime**, because clients use the system every day for orders and field work.
 > **A:** We split it into a Laravel core REST API, two separate React apps — one for tenants, one for admin — and three services: **Report, Notification and SOP**, talking over **RabbitMQ**, with MongoDB and Redis. The most important decision was to **run both systems in parallel** and move traffic step by step, so we could roll back at any point.
 > **R:** We cut over with **zero downtime**, and server load dropped by **about 20%**. Just as important, heavy reports stopped affecting the rest of the platform."
@@ -663,7 +663,7 @@ This block has **three openings**. They may ask one, two or all three.
 **Opening:** *"What feature are you most proud of?"*
 
 **Model answer (STAR, ~2 min):**
-> **S:** "Sokrio's clients have large field teams — sales reps and van drivers visiting shops every day. Managers had no reliable way to plan their work or know if they really visited the shops.
+> **S:** "DistroSaaS's clients have large field teams — sales reps and van drivers visiting shops every day. Managers had no reliable way to plan their work or know if they really visited the shops.
 > **T:** I built the field-force side of the platform.
 > **A:** **Task Manager** for planning, approval and achievement tracking; **Van Sales**, **Vehicle Feedback** and **Van Attendance** — all syncing in real time with the core platform. The most interesting part was **GPS-spoofing detection**, because some field staff used fake-location apps to mark attendance without being there. We detected it by [FILL: your real signals — see Drill 1].
 > **R:** Managers could finally trust attendance and visit data, and these modules **contributed to the company's 27% revenue growth**.
@@ -711,7 +711,7 @@ Then: *"For field users with weak signal, [FILL: the app queued actions offline 
 
 ### Why-Field-Nation bridge (memorize this)
 
-> "At Sokrio I solved **field workforce** problems: planning tasks, proving someone was really on site, approving the work, and syncing it all from a mobile app with weak connectivity. Field Nation solves this for **technicians and work orders** at a much larger scale — check-in, location proof, approvals and payments. I'd love to bring that experience to a bigger marketplace."
+> "At DistroSaaS I solved **field workforce** problems: planning tasks, proving someone was really on site, approving the work, and syncing it all from a mobile app with weak connectivity. Field Nation solves this for **technicians and work orders** at a much larger scale — check-in, location proof, approvals and payments. I'd love to bring that experience to a bigger marketplace."
 
 ### Trade-off line
 
@@ -750,7 +750,7 @@ Then: *"For field users with weak signal, [FILL: the app queued actions offline 
 **Strong answer:**
 > "**Node** is strong for **I/O-heavy, concurrent** work — many open connections, real-time events, WebSockets, workers that wait on queues and APIs. Its **event loop** handles thousands of waiting connections in one process, because it doesn't block while waiting for I/O.
 > **Laravel** is very productive for **CRUD-heavy business apps** — Eloquent, migrations, auth, queues and validation come built in. PHP's model is one request, one process, which is simple and safe: one bad request can't break the others.
-> So at Sokrio: business logic and CRUD in Laravel, and Node where we needed long-running, event-driven processes. For Field Nation's move from PHP to Node, I already know both sides."
+> So at DistroSaaS: business logic and CRUD in Laravel, and Node where we needed long-running, event-driven processes. For Field Nation's move from PHP to Node, I already know both sides."
 
 ### Drill 2 — "Explain the event loop."
 
@@ -889,8 +889,8 @@ Keep these **short**. If they want more, they'll ask. Each one has a likely foll
 
 - *Follow-up: "What have you built in Go?"* → [FILL: e.g. small practice programs] — never claim production work.
 
-### "Why are you leaving Sokrio?" (not on the CV, but it will come up)
-> "I've learned a lot at Sokrio — I grew from building features to leading architecture work and on-call. Now I want to work on a **bigger platform with a larger engineering team**, where I can learn from senior engineers and work at a bigger scale. Field Nation's field-workforce marketplace is very close to what I built, so it feels like the right next step." [FILL: adjust to your real reason — keep it positive, never criticize your current company]
+### "Why are you leaving DistroSaaS?" (not on the CV, but it will come up)
+> "I've learned a lot at DistroSaaS — I grew from building features to leading architecture work and on-call. Now I want to work on a **bigger platform with a larger engineering team**, where I can learn from senior engineers and work at a bigger scale. Field Nation's field-workforce marketplace is very close to what I built, so it feels like the right next step." [FILL: adjust to your real reason — keep it positive, never criticize your current company]
 
 ---
 

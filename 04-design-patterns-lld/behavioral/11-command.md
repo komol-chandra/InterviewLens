@@ -10,7 +10,7 @@ tags: [lld, behavioral]
 updated: 2026-11-14
 ---
 
-> Tracker ID: DP-11 · Generated: 2026-10-15 · Answers: **DP-Q11** (TRK-02 Phase 7) · Source: GoF + sokrio-server code (`app/Jobs/` 132 files, `Jobs/ResendFailedSmsBatch`, `Support/QaSeed/QaJournal` + `QaReverter`, `Order::approveAfter`) · Runnable: `04-design-patterns-lld/code/command.ts` (✅ ran + strict tsc 2026-10-15) · Status: 🟡 generated
+> Tracker ID: DP-11 · Generated: 2026-10-15 · Answers: **DP-Q11** (TRK-02 Phase 7) · Source: GoF + api-server code (`app/Jobs/` 132 files, `Jobs/ResendFailedSmsBatch`, `Support/QaSeed/QaJournal` + `QaReverter`, `Order::approveAfter`) · Runnable: `04-design-patterns-lld/code/command.ts` (✅ ran + strict tsc 2026-10-15) · Status: 🟡 generated
 
 # DP-Q11: How would you model an action so it can be queued, retried or undone?
 
@@ -150,7 +150,7 @@ ApproveOrder::dispatch($tenant, $id, $userId)->delay(now()->addMinutes($delay));
 **মূল উত্তর (৪৫ সেকেন্ড):**
 > "I'd use the Command pattern: the action becomes an object that carries its own data and knows how to execute. Once it's an object, a queue can store it and a worker can run it later, retry it, or run it on another machine. In Laravel that's exactly what a queued job is. For undo, the command records the state before it changed anything, and undo restores it; for a sequence, you undo in reverse order. Two things I'm careful about: retries need idempotency, so the same command never applies twice, and anything that left the system, like an SMS or a payment, can't be undone, only compensated."
 
-**Sokrio উদাহরণ (তোমার নিজের, সবচেয়ে শক্তিশালী):**
+**DistroSaaS উদাহরণ (তোমার নিজের, সবচেয়ে শক্তিশালী):**
 > "In our QA Test Lab, which I built, every write a test seeder makes goes through a journal with the before and after state. `qa:revert` replays that journal in reverse: inserts become deletes, updates restore the old values, deletes are re-inserted. If someone changed a record since the run, it flags a conflict instead of overwriting it. After a revert, the tables are identical to before. That's Command with undo."
 
 **দ্বিতীয় উদাহরণ (তোমার):**
@@ -170,7 +170,7 @@ ApproveOrder::dispatch($tenant, $id, $userId)->delay(now()->addMinutes($delay));
 
 ---
 
-🔗 **Sokrio link:** (কোডে যাচাই করা)
+🔗 **DistroSaaS link:** (কোডে যাচাই করা)
 - ⭐ **Command + undo (তোমার, A6):** `app/Support/QaSeed/QaJournal.php` (প্রতিটা write before/after সহ) + `QaReverter::revert(string $runId, bool $force, bool $dryRun)`; `app/Support/QaSeed/`-এর একমাত্র লেখক Komol (`git log`)। Test Lab-এর নিয়ম: "`qa:revert` leaves the tables identical"।
 - ⭐ **Queued command (তোমার):** `app/Jobs/ResendFailedSmsBatch.php` (commit `996fa2bc6`, ২০২৬-১০-০৫): `__construct(public int $orgId, public array $messageIds)`, `$tries = 1`, `handle(SMSSender $sms)`, `failed()` + `releaseUnfinished()` claim ছাড়ে, `releaseRows()`। SMS resend স্টোরি (story-bank-এ যোগ বাকি)।
 - **Deferred command:** `Order::approveAfter($delay)` → `ApproveOrder::dispatch(app('tenant'), $this->id, $userId)->onQueue('order-approved')->delay(...)`: tenant job-এর সাথে যায়।

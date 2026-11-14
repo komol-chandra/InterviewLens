@@ -16,7 +16,7 @@ updated: 2026-10-26
 
 Most business applications start out the same way: a request comes in, you write to the database, you return a response. Anything heavier goes into a scheduled job — "every hour, rebuild the summary table," "every night, recompute the dashboard." That model is simple, debuggable, and gets you a surprisingly long way.
 
-At Sokrio it got us a long way too. Then two kinds of work started to hurt:
+At DistroSaaS it got us a long way too. Then two kinds of work started to hurt:
 
 1. **High-frequency, low-value-per-event data.** Field reps' phones send GPS breadcrumbs all day. Writing every point into two databases inside the HTTP request makes the mobile app wait on work the user never sees.
 2. **Data that's only correct after a batch job runs.** Our primary order summaries — the denormalized, one-row-per-product-line view that reports and dashboards read — are rebuilt by an hourly cron. Place an order at 10:46 and it may not show up correctly until after 11:45.
@@ -93,7 +93,7 @@ flowchart LR
         P1["Partition 1  | 0 | 1 | 2 |"]
         P2["Partition 2  | 0 | 1 | 2 | 3 | 4 |"]
     end
-    subgraph Consumer group: sokrio-group
+    subgraph Consumer group: app-group
         C1[Consumer A]
         C2[Consumer B]
     end

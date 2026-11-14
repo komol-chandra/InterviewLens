@@ -36,7 +36,7 @@ updated: 2026-11-14
 
 **যা জিজ্ঞেস করব ইন্টারভিউয়ারকে:** geo-radius কত? real-time bidding না কি push-then-first-accept-wins? payment এই ডিজাইনের স্কোপে আছে কি না?
 
-🔗 Sokrio link: multi-tenant approval workflow-এর কনসিস্টেন্সি চিন্তা S3-এর মতোই (tenant isolation strong consistency দাবি করে)।
+🔗 DistroSaaS link: multi-tenant approval workflow-এর কনসিস্টেন্সি চিন্তা S3-এর মতোই (tenant isolation strong consistency দাবি করে)।
 
 ---
 
@@ -162,9 +162,9 @@ Choreography (প্রতিটা সার্ভিস event শুনে প
 
 ---
 
-## Sokrio-এ যা সরাসরি করেছি vs এখানে নতুন
+## DistroSaaS-এ যা সরাসরি করেছি vs এখানে নতুন
 
-| অংশ | Sokrio-তে লাইভ অভিজ্ঞতা | নতুন/স্টাডি-করা |
+| অংশ | DistroSaaS-এে লাইভ অভিজ্ঞতা | নতুন/স্টাডি-করা |
 |---|---|---|
 | Event-driven service split, RabbitMQ, zero-downtime cutover | ✅ S1 | — |
 | Heavy read optimisation, index/EXPLAIN, caching | ✅ S2 | — |

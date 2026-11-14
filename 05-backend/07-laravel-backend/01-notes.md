@@ -72,7 +72,7 @@ updated: 2026-10-15
 3. Route middleware-এ parameter পাঠানো যায়: `->middleware('permission:VIEW_REPORT')`
 4. Global vs group vs route-specific — যত ছোট scope-এ রাখা যায় তত ভালো
 5. `terminate()` মেথডে response পাঠানোর পরের কাজ করা যায় (logging, metrics) — user wait করে না
-6. Multi-tenant অ্যাপে middleware-ই tenant DB connection switch করার সঠিক জায়গা (আমাদের Sokrio-তেও `tenant` middleware তাই করে)
+6. Multi-tenant অ্যাপে middleware-ই tenant DB connection switch করার সঠিক জায়গা (আমাদের DistroSaaS-এেও `tenant` middleware তাই করে)
 
 ### ৬. Database Transaction ও Race Condition হ্যান্ডলিং
 
@@ -116,7 +116,7 @@ updated: 2026-10-15
 
 **৬টা Key Point:**
 1. দুই মূল প্যাটার্ন: single DB + `tenant_id` column (সহজ, ঝুঁকি: scope মিস) vs DB-per-tenant (শক্ত isolation, migration overhead)
-2. Landlord DB-তে platform data (org, billing), tenant DB-তে business data — Sokrio-তে এই প্যাটার্নই চলে
+2. Landlord DB-তে platform data (org, billing), tenant DB-তে business data — DistroSaaS-এে এই প্যাটার্নই চলে
 3. Middleware-এ tenant resolve (domain/header থেকে) করে connection reconnect — পরে অবশ্যই landlord-এ switch back
 4. Shared-DB হলে Global Scope দিয়ে সব query-তে `tenant_id` auto-apply — ম্যানুয়াল where-এর ভরসায় থাকা বিপজ্জনক
 5. Cache/queue key-তেও tenant scope রাখা বাধ্যতামূলক — নাহলে এক tenant-এর report আরেকজন দেখে ফেলে

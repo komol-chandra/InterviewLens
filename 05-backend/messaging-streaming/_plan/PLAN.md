@@ -16,14 +16,14 @@ updated: 2026-10-26
 > (`../README.md` is a byte-identical duplicate of it). Old notes: `../old-resource/`.
 
 ## Goal
-Build a code-verified, interview-ready knowledge base on how Sokrio uses Kafka, Redis, Laravel queues and AWS.
+Build a code-verified, interview-ready knowledge base on how DistroSaaS uses Kafka, Redis, Laravel queues and AWS.
 Write it **part by part as Markdown sections**, then **render everything into one standard HTML page**.
 
 ## Decisions (made with Komol)
 | Decision | Choice |
 |---|---|
 | Format | Section `.md` files first (`../sections/`), then one rendered `.html` |
-| Depth | Full code-verified deep dive, every Sokrio claim as `file:line` + tag |
+| Depth | Full code-verified deep dive, every DistroSaaS claim as `file:line` + tag |
 | Language | English |
 | Q&A scope | All 81 questions + 20 or more new ones from the code, full format, plus the STAR story and 3 system designs |
 | Location | This RnD folder. This replaces README_2's `docs/messaging-knowledge/` |
@@ -66,8 +66,8 @@ Output: `sections/00-inventory.md`. Facts are summarised in `MEMORY.md`.
   4. Add a notes-vs-code table, reusing D1–D8 from MEMORY.md and adding any new ones.
 - **Done when:** 3 diagrams, every claim tagged, checklist passed.
 
-### T2 — Kafka in Sokrio, deep dive (README_2 Phase 2)
-- **Output:** `sections/02-kafka-in-sokrio.md` (split into 02a/02b if it runs long)
+### T2 — Kafka in DistroSaaS, deep dive (README_2 Phase 2)
+- **Output:** `sections/02-kafka-in-distrosaas.md` (split into 02a/02b if it runs long)
 - **Must verify first:** the `longlang/phpkafka` defaults for `acks`, `auto.offset.reset`, partitioner and compression in `vendor/longlang/phpkafka/src/{Producer,Consumer}/*Config.php`. This resolves A1/A2 in MEMORY.md.
 - **Cover:**
   1. Producer config, the key choice (user_id / department_id vs the tenant_id default), the envelope, and the retry and fallback.
@@ -82,11 +82,11 @@ Output: `sections/00-inventory.md`. Facts are summarised in `MEMORY.md`.
 - **Done when:** every subsection has a code proof and a "what could go wrong" note.
 
 ### T3 — RabbitMQ (README_2 Phase 3)
-- **Output:** `sections/03-rabbitmq-in-sokrio.md`
-- **Content:** "Not used". Show the search proof from MEMORY.md and the inventory. Then a `[GENERAL]` section on where it *would* fit in Sokrio: delayed order approval, SMS/notification retries with DLX+TTL, per-tenant priority, request/reply to ERP sync. Include an AMQP model diagram.
+- **Output:** `sections/03-rabbitmq-in-distrosaas.md`
+- **Content:** "Not used". Show the search proof from MEMORY.md and the inventory. Then a `[GENERAL]` section on where it *would* fit in DistroSaaS: delayed order approval, SMS/notification retries with DLX+TTL, per-tenant priority, request/reply to ERP sync. Include an AMQP model diagram.
 
-### T4 — Redis in Sokrio (README_2 Phase 4)
-- **Output:** `sections/04-redis-in-sokrio.md`
+### T4 — Redis in DistroSaaS (README_2 Phase 4)
+- **Output:** `sections/04-redis-in-distrosaas.md`
 - **Cover:**
   - The queue driver: the queues, `retry_after=9000` vs the `$timeout=0` jobs (duplicate-run risk), the ignored `$retry_after`/`$retries` properties, no Horizon.
   - Cache: `ScopeCacheToTenant`, `Org::findById`, stampede risk on heavy reports (check `MatrixAggregator` lock+block).
@@ -101,7 +101,7 @@ Output: `sections/00-inventory.md`. Facts are summarised in `MEMORY.md`.
 - **Output:** `sections/05-laravel-implementation.md`
 - **Cover:**
   - Step-by-step "add a new topic + consumer", using the real classes as templates (reuse the study guide §8 checklist, corrected).
-  - "Add a queued job the Sokrio way" (Org in the constructor, then `TenantManager` reconnect).
+  - "Add a queued job the DistroSaaS way" (Org in the constructor, then `TenantManager` reconnect).
   - Where `afterCommit` is missing.
   - Tenant context in jobs and consumers.
   - Testing patterns from the 12 Kafka test files.
@@ -111,22 +111,22 @@ Output: `sections/00-inventory.md`. Facts are summarised in `MEMORY.md`.
 - **Output:** `sections/06-aws-infrastructure.md`
 - **Known:** EC2 VMs deployed by GitHub Actions over SSH with a server-side `pipeline.sh`. Boxes: prod, queue worker, report server, PVM, staging. Supervisor. Datadog + Sentry. No IaC.
 - **Unknown (mark `[ASSUMPTION]`):** MSK vs self-hosted Kafka, ElastiCache vs self-hosted Redis.
-- **Cover:** the README_2 concern table, what AWS manages vs what we manage, and the alternatives (MSK, ElastiCache, SQS/SNS/EventBridge/Kinesis) with trade-offs for Sokrio.
+- **Cover:** the README_2 concern table, what AWS manages vs what we manage, and the alternatives (MSK, ElastiCache, SQS/SNS/EventBridge/Kinesis) with trade-offs for DistroSaaS.
 
 ### T7 — Failure modes & runbooks (README_2 Phase 7)
 - **Output:** `sections/07-failure-modes-and-runbooks.md` (likely split into 07a/07b)
-- **Format:** the exact 8-field runbook template from README_2, for all 20 listed failures plus the Sokrio-specific ones (RF=1 topic, FENCED_INSTANCE_ID group sharing, EINTR/Datadog, signal mid-DB-read, department publish lost with no fallback, the `$timeout=0` double run).
+- **Format:** the exact 8-field runbook template from README_2, for all 20 listed failures plus the DistroSaaS-specific ones (RF=1 topic, FENCED_INSTANCE_ID group sharing, EINTR/Datadog, signal mid-DB-read, department publish lost with no fallback, the `$timeout=0` double run).
 - **End with:** the Top 5 risks today, ranked, with the first fix to propose.
 
 ### T8 — Interview Q&A (README_2 Phase 8)
-Format per question: **Short (30s) / Deep / Sokrio example (file:line) / Follow-ups / Mistakes**.
+Format per question: **Short (30s) / Deep / DistroSaaS example (file:line) / Follow-ups / Mistakes**.
 | Card | Output | Questions |
 |---|---|---|
 | T8a | `sections/08a-interview-qa.md` | Q1–Q19 (foundations, guarantees, Kafka internals) |
 | T8b | `sections/08b-interview-qa.md` | Q20–Q37 (Kafka ops, RabbitMQ) |
 | T8c | `sections/08c-interview-qa.md` | Q38–Q57 (Redis, comparisons, stream processing) |
 | T8d | `sections/08d-interview-qa.md` | Q58–Q81 (patterns, Laravel, design, incidents) |
-| T8e | `sections/08e-interview-qa.md` | Q82–Q101+: 20 or more new Sokrio-derived questions, the STAR story (PR-5094 → tracking pipeline), and 3 system designs (order pipeline, multi-tenant reporting, notifications) |
+| T8e | `sections/08e-interview-qa.md` | Q82–Q101+: 20 or more new DistroSaaS-derived questions, the STAR story (PR-5094 → tracking pipeline), and 3 system designs (order pipeline, multi-tenant reporting, notifications) |
 
 ### T9 — Study plan, labs, cheat sheet (README_2 Phase 9)
 - **Output:** `sections/09-study-plan-and-labs.md`

@@ -69,7 +69,7 @@ updated: 2026-10-15
 **৬টা Key Point:**
 1. Custom hook = stateful logic-এর reuse; UI নয় — UI reuse হলে component, logic reuse হলে hook
 2. প্রতিটা hook call-এর নিজস্ব state — দুই component একই hook ব্যবহার করলেও state আলাদা (logic শেয়ার হয়, state না)
-3. কমন প্যাটার্ন: `useDebounce`, `useLocalStorage`, `usePermission`, `useFetch`/axios wrapper — প্রজেক্টে বাস্তব উদাহরণ বলা (Sokrio-তে `useAxiosInstance`)
+3. কমন প্যাটার্ন: `useDebounce`, `useLocalStorage`, `usePermission`, `useFetch`/axios wrapper — প্রজেক্টে বাস্তব উদাহরণ বলা (DistroSaaS-এে `useAxiosInstance`)
 4. Rules of hooks-এর কারণ: React call order দিয়ে state মেলায় — তাই condition/loop-এর ভেতরে hook নয়
 5. ভালো hook design: return value ছোট ও স্পষ্ট (`{data, loading, error}` বা tuple) — ভেতরের জটিলতা লুকানো
 6. টেস্টযোগ্যতা: hook আলাদা হলে `renderHook` দিয়ে UI ছাড়াই টেস্ট — logic-in-component-এর চেয়ে বড় সুবিধা
@@ -129,7 +129,7 @@ updated: 2026-10-15
 **৬টা Key Point:**
 1. Presentational vs container ভাগ এখনো দরকারি ধারণা: dumb component props নেয়, smart component data জোগায় — টেস্ট ও reuse সহজ
 2. Composition (`children`, slot props) inheritance-এর জায়গায় — `<Modal>` ভেতরে কী থাকবে জানে না, জানার দরকারও নেই
-3. Base component লেয়ার (BaseButton, BaseTable, BaseModal) — design consistency + লাইব্রেরি বদলালে এক জায়গায় বদল (Sokrio-তে এই প্যাটার্নই)
+3. Base component লেয়ার (BaseButton, BaseTable, BaseModal) — design consistency + লাইব্রেরি বদলালে এক জায়গায় বদল (DistroSaaS-এে এই প্যাটার্নই)
 4. Prop drilling ৩ লেভেল ছাড়ালে সংকেত — composition বা context ভাবা; তবে সব prop-ই খারাপ না, explicit data flow-ও একটা গুণ
 5. টেস্ট (Vitest + Testing Library): user-এর চোখে টেস্ট — "render হলে কী দেখা যায়, click-এ কী ঘটে"; implementation detail (state/internal call) টেস্ট নয়
 6. টেস্ট অগ্রাধিকার: জটিল logic-ওয়ালা hook/util > critical flow (form submit, permission gate) > সব component snapshot — শেষটা প্রায় মূল্যহীন

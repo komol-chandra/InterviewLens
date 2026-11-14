@@ -23,7 +23,7 @@ updated: 2026-11-14
 - Form accessibility: প্রতিটা `<input>`-এর সাথে `<label for="id">` জোড়া লাগানো, ভিজ্যুয়াল কিউ যথেষ্ট না হলে `aria-*` attribute।
 
 **সম্ভাব্য প্রশ্ন:** "কেন `<div>` দিয়ে সব বানানো খারাপ প্র্যাকটিস?"
-🔗 Sokrio link: সরাসরি অভিজ্ঞতা নেই — এভাবে বলো: "আমি React কম্পোনেন্ট লেখার সময় semantic HTML মেনে চলি, বিশেষ করে ফর্ম আর ন্যাভিগেশনে, কারণ accessibility আর Lighthouse স্কোর দুটোই এতে ভালো থাকে।"
+🔗 DistroSaaS link: সরাসরি অভিজ্ঞতা নেই — এভাবে বলো: "আমি React কম্পোনেন্ট লেখার সময় semantic HTML মেনে চলি, বিশেষ করে ফর্ম আর ন্যাভিগেশনে, কারণ accessibility আর Lighthouse স্কোর দুটোই এতে ভালো থাকে।"
 
 ## ২. Flexbox vs Grid
 
@@ -35,7 +35,7 @@ updated: 2026-11-14
 
 **নিয়ম:** ছোট, এক-দিকে সাজানো কম্পোনেন্ট হলে Flexbox। পুরো লেআউট বা ২-ডাইমেনশনাল বিন্যাস হলে Grid। দুটো একসাথেও চলে — Grid দিয়ে বড় লেআউট, ভেতরে Flexbox দিয়ে ছোট অংশ।
 
-🔗 Sokrio link: সরাসরি অভিজ্ঞতা নেই — এভাবে বলো: "Sokrio-র React/Bootstrap UI-তে গ্রিড লেআউট আর ভেতরের কম্পোনেন্ট alignment-এ Flexbox — দুটোই ব্যবহার করেছি (S6)।"
+🔗 DistroSaaS link: সরাসরি অভিজ্ঞতা নেই — এভাবে বলো: "DistroSaaS-এর React/Bootstrap UI-তে গ্রিড লেআউট আর ভেতরের কম্পোনেন্ট alignment-এ Flexbox — দুটোই ব্যবহার করেছি (S6)।"
 
 ## ৩. CSS Specificity
 
@@ -72,4 +72,4 @@ $primary-color: #1a73e8;
 - Nesting ৩ লেভেলের বেশি গভীর করলে generated CSS ভারী হয় আর specificity যুদ্ধ শুরু হয় — নিয়ম: ৩ লেভেলের বেশি না।
 - আধুনিক `@use`/`@forward` বনাম পুরনো `@import` (deprecated) — নতুন প্রজেক্টে `@use` ব্যবহার করা উচিত।
 
-🔗 Sokrio link: S6 — Vue থেকে React/Next.js/TypeScript রিরাইটে SASS ব্যবহার হয়েছে। মিক্সিন/ভ্যারিয়েবল স্ট্রাকচার ঠিক কীভাবে সাজানো হয়েছিল তার ডিটেইল `[Komol পূরণ করবে]`।
+🔗 DistroSaaS link: S6 — Vue থেকে React/Next.js/TypeScript রিরাইটে SASS ব্যবহার হয়েছে। মিক্সিন/ভ্যারিয়েবল স্ট্রাকচার ঠিক কীভাবে সাজানো হয়েছিল তার ডিটেইল `[Komol পূরণ করবে]`।

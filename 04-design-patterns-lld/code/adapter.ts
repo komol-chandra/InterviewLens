@@ -73,7 +73,7 @@ function senderFor(name: string): SmsSender {
 
 // Business code: never mentions a provider.
 async function sendOtp(sms: SmsSender, phone: string, code: string) {
-  return sms.send(phone, `Your Sokrio OTP is ${code}`);
+  return sms.send(phone, `Your DistroSaaS OTP is ${code}`);
 }
 
 async function main() {

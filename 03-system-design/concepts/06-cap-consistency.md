@@ -10,7 +10,7 @@ tags: [system-design, concepts]
 updated: 2026-10-15
 ---
 
-> Tracker ID: SD-06 · Generated: 2026-10-15 · Answers: **SD-Q06** (TRK-02 Phase 3) · Source: general SD knowledge + sokrio code (`MessageResendService::claim`, `config/database.php` `read` connection, A2 rollups) · Status: ✅ generated
+> Tracker ID: SD-06 · Generated: 2026-10-15 · Answers: **SD-Q06** (TRK-02 Phase 3) · Source: general SD knowledge + DistroSaaS code (`MessageResendService::claim`, `config/database.php` `read` connection, A2 rollups) · Status: ✅ generated
 
 # SD-Q06: Explain CAP and consistency. When is eventual consistency OK?
 
@@ -94,8 +94,8 @@ updated: 2026-10-15
 **কখন eventual (মূল অংশ):**
 > "I decide per piece of data, not per system. I ask: if a user sees data a few seconds old, does anyone lose money, stock or access? Like counts, dashboards, search and reports are fine eventually consistent. Balances, the last unit of stock, and permission changes need strong consistency. And for user experience I add read-your-writes, so people always see their own changes immediately."
 
-**Sokrio উদাহরণ:**
-> "In Sokrio both live side by side. Our benchmark rollups are rebuilt by a scheduled job, so they're eventually consistent by design, and that's fine for monthly market data. But when I built bulk SMS resend, the tenant's SMS balance had to be strongly consistent: two admins resending at once must not both pass the balance check. So the claim runs under a per-tenant lock, inside a transaction with row locks, and it subtracts what other in-flight resends have already reserved."
+**DistroSaaS উদাহরণ:**
+> "In DistroSaaS both live side by side. Our benchmark rollups are rebuilt by a scheduled job, so they're eventually consistent by design, and that's fine for monthly market data. But when I built bulk SMS resend, the tenant's SMS balance had to be strongly consistent: two admins resending at once must not both pass the balance check. So the claim runs under a per-tenant lock, inside a transaction with row locks, and it subtracts what other in-flight resends have already reserved."
 
 ---
 
@@ -110,7 +110,7 @@ updated: 2026-10-15
 
 ---
 
-🔗 **Sokrio link:** (কোডে যাচাই করা)
+🔗 **DistroSaaS link:** (কোডে যাচাই করা)
 - **তোমার নিজের strong consistency (সবচেয়ে ভালো):** `app/Services/SMS/MessageResendService.php::claim()` (Komol, 2026-10-05/06): `Cache::lock('sms-resend:{tenant}:claim')` + `DB::transaction` + `lockForUpdate()`, আর অন্য চলমান resend-এর **reserved** SMS বাদ দিয়ে balance চেক। ব্যালান্স কম হলে transaction rollback, row আবার `failed`।
 - **Eventual by design (A2, B5):** `order_rollups_monthly` scheduled job লেখে; benchmark cache TTL ৩ ঘণ্টা।
 - **PACELC-এর বাস্তব রূপ:** ২৭টা report job `reconnect('read')` করে (SD-Q04) → রিপোর্ট replica lag মেনে নেয়, write DB মুক্ত থাকে।

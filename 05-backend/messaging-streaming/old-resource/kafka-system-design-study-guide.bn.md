@@ -1,6 +1,6 @@
 ---
 id: be-messaging-streaming-old-resource-kafka-system-design-study-guide-bn
-title: "Sokrio-তে Kafka — সিস্টেম ডিজাইন ও DevOps গাইড (বাংলা)"
+title: "DistroSaaS-এে Kafka — সিস্টেম ডিজাইন ও DevOps গাইড (বাংলা)"
 track: backend
 type: topic
 status: draft
@@ -10,11 +10,11 @@ tags: [backend, messaging-streaming]
 updated: 2026-10-26
 ---
 
-# Sokrio-তে Kafka — সিস্টেম ডিজাইন ও DevOps গাইড (বাংলা)
+# DistroSaaS-এে Kafka — সিস্টেম ডিজাইন ও DevOps গাইড (বাংলা)
 
-> `sokrio-server`-এ নতুন জয়েন করা ডেভদের জন্য লেখা। এটা Kafka-র জেনারেল থিওরির বই না —
+> `api-server`-এ নতুন জয়েন করা ডেভদের জন্য লেখা। এটা Kafka-র জেনারেল থিওরির বই না —
 > আমরা কীভাবে এটা ইউজ করছি, কেন এভাবে ডিজাইন করা হয়েছে, আর কোন কোন প্রোডাকশন ইনসিডেন্টের
-> পর এই শেপ-এ এসেছে সেই গল্প। 2026-09-08-এ লেখা, পুরোটাই `sokrio-server`-এর `git log`
+> পর এই শেপ-এ এসেছে সেই গল্প। 2026-09-08-এ লেখা, পুরোটাই `api-server`-এর `git log`
 > ঘেঁটে বানানো (GitHub PR না, কারণ এই environment-এ `gh` CLI নেই আর API token-ও নেই —
 > নিচের প্রতিটা hash `git show <hash>` দিয়ে নিজে চেক করে নিতে পারেন)।
 
@@ -22,7 +22,7 @@ updated: 2026-10-26
 
 ## ১. আমাদের কোডবেসে Kafka কেন লাগলো
 
-Sokrio একটা মাল্টি-টেন্যান্ট Laravel মনোলিথ। বেশিরভাগ কাজ সিঙ্ক্রোনাসলি হয় — হয়
+DistroSaaS একটা মাল্টি-টেন্যান্ট Laravel মনোলিথ। বেশিরভাগ কাজ সিঙ্ক্রোনাসলি হয় — হয়
 একটা HTTP রিকোয়েস্টের মধ্যেই, নয়তো cron দিয়ে চলা ব্যাচ জবে (`app/Console/Kernel.php`
 খুললেই দেখবেন `dailyAt()`/`hourlyAt()`-এ ভরা, সব queue job dispatch করছে)। সাধারণ
 CRUD-এর জন্য এই approach একদম ফাইন, কিন্তু দুই জায়গায় এসে আটকে যায়:
@@ -56,7 +56,7 @@ Kafka মূলত একটা টেকসই, অর্ডারড বাফ
 | **Partition key** | আমরা publish করি `key = tenant_id` দিয়ে (`KafkaProducer::publish()`, ডিফল্ট `partitionKey ?? (string)$tenantId`)। একই key মানে একই partition — মানে **একটা টেন্যান্টের সব ইভেন্ট সবসময় ঠিক ওই অর্ডারেই আসবে**। কোনো লক ছাড়াই টেন্যান্ট-অনুযায়ী অর্ডারিং পাওয়ার আসল ট্রিকটাই এটা। |
 | **Producer** | যে কেউ একটা ইভেন্ট লেখে — সাধারণত রিকোয়েস্ট-টাইম Controller বা model Observer। সিঙ্ক্রোনাস, timeout খুবই ছোট (1s), broker ডাউন থাকলেও কখনো রেসপন্স আটকে রাখবে না (§৫)। |
 | **Consumer** | দীর্ঘসময় ধরে চলতে থাকা `php artisan kafka:consume {topic}` প্রসেস (প্রতি topic-এ একটা), supervised, কিন্তু queue worker না — Redis/DB queue টেবিলে নির্ভর করে না, broker-এর নিজের offset ট্র্যাকিং-এর উপর নির্ভর করে। |
-| **Consumer group** | একই `group_id`-তে (`KAFKA_GROUP`, ডিফল্ট `sokrio-group`) একই topic পড়া সব consumer একে অপরের সাথে partition ভাগ করে নেয়, আর কেউ join/leave করলে *rebalance* হয়। আমরা এখন প্রতি topic-এ `numprocs=1` রাখি (§৭), তাই rebalance মূলত রিস্টার্টের সময়ই ঘটে, স্কেল-আউটের জন্য না — তবে group membership-এর প্লাম্বিংটা (§৪.৫) ঠিকঠাক বসাতেই হয়েছিল। |
+| **Consumer group** | একই `group_id`-তে (`KAFKA_GROUP`, ডিফল্ট `app-group`) একই topic পড়া সব consumer একে অপরের সাথে partition ভাগ করে নেয়, আর কেউ join/leave করলে *rebalance* হয়। আমরা এখন প্রতি topic-এ `numprocs=1` রাখি (§৭), তাই rebalance মূলত রিস্টার্টের সময়ই ঘটে, স্কেল-আউটের জন্য না — তবে group membership-এর প্লাম্বিংটা (§৪.৫) ঠিকঠাক বসাতেই হয়েছিল। |
 | **Offset** | প্রতি-পার্টিশনের read কার্সার — মানে "কতদূর পড়া হয়েছে"। Offset commit মানে "এই পর্যন্ত সব ডান হয়ে গেছে"; consumer রিস্টার্ট হলে শূন্য থেকে না, শেষ committed offset থেকেই আবার শুরু করে। |
 | **Delivery semantics** | একটা flush শেষে handler রান হওয়ার পরই আমরা offset commit করি, কিন্তু handler-টা এমনভাবে লেখা যে সে **কখনো throw করে না** — কোনো টেন্যান্ট 3 বার ফেল করলেও সেটা শুধু লগ হয়, ব্যাচ তারপরও commit হয়ে যায়। মানে ফেল হওয়া অংশের জন্য এটা আসলে **at-most-once**, at-least-once না — যদিও offset manually কন্ট্রোল করছি। এটা ইচ্ছাকৃত ট্রেড-অফ (§৪.৪), নতুন কোনো handler লেখার আগে জেনে রাখা ভালো — "Kafka-তে গেছে মানেই একদিন না একদিন ল্যান্ড করবে" — এই ধারণা এখানে খাটে না। |
 
@@ -400,12 +400,12 @@ DB কানেকশন বদলাতে বদলাতে।
 এখানকার Kafka consumer-গুলো queue worker না (Redis/DB queue টেবিলের সাথে কোনো
 সম্পর্ক নেই), আবার রিকোয়েস্টে চালিতও না — এগুলো **আলাদা, দীর্ঘস্থায়ী প্রসেস**, যেটা
 আপনি একটা ছোট, একক-উদ্দেশ্যের সার্ভিসের মতোই ডিপ্লয় আর সুপারভাইজ করেন — যদিও কোডটা
-`sokrio-server`-এর ভেতরেই থাকে।
+`api-server`-এর ভেতরেই থাকে।
 
 ### ৭.১ Supervisor — প্রোডাকশনে আসল প্রসেস মডেল
 
 ```ini
-[program:sokrio-kafka-consumer-tracking]
+[program:kafka-consumer-tracking]
 command=php /var/www/html/artisan kafka:consume tracking
 autostart=true
 autorestart=true
@@ -454,8 +454,8 @@ environment-এই) এটা ইনস্টল থাকতেই হবে �
 | Var | ডিফল্ট | কী করে |
 |---|---|---|
 | `KAFKA_BROKERS` | `localhost:9092` | Bootstrap সার্ভার |
-| `KAFKA_GROUP` | `sokrio-group` | Consumer group id — partition ownership যাদের মধ্যে ভাগাভাগি হওয়ার কথা, সব consumer-এর group একই থাকতে হয় |
-| `KAFKA_PRODUCER_CLIENT_ID` / `KAFKA_CONSUMER_CLIENT_ID` | `sokrio-producer` / `sokrio-consumer` | আলাদা রাখা হয়েছে যাতে broker-সাইড মেট্রিক্স/quota দুই role আলাদাভাবে দেখা যায় |
+| `KAFKA_GROUP` | `app-group` | Consumer group id — partition ownership যাদের মধ্যে ভাগাভাগি হওয়ার কথা, সব consumer-এর group একই থাকতে হয় |
+| `KAFKA_PRODUCER_CLIENT_ID` / `KAFKA_CONSUMER_CLIENT_ID` | `app-producer` / `app-consumer` | আলাদা রাখা হয়েছে যাতে broker-সাইড মেট্রিক্স/quota দুই role আলাদাভাবে দেখা যায় |
 | `KAFKA_PRODUCER_*_TIMEOUT` | প্রতিটাই 1.0s | দ্রুত ফেল করতে হয় — এটা একটা HTTP রিকোয়েস্টের মধ্যেই চলছে |
 | `KAFKA_PRODUCE_RETRY` / `KAFKA_MAX_WRITE_ATTEMPTS` | 0 / 1 (লাইব্রেরি লেভেলে) — এর উপরে `KafkaProducer` নিজে 3 বার পর্যন্ত রিট্রাই করে (`MAX_PUBLISH_ATTEMPTS`) | Publish-এর রিলায়েবিলিটি |
 | `KAFKA_CONSUMER_*_TIMEOUT` | 3-5s | বেশি সময় দেওয়া — coordinator-এর round-trip একটু ধীর হলেই যেন dead socket মনে না হয় |
@@ -476,7 +476,7 @@ php artisan kafka:consume tracking
 
 # আরেকটা টার্মিনালে, tracking endpoint হিট করে একটা publish ট্রিগার করুন
 # (TrackingController::store ইতিমধ্যেই producer-কে কল করে দেয়)
-curl -X POST https://<tenant>.sokrio-server.test/api/trackings ...
+curl -X POST https://<tenant>.api-server.test/api/trackings ...
 
 # লগে দেখুন ইভেন্ট পৌঁছালো কিনা
 tail -f storage/logs/kafka.log

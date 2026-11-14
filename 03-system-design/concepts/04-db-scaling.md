@@ -10,7 +10,7 @@ tags: [system-design, concepts]
 updated: 2026-11-14
 ---
 
-> Tracker ID: SD-04 · Generated: 2026-10-15 · Answers: **SD-Q04** (TRK-02 Phase 2) · Source: general SD knowledge + sokrio-server code (`config/database.php` `read` connection, `TenantManager::reconnect('read')` in 27 job/report files, `git log`) · Status: ✅ generated
+> Tracker ID: SD-04 · Generated: 2026-10-15 · Answers: **SD-Q04** (TRK-02 Phase 2) · Source: general SD knowledge + api-server code (`config/database.php` `read` connection, `TenantManager::reconnect('read')` in 27 job/report files, `git log`) · Status: ✅ generated
 
 # SD-Q04: One MySQL server is not enough anymore. What do you do?
 
@@ -113,7 +113,7 @@ flowchart TB
 
 ---
 
-🔗 **Sokrio link:** (কোডে যাচাই করা, 2026-10-15)
+🔗 **DistroSaaS link:** (কোডে যাচাই করা, 2026-10-15)
 - **Read connection (ধাপ ৫):** `config/database.php`-এ আলাদা `read` connection (`READ_DB_HOST`)। **২৭টা** job/report ফাইল ভারী রিপোর্টের আগে `TenantManager::tenant($org)->reconnect('read')` করে (যেমন `StockDownloadJOb`, `AttendanceReportJob`, `GenerateOrderProductSummery`)। মানে ভারী রিপোর্টের read মূল write DB থেকে সরানো। config ২০২২-এ Miraj যোগ করেছে; তোমার ৬টা commit এই অংশ ছুঁয়েছে। `READ_DB_HOST` production-এ আসলেই আলাদা replica কি না: `[Komol পূরণ করবে]`। বলো: *"Our heavy report jobs switch to a read connection before they run, so exports don't compete with order writes."*
 - **Per-tenant DB = tenant_id দিয়ে sharding-এর রূপ (S3, A1):** প্রতি টেন্যান্টের আলাদা MySQL DB, landlord DB হলো directory (কোন টেন্যান্ট কোন DB/host)। তাই "shard key কী হবে?" প্রশ্নের উত্তর তুমি বাস্তবে দেখেছ। খরচ: migration সব টেন্যান্টে চালাতে হয়, cross-tenant রিপোর্ট fan-out লাগে (A2)।
 - **Analytics আলাদা store-এ (ধাপ ৬, S2):** রিপোর্টের জন্য MongoDB-তে pre-aggregated summary (`order_summaries`, `DeliverySummary`) + `order_rollups_monthly`।

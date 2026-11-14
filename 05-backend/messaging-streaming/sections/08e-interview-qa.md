@@ -1,6 +1,6 @@
 ---
 id: be-messaging-streaming-sections-08e-interview-qa
-title: "08e · Interview Q&A — Sokrio-Derived Questions, STAR Story, System Designs (Q82–Q106)"
+title: "08e · Interview Q&A — DistroSaaS-Derived Questions, STAR Story, System Designs (Q82–Q106)"
 track: backend
 type: topic
 status: draft
@@ -10,18 +10,18 @@ tags: [backend, messaging-streaming]
 updated: 2026-10-26
 ---
 
-# 08e · Interview Q&A — Sokrio-Derived Questions, STAR Story, System Designs (Q82–Q106)
+# 08e · Interview Q&A — DistroSaaS-Derived Questions, STAR Story, System Designs (Q82–Q106)
 
-> **Snapshot:** `sokrio-server` @ `master` · HEAD `d14c0ebb2` · written 2026-10-26.
-> Paths are relative to `sokrio-server/`. Framework paths are shortened to `vendor/…/X` = `vendor/laravel/framework/src/Illuminate/X` (Laravel 9.52.22); `phpkafka/…` = `vendor/longlang/phpkafka/src/…`.
+> **Snapshot:** `api-server` @ `master` · HEAD `d14c0ebb2` · written 2026-10-26.
+> Paths are relative to `api-server/`. Framework paths are shortened to `vendor/…/X` = `vendor/laravel/framework/src/Illuminate/X` (Laravel 9.52.22); `phpkafka/…` = `vendor/longlang/phpkafka/src/…`.
 > Tags: `[CODE]` verified in app code · `[LIB]` verified in vendored code · `[GENERAL]` industry knowledge · `[INFERENCE]` reasoned, needs a lab · `[ASSUMPTION]` best guess plus how to verify · `[NOTES]` from Komol's PR/blog notes · `[HIST]` deleted file, read from git history.
 > Finding ids (F1–F24), conflicts (D1–D20), assumptions (A1–A11) and runbooks (R1–R35) point back to sections 00–07.
 
-**How to use this file:** Q82–Q106 are **new questions**, not from `interview-questions.md`. Each one comes from a real bug or design choice found in Sokrio's code, so you can answer it with "here's what I found, here's why it happens, here's the fix". These are the questions that make you sound like someone who has run the system, not read about it. Where a topic is already covered in 08a–08d, the answer stays short and links back. §8.14 is the 2-minute STAR story. §8.15 holds three Sokrio-based system designs that go deeper than the generic Q69–Q71.
+**How to use this file:** Q82–Q106 are **new questions**, not from `interview-questions.md`. Each one comes from a real bug or design choice found in DistroSaaS's code, so you can answer it with "here's what I found, here's why it happens, here's the fix". These are the questions that make you sound like someone who has run the system, not read about it. Where a topic is already covered in 08a–08d, the answer stays short and links back. §8.14 is the 2-minute STAR story. §8.15 holds three DistroSaaS-based system designs that go deeper than the generic Q69–Q71.
 
 ---
 
-## 8.13 New questions from the Sokrio code (Q82–Q106)
+## 8.13 New questions from the DistroSaaS code (Q82–Q106)
 
 ### Q82. Your API returns 202 right after publishing to Kafka. How can that event still be lost?
 
@@ -36,8 +36,8 @@ If the producer runs with `acks=0`, "published" means "written to the local sock
 - The fallback trap: application fallbacks ("if publish fails, write to the DB") only fire on errors the producer **sees**. With `acks=0` most failures are invisible, so the fallback never runs.
 - What to measure: produce error rate and record-error rate; a reconciliation count (events produced vs rows written downstream per hour).
 
-**Sokrio example:**
-- `[LIB]` phpkafka defaults to `acks=0` (`phpkafka/Producer/ProducerConfig.php:36`) and Sokrio never calls `setAcks()`. With `acks=0` the library doesn't read a response at all (`phpkafka/Producer/Producer.php:159-163`). This is F5 / R26.
+**DistroSaaS example:**
+- `[LIB]` phpkafka defaults to `acks=0` (`phpkafka/Producer/ProducerConfig.php:36`) and DistroSaaS never calls `setAcks()`. With `acks=0` the library doesn't read a response at all (`phpkafka/Producer/Producer.php:159-163`). This is F5 / R26.
 - `[CODE]` The tracking controller returns **202** after the publish call (`app/Http/Controllers/Tracking/TrackingController.php:62-83`). Its fallback (write to MySQL directly, or 503 + Retry-After 5) only covers transport errors such as a refused connection.
 - `[CODE]` A code comment assumes a stronger setting: `WriteTrackingActions.php:26-28` accepts a "lost-ack duplicate", which can only happen when the producer waits for acks. Line to use: "the comment was written for acks=1, the config is acks=0."
 - `[INFERENCE]` Fix order: `setAcks(1)` now (one line, small latency cost), `-1` once there are replicas (RF=3), outbox for departments.
@@ -65,7 +65,7 @@ The committed offset now points at data that's been deleted, so the broker retur
 - `latest` after an outage: no duplicates, but the gap is gone. For a stream like GPS that might be acceptable; for master data it isn't.
 - Detect: log the reset with old and new offsets, alert on it, and alert on lag well before retention runs out (lag in time > 50% of retention).
 
-**Sokrio example:**
+**DistroSaaS example:**
 - `[LIB]` phpkafka has **no `auto.offset.reset` setting** (F6, R27):
   - New group → `max(committed, 0)` → offset **0**, i.e. earliest (`phpkafka/Consumer/OffsetManager.php:107`).
   - Out of range → asks for the latest offset and starts at `latest − 1` (`OffsetManager.php:140,150`, `phpkafka/Consumer/Consumer.php:345,364`). So a long outage silently skips the gap.
@@ -95,8 +95,8 @@ Kafka offsets aren't guaranteed to be contiguous (compaction, transaction marker
 - A counting client stays correct only while it never restarts mid-batch and the log has no gaps.
 - Test it: produce one batch of 10, consume 4, commit, restart, and check which records come next.
 
-**Sokrio example:**
-- `[LIB]` `[INFERENCE]` F7 / R28: phpkafka never reads `RecordBatch::$baseOffset` and advances by count (`phpkafka/Consumer/Consumer.php:321,351-353`); Sokrio's own cursor also does `+1` per message (`app/Services/Kafka/KafkaConsumer.php:279-294`).
+**DistroSaaS example:**
+- `[LIB]` `[INFERENCE]` F7 / R28: phpkafka never reads `RecordBatch::$baseOffset` and advances by count (`phpkafka/Consumer/Consumer.php:321,351-353`); DistroSaaS's own cursor also does `+1` per message (`app/Services/Kafka/KafkaConsumer.php:279-294`).
 - `[INFERENCE]` The producer packs **one record batch per partition per `sendBatch`**, so a v2 bulk tracking publish is one batch. A commit in the middle of it (flush at 200 messages), then a restart, means the broker returns the whole batch → the first records are duplicated and the same number of later records are skipped.
 - `[INFERENCE]` Not proven yet; it's a T9 lab. In an interview, say exactly that: "I found it by reading the client, I haven't reproduced it yet, here's the lab I'd run."
 
@@ -124,7 +124,7 @@ With a background heartbeat thread, slow processing only has to beat `max.poll.i
 - Options: process in a coroutine runtime that can heartbeat (Swoole), a client with a background thread (`rdkafka`), or hand work to a queue and commit after enqueue.
 - Overlaps Q78 (rebalance loop) and 08b's "effective poll budget" framing.
 
-**Sokrio example:**
+**DistroSaaS example:**
 - `[LIB]` F9: outside Swoole, phpkafka uses a `NoopTimer` and only heartbeats from the fetch path (`phpkafka/…/KafkaUtil.php:45-53`, `Consumer.php:292-294,421-427`). Session timeout is 30 s.
 - `[CODE]` A tracking flush can retry 3 times with sleeps (1 s + 2 s, `TrackingMessageHandler.php:85-116`) and then fall back to writing up to 200 points one by one (`:125-158`). With a slow tenant DB that crosses 30 s → eviction → the commit is swallowed (`KafkaConsumer.php:329-335`) → the batch is replayed. Tracking writes aren't idempotent, so that means duplicate rows.
 - `[INFERENCE]` Cheapest fix: a 15-second time budget per flush (stop early, commit what's done), plus a unique key on tracking rows so replays are harmless (Q102).
@@ -152,7 +152,7 @@ With a background heartbeat thread, slow processing only has to beat `max.poll.i
 - Rules: id unique per process, stable across restarts of the **same** process slot (e.g. `${HOSTNAME}-${process_num}`).
 - Trade-off: a dead static member holds its partitions until the session timeout passes.
 
-**Sokrio example:**
+**DistroSaaS example:**
 - `[CODE]` `KafkaConsumer.php:79-95` sets `group.instance.id` to `""`. The notes said that meant dynamic membership (D1); the code says it's **static** membership under the id "". The code comment at `:92-94` even describes the FENCED ping-pong you'd get with two processes.
 - `[CODE]` That's why every Supervisor program has `numprocs=1` (`README.md:178-212`). Topics have 3 partitions (`config/kafka.php:74-75`) but real parallelism is 1.
 - `[CODE]` Static membership was a sensible choice for the 6 h self-recycle (`config/kafka.php:70`): the restarted process takes its partitions back with no rebalance.
@@ -184,7 +184,7 @@ ORM events (Eloquent observers, Hibernate listeners) only fire for writes that g
   3. Nightly reconciliation (cheap, catches drift whatever the cause).
 - Also: observers fire **inside** the transaction, so they can publish changes that are later rolled back (F8); use `$afterCommit` or the outbox.
 
-**Sokrio example:**
+**DistroSaaS example:**
 - `[CODE]` F2: `DepartmentErpCodeSyncJob.php:71` uses `Department::upsert()`, which bypasses `DepartmentChangeObserver`. `erp_code` is part of the Mongo document (`app/Models/MongoDB/Department.php:71,213`), so ERP codes **never** reach Mongo through Kafka.
 - `[CODE]` `VanSystemController.php:98,138,152` also uses `->update()` on a query, but the field it changes (`van_sales_enabled`) isn't in the Mongo document, so it's harmless. Saying that shows you checked impact, not just syntax.
 - `[CODE]` The reverse problem, F8: `DepartmentBulkDataUpdateController.php:41-52` updates inside a transaction, so the observer publishes before commit; a rollback leaves a phantom event already applied in Mongo.
@@ -213,14 +213,14 @@ Laravel builds the unique lock key from the job class plus `uniqueId()`. With no
 - The opposite bug: a `uniqueId` that is different every time (a random number) makes uniqueness a no-op.
 - Test: dispatch twice with different inputs and assert both are queued.
 
-**Sokrio example:**
+**DistroSaaS example:**
 - `[CODE]` F11 / R29: `app/Jobs/Stock/BulkStockImportJob.php:30` is `ShouldBeUnique` with no `uniqueId` and no `uniqueFor`. `BulkStockBatchImportJob` dispatches it in a loop for 30k-row chunks (`:20,104-107`). Chunk 2 onwards, and every other tenant's import, is **silently dropped** while chunk 1 holds the lock. Reproduced in the T4 Redis lab.
 - `[CODE]` The opposite bug, F3: `SecondaryOrderSummaryJob::uniqueId()` appends `rand(1000,9999)` (`:40-43`), so the lock never matches and duplicates run. Harmless there because the summary upsert is idempotent, but it shows uniqueness wasn't tested.
 - `[CODE]` Good example in the same codebase: `FlushFeatureEventsJob` sets `uniqueFor = 300`, longer than its `timeout = 240` (MEMORY T4).
 - `[INFERENCE]` Fix for F11: `uniqueId = org_id + upload_id + startingRow` and `uniqueFor = 3600`. One line each.
 
 **Follow-up questions the interviewer may ask:**
-- Where is the lock key stored and with what prefix? (Default cache store; and in Sokrio the web and worker prefixes differ, F12, so a lock taken in a request may never be released by the worker.)
+- Where is the lock key stored and with what prefix? (Default cache store; and in DistroSaaS the web and worker prefixes differ, F12, so a lock taken in a request may never be released by the worker.)
 - `ShouldBeUnique` vs `ShouldBeUniqueUntilProcessing`? (The second releases the lock when processing starts, so a new dispatch can queue while the first runs.)
 - How do you find stuck unique locks? (Look for `laravel_unique_job:*` keys with no TTL.)
 
@@ -241,7 +241,7 @@ Anything that is **written by one process type and read or deleted by the other*
 - Tenant-scoped prefixes are good for isolation, but must be set the same way in every process that touches the key.
 - Test: one test that dispatches from an HTTP request and runs the job in a worker context, then asserts the guard is cleared.
 
-**Sokrio example:**
+**DistroSaaS example:**
 - `[CODE]` F12 / R35: `ScopeCacheToTenant` (`app/Http/Middleware/ScopeCacheToTenant.php:37-76`) prefixes the cache with `{CACHE_PREFIX}:tenant_N|landlord:` **only in HTTP**. Workers, the scheduler and Kafka consumers use the bare prefix. Leaks found:
   - **Export guard:** `ReportCacheMacro` sets a guard in 16 controllers; 17 jobs try to remove it under a different prefix → users get 429 until the 3600 s TTL (`app/Support/Macros/ReportCacheMacro.php:24-57`).
   - **Unique locks** dispatched from HTTP are never released by the worker (today `KPISummary` via `Admin/DailyReportController.php:81`, 24 h).
@@ -270,7 +270,7 @@ Redis clients don't share an API shape: argument order, how options are passed, 
 - Mocks hide it: a mocked Redis returns what you told it, in the shape you expected.
 - A cheap guard: a smoke test in CI against a real Redis with each supported client.
 
-**Sokrio example:**
+**DistroSaaS example:**
 - `[CODE]` F14 / R30: `Redis::scan($cursor, 'MATCH', …)` in `FlushFeatureEventsJob.php:68` and `PurgeFeatureTrackingLeaderboards.php:38` uses the **Predis** argument style. Under **phpredis** it finds 0 keys (reproduced in the T4 lab), so feature analytics buffers would never flush to Mongo. No error, no log.
 - `[CODE]` Why tests are green: `FlushFeatureEventsJobTest.php:46-48` mocks the Predis `scan` shape.
 - `[CODE]` Which client runs in prod is unknown (A7, urgent). Hints point to phpredis: Laravel's default (`config/database.php:195`), the README tells devs to set `REDIS_CLIENT=phpredis` (`README.md:43,85`), and `[HIST]` the 2024 worker image ran `pecl install redis`.
@@ -300,7 +300,7 @@ Laravel's `SerializesModels` stores only the model class, id and connection **na
 - Any long-lived process with a "current tenant" global has the same class of bug: state leaks from one unit of work to the next.
 - Test it with **two** tenant databases, because a single-tenant test suite can't see it.
 
-**Sokrio example:**
+**DistroSaaS example:**
 - `[LIB]` F16 / R31: restore happens before `handle()` (`vendor/…/Queue/SerializesAndRestoresModelIdentifiers.php:104-108`, `SerializesModels.php:62-88`, `CallQueuedHandler.php:60`), and `TenantManager` sets the `tenant` connection config globally, so it persists across jobs (`TenantManager.php:96-99`).
 - `[CODE]` Reproduced with two SQLite DBs in the T5 lab: dispatched Alice (tenant A) → the job received Bob (tenant B, same id).
 - `[CODE]` Live sites: `BatchTransferJob.php:35`, `PreInventoryTransferJob.php:34`, `BulkPrimaryPaymentActions.php:30`, `BulkProductBatchImportJob.php:34`. The last one emails `$this->user` (`:142`), so a failure email can go to **another tenant's user**. That's why it's #1 in the T7 Top 5.
@@ -329,7 +329,7 @@ Until the process restarts or the cache entry expires, whichever comes first, an
 - Options: a TTL'd in-memory map (e.g. 5 min), reading from the shared cache each time (cheap for Redis), or subscribing to `tenant.updated` events (a GlobalKTable-style copy, 08c Q55).
 - Decide what the consumer should do with a deactivated tenant's messages: drop, park, or still process (sometimes data must still be accepted).
 
-**Sokrio example:**
+**DistroSaaS example:**
 - `[CODE]` F18: both Kafka handlers cache `Org` in a process array (`TrackingMessageHandler.php:33,162`, `DepartmentMessageHandler.php:23,160-180`) for the life of the process, up to the 6 h recycle (`config/kafka.php:70`), and never check `active`. A deactivated tenant is still consumed for up to 6 h.
 - `[CODE]` The code comment says the process cache "does not change freshness"; it does, because 6 h is longer than the 2.8 h Redis TTL (D14). And the Redis TTL itself is `60*24*7` **seconds** ≈ 2.8 h, not the "week" the comment claims (D12, `Org.php:57,72`).
 - `[CODE]` Related, F17: `EnsureTenantAccess` stamps `tenant_id` into job payloads (`:56-58`), but the listener that would use it is registered only in the HTTP process (`:60-64`), so it's dead on workers.
@@ -361,9 +361,9 @@ Everything that assumed "same machine": files written to the local disk by the w
   5. Per-box config drift → config in the repo, deploys that restart every box.
   6. Queue routing → each box's `--queue` list documented.
 
-**Sokrio example:**
+**DistroSaaS example:**
 - `[CODE]` F19 / R32: `BulkStockController.php:58-62,88` stores the upload on the `local` disk; `BulkStockBatchImportJob.php:23,36-38` (queue `default`) reads it. On another VM: a warning and a silent return. `[INFERENCE]` It depends on which boxes consume `default` (A10); the README's feature-tracking worker consumes `default` too (`README.md:173`).
-- `[CODE]` Sokrio already has separate prod, queue and report servers (deploy workflows `ci-cd.yml`, `queue-worker-deploy.yml`, `prod-report-deploy.yml`, T6).
+- `[CODE]` DistroSaaS already has separate prod, queue and report servers (deploy workflows `ci-cd.yml`, `queue-worker-deploy.yml`, `prod-report-deploy.yml`, T6).
 - `[CODE]` Scheduler: guarded by `RUN_SCHEDULER` (`app/Console/Kernel.php:113-117`), with no `onOneServer()` anywhere. Safe only while exactly one box sets it (Q103).
 - `[CODE]` Defaults to watch: `config/cache.php:21` defaults to `file`, `config/session.php:21` defaults to `file`. Prod is very likely Redis for cache (A6).
 - `[CODE]` Export jobs are fine: they write and read temp files within the same job.
@@ -390,7 +390,7 @@ The row stays `processing` forever, because only the job itself clears it (on su
 - `failed()` runs on exceptions and on max-attempts, **not** on SIGKILL/OOM. Recovery on a crash comes from the queue's lease (`retry_after`) re-delivering the job, if the queue still has it.
 - Fairness: a global lane means one tenant's huge export delays everyone (noisy neighbour, R18).
 
-**Sokrio example:**
+**DistroSaaS example:**
 - `[CODE]` `[INFERENCE]` F24 / R34: `SequentialJob` is a **landlord** model (`app/Models/Core/SequentialJob.php:18`), and `SequentialJobDispatcher` returns early if **any** row is `processing` (`app/Support/Dispatcher/SequentialJobDispatcher.php:15,21-23`). The row is cleared only by the export job's own update or `failed()` (e.g. `ProcessOrderSummaryExportJob.php:125,138-149`).
 - `[CODE]` After a SIGKILL: the job comes back after `retry_after` = 9000 s (2.5 h), and with `tries=1` it fails, which finally clears the row. If Redis lost the reserved job (restart without persistence), the row is stuck forever. The `sequential:jobs` kick runs every 4 h (`Kernel.php:160`) and does the same "is anything processing?" check, so it doesn't help.
 - `[CODE]` Also F15: `SequentialJobDispatcher.php:31` calls `$candidate->lockForUpdate()` without executing a query, so there's no row lock at all (Q95).
@@ -418,7 +418,7 @@ In Laravel (and most query builders) `lockForUpdate()` only adds `FOR UPDATE` to
 - The lock lasts until commit; outside a transaction it's released immediately (autocommit).
 - Tests: two connections, one holds the lock, the other must block (or use `NOWAIT`/`SKIP LOCKED` and assert the result).
 
-**Sokrio example:**
+**DistroSaaS example:**
 - `[CODE]` F15: `app/Support/Dispatcher/SequentialJobDispatcher.php:31` calls `$candidate->lockForUpdate()` on an already-fetched model; the returned builder is discarded, so no `SELECT … FOR UPDATE` runs.
 - `[CODE]` Why it hasn't hurt yet: the dispatcher is also wrapped in a `Cache::lock` (`:15`, 10 s), and the later `UPDATE` takes an InnoDB row lock anyway (T5 §5.4). So it's 🟢: a misleading line, not an incident. Saying "I rated it low and here's why" is a good interview signal.
 - `[INFERENCE]` A related trap in the same family: F13, a Redis lock released before the DB commit (Q73). Both are "the lock is not where the commit is".
@@ -445,8 +445,8 @@ Managed Kafka services each expect certain auth mechanisms. Amazon MSK supports 
 - Switching clients in PHP: `rdkafka` (librdkafka) supports all of the above but needs a C extension in every image.
 - Security in a VPC without SASL: security groups, private subnets, TLS in transit; it's acceptable for many teams but auditors may ask for per-client identity.
 
-**Sokrio example:**
-- `[LIB]` F21: `longlang/phpkafka` implements SASL **PLAIN only** (`phpkafka/Sasl/PlainSasl.php:27`, `Client/SyncClient.php:203-211`). TLS is available via `setSsl` (`Config/CommonConfig.php:197-216`), and Sokrio's custom socket calls `parent::connect()`, so TLS would still work (`Socket/StreamSocket.php:270,277-279`).
+**DistroSaaS example:**
+- `[LIB]` F21: `longlang/phpkafka` implements SASL **PLAIN only** (`phpkafka/Sasl/PlainSasl.php:27`, `Client/SyncClient.php:203-211`). TLS is available via `setSsl` (`Config/CommonConfig.php:197-216`), and DistroSaaS's custom socket calls `parent::connect()`, so TLS would still work (`Socket/StreamSocket.php:270,277-279`).
 - `[CODE]` Today there's no TLS or SASL in the Kafka config at all (A4), consistent with a self-hosted broker on a private network.
 - `[INFERENCE]` So MSK IAM and MSK Serverless are out; MSK with a TLS listener inside the VPC (or mTLS) is the path (T6 §6.4, §6.12). It's also an argument to evaluate `rdkafka` before any MSK move, together with F5/F7/F9.
 
@@ -472,8 +472,8 @@ Sampling profilers often use timer **signals**. When a signal arrives while the 
 - PHP specifics: `stream_select()` and `stream_socket_client()` can fail with EINTR; with `pcntl_async_signals(true)` PHP handlers can run between opcodes.
 - How to recognise it: error text containing "Interrupted system call" or errno 4, errors correlated with an agent being enabled.
 
-**Sokrio example:**
-- `[CODE]` R23: Datadog's continuous profiler interrupted phpkafka's blocking socket calls → spurious reconnects and failed publishes. Sokrio wrote `InterruptResilientStreamSocket` that retries interrupted calls (`app/Services/Kafka/Socket/InterruptResilientStreamSocket.php:36-83,85-116`), wired into the producer (`KafkaProducer.php:51`), with a unit test (`tests/Unit/Kafka/InterruptResilientStreamSocketTest.php:88-116`).
+**DistroSaaS example:**
+- `[CODE]` R23: Datadog's continuous profiler interrupted phpkafka's blocking socket calls → spurious reconnects and failed publishes. DistroSaaS wrote `InterruptResilientStreamSocket` that retries interrupted calls (`app/Services/Kafka/Socket/InterruptResilientStreamSocket.php:36-83,85-116`), wired into the producer (`KafkaProducer.php:51`), with a unit test (`tests/Unit/Kafka/InterruptResilientStreamSocketTest.php:88-116`).
 - `[CODE]` The consumers also run with `DD_PROFILING_ENABLED=false` and `DD_TRACE_CLI_ENABLED=false` **per Supervisor program**, not container-wide (`README.md:214-226`), so scheduled artisan commands keep tracing.
 - Interview line: "an observability agent broke the thing it was observing; the fix was to treat EINTR as retryable, the way C libraries do."
 
@@ -499,7 +499,7 @@ With async signals enabled, PHP can run your signal handler in the middle of any
 - Masking delays delivery until unmasked, so a long flush delays shutdown. Supervisor's `stopwaitsecs` (or ECS's 120 s max stop timeout) then decides whether you get SIGKILL.
 - After SIGKILL, everything since the last commit is replayed, so idempotent handlers still matter.
 
-**Sokrio example:**
+**DistroSaaS example:**
 - `[CODE]` R24: `KafkaConsumer.php:309-319` blocks SIGTERM/SIGINT with `pcntl_sigprocmask(SIG_BLOCK)` around `handleBatch` and unblocks after; the shutdown flag is checked between polls, and the consumer flushes before exiting (`:262-266`).
 - `[CODE]` Supervisor gives it `stopwaitsecs=35` (`README.md:178-212`). A flush longer than 35 s still ends in SIGKILL and a replay (R9). That's the same 30-second budget as F9 (Q85), so a 15 s flush budget fixes both.
 - `[CODE]` For `queue:work`, Laravel handles SIGTERM itself (`vendor/…/Queue/Worker.php:675-681`: quit after the current job). The equivalent risk there is a job longer than `stopwaitsecs`.
@@ -527,7 +527,7 @@ Long-running PHP processes slowly accumulate memory and stale state (leaks in li
 - Don't recycle every instance at the same moment (jitter), or the whole group pauses together.
 - Recycling also picks up new code, which is why deploys must still restart processes explicitly.
 
-**Sokrio example:**
+**DistroSaaS example:**
 - `[CODE]` `config/kafka.php:70` sets a 6 h max runtime (21 600 s); the consumer flushes, commits and exits at the deadline (`KafkaConsumer.php:123,229-231,256-258`). Git history: `6486a0607` "6h runtime".
 - `[CODE]` Static membership (Q86) is what makes this cheap: the restarted process gets its partitions back without a rebalance.
 - `[CODE]` The hidden cost: in-process caches live exactly as long as the process, so the recycle period becomes a freshness bound (F18, Q92). 6 h is longer than the Redis Org TTL.
@@ -556,7 +556,7 @@ Without `event_id` you can't deduplicate: redeliveries and replays become duplic
 - Latency SLOs: now − `occurred_at` at the consumer is the most honest freshness metric.
 - Debugging: `event_id` in logs ties the producer's log line to the consumer's.
 
-**Sokrio example:**
+**DistroSaaS example:**
 - `[CODE]` The producer builds a proper envelope with `event_id`, `event_type`, `occurred_at` and `tenant_id` (`KafkaProducer.php:93-102`), but the consumer's decode drops `event_id` and `occurred_at` (`KafkaConsumer.php:360-364`). Handlers also ignore `event_type` and branch only on topic (T7).
 - `[CODE]` Consequences already seen in this file: tracking replays from F9/F7 can't be deduplicated (Q84, Q85); 08c Q57's line "exactly-once starts at the producer" also depends on this.
 - `[INFERENCE]` Fix: pass the full envelope to handlers (one decode change), log `event_id` on failures, and store it in a unique column where dedup matters.
@@ -583,7 +583,7 @@ A synchronous fallback is right when the data matters, the write path is idempot
 - Alternatives: a local outbox table (publish later), a client-side retry with Retry-After, or an on-disk spool.
 - Consistency: make fallback and consumer call the **same** action class.
 
-**Sokrio example:**
+**DistroSaaS example:**
 - `[CODE]` Tracking v1: publish → on failure `WriteTrackingActions` (MySQL + Mongo) → if that fails too, 503 + `Retry-After: 5` (`Tracking/TrackingController.php:62-83`; D9 corrects the blog, which said "always 202"). Tracking v2 does the same with `WriteBulkTrackingActions` (MySQL transaction, best-effort Mongo, `V2/Tracking/TrackingController.php:52-78`, `WriteBulkTrackingActions.php:67-82`).
 - `[CODE]` Good: the consumer and the fallback use the same action classes, so the data has the same shape.
 - `[CODE]` Weak spots: the fallback can't fire on broker-side loss with `acks=0` (Q82); and the Mongo half is best-effort, so the fallback itself is a small dual write.
@@ -611,7 +611,7 @@ Use a **natural key**: one device can't produce two fixes for the same user in t
 - Adding a unique index to a big existing table: deduplicate first, then build the index online (MySQL 8 `ALGORITHM=INPLACE`, or a tool like gh-ost / pt-online-schema-change).
 - Bulk inserts with ignore keep the batch fast; a per-row upsert is slower.
 
-**Sokrio example:**
+**DistroSaaS example:**
 - `[CODE]` `trackings` has no unique key, only an index on `user_id` and on `(created_at, user_id)` (`database/migrations/2020_08_18_074138_create_trackings_table.php:18,24`). Writes are plain inserts (`WriteBulkTrackingActions.php:67-78`), so every replay (F9 eviction, F7, SIGKILL past `stopwaitsecs`, a phone retrying after a 503 that actually committed) adds duplicate rows.
 - `[CODE]` By contrast departments are already idempotent: Mongo `updateOne({department_id}, {$set: …}, upsert)` (`DepartmentMessageHandler.php:87-112`).
 - `[INFERENCE]` Fix from T2 §2.7: unique `(user_id, created_at)` + `insertOrIgnore` in MySQL, a unique index `{user_id, created_at}` + `ordered:false` in Mongo. Needs a one-off dedup of existing rows first.
@@ -639,7 +639,7 @@ Two layers. Operationally, run the scheduler on one designated box. In code, use
 - Failure modes: scheduler disabled everywhere (nothing runs, nobody notices), enabled everywhere (everything runs N times).
 - For critical jobs, prefer an external scheduler (EventBridge Scheduler, Kubernetes CronJob with `concurrencyPolicy: Forbid`).
 
-**Sokrio example:**
+**DistroSaaS example:**
 - `[CODE]` The scheduler is gated by an env flag: `RUN_SCHEDULER` (`app/Console/Kernel.php:113-117`). The comment says it runs only on the "all task" prod server, not the report server (T6).
 - `[CODE]` There's **no `onOneServer()`** anywhere, and about 40 scheduled entries, including hourly summaries (`:149-155`), the 05:40 and 06:00 ERP syncs (`:143,147`) and `FlushFeatureEventsJob` every 15 min (`:180-181`). Summaries are idempotent upserts, so a double run costs load, not data; anything that sends messages would duplicate (Q77).
 - `[CODE]` No scheduler heartbeat either (T6 §6.9 item 7): if the box with `RUN_SCHEDULER=true` dies, nothing alerts.
@@ -667,7 +667,7 @@ Because the framework doesn't read them. In Laravel, `retry_after` is a **connec
 - Lease length per job type = use a separate connection with its own `retry_after` (Q65).
 - A static check: a test that reflects over job classes and fails on unknown public properties from a deny-list (`retry_after`, `retries`, `max_tries`).
 
-**Sokrio example:**
+**DistroSaaS example:**
 - `[CODE]` `ApproveOrder::$retry_after` (`app/Jobs/ApproveOrder.php:26`) is ignored: the real lease is the connection's 9000 s (`config/queue.php:65`).
 - `[CODE]` `PrimaryOrderSummaryMongoDBJob::$retries` (`:32`) is ignored: Laravel reads `$tries`, so the worker's `--tries` value (or 1) decides.
 - `[CODE]` Related: 0 of 125 `SerializesModels` jobs set `$deleteWhenMissingModels` (T7), so a job for a deleted model fails noisily instead of being dropped.
@@ -694,7 +694,7 @@ Auto-created topics get the **broker defaults**: often 1 partition or a small nu
 - Changing partitions later changes `hash(key) % N`, so per-key order breaks during the change.
 - Broker setting `auto.create.topics.enable=false`; client setting to stop clients requesting it.
 
-**Sokrio example:**
+**DistroSaaS example:**
 - `[CODE]` `TopicProvisioner` creates topics from the app with **3 partitions, RF 1** from env defaults (`config/kafka.php:74-75`, `app/Services/Kafka/TopicProvisioner.php:52-81`). A creation failure is only a warning (`:69-80`), and "already created" is remembered in the cache for a day (`:114`).
 - `[LIB]` phpkafka also has `autoCreateTopic=true` on both producer and consumer (MEMORY T2), so a broker with auto-create on would create topics on first use regardless.
 - `[ASSUMPTION]` Production RF is unknown (A3); if topics were auto-created, it's 1 (R21).
@@ -725,15 +725,15 @@ Alert on the things that fail **silently**, ordered by how much damage they do b
 - Heartbeats catch the "nothing ran" failure, which no error-based alert can.
 - Avoid noise: alert on symptoms users feel, page only for those; everything else goes to a channel.
 
-**Sokrio example:**
+**DistroSaaS example:**
 - `[CODE]` Today (T6 §6.9): Sentry for exceptions, Slack log channels, Datadog APM. Missing: consumer lag, queue depth/age, `failed_jobs` growth, Redis memory/evictions, broker health, scheduler heartbeat. The `kafka` log channel is file + stderr only, deliberately kept out of Slack and Sentry (`config/logging.php:54-68`), so nobody is paged if a consumer stalls.
-- `[CODE]` Concrete first five for Sokrio (T6 §6.9 list, T7 Top 5 #5):
+- `[CODE]` Concrete first five for DistroSaaS (T6 §6.9 list, T7 Top 5 #5):
   1. Kafka lag per group (Datadog Kafka check on the self-hosted broker).
-  2. `queue:monitor redis:summary,redis:default,redis:order-approved --max=N` on the scheduler; Laravel 9 has it (`vendor/…/Queue/Console/MonitorCommand.php`), Sokrio doesn't use it.
+  2. `queue:monitor redis:summary,redis:default,redis:order-approved --max=N` on the scheduler; Laravel 9 has it (`vendor/…/Queue/Console/MonitorCommand.php`), DistroSaaS doesn't use it.
   3. Count of `failed_jobs` in the last hour → Slack (no `queue:prune-failed` is scheduled either, T7).
   4. Redis `used_memory / maxmemory` > 80% and evicted keys > 0.
   5. Supervisor program state (Supervisor's default 3 start retries end in FATAL with no alert, T7) + `thenPing()` heartbeat.
-- `[INFERENCE]` Plus one Sokrio-specific query: any `sequential_jobs` row in `processing` for more than 2 h (F24).
+- `[INFERENCE]` Plus one DistroSaaS-specific query: any `sequential_jobs` row in `processing` for more than 2 h (F24).
 
 **Follow-up questions the interviewer may ask:**
 - What thresholds would you start with? (Lag > 5 min, oldest job > 15 min on `order-approved`, failed jobs > 10/h; then tune from a week of data.)
@@ -749,7 +749,7 @@ Alert on the things that fail **silently**, ordered by how much damage they do b
 
 ## 8.14 STAR story — "Tell me about a distributed system you worked on" (2 minutes)
 
-> Built from git history (`sokrio-server`), PR-5094 notes `[NOTES]` and T2 §2.4. Numbers in `[brackets]` are **placeholders**: fill them from Datadog/Sentry before using the story. Never quote a number you can't back up.
+> Built from git history (`api-server`), PR-5094 notes `[NOTES]` and T2 §2.4. Numbers in `[brackets]` are **placeholders**: fill them from Datadog/Sentry before using the story. Never quote a number you can't back up.
 
 ### The timeline behind the story
 
@@ -766,7 +766,7 @@ Alert on the things that fail **silently**, ordered by how much damage they do b
 
 ### The answer (about 300 words, 2 minutes spoken)
 
-**Situation.** Sokrio is a multi-tenant SaaS for distribution companies: 100+ clients, each with its own database, and field sales reps whose phones send GPS points all day. Every point was written to MySQL and MongoDB inside the HTTP request, so the phone waited on two database writes and that write load landed on the same databases the reports read from [confirm the symptom you actually saw: slow tracking API, DB load, timeouts]. Order summaries were hourly batch jobs, so dashboards were up to an hour stale.
+**Situation.** DistroSaaS is a multi-tenant SaaS for distribution companies: 100+ clients, each with its own database, and field sales reps whose phones send GPS points all day. Every point was written to MySQL and MongoDB inside the HTTP request, so the phone waited on two database writes and that write load landed on the same databases the reports read from [confirm the symptom you actually saw: slow tracking API, DB load, timeouts]. Order summaries were hourly batch jobs, so dashboards were up to an hour stale.
 
 **Task.** I owned moving tracking ingestion onto Kafka without losing points and without a risky cut-over, and building plumbing other streams could reuse.
 
@@ -793,7 +793,7 @@ Alert on the things that fail **silently**, ordered by how much damage they do b
 
 ---
 
-## 8.15 System designs using Sokrio as the base
+## 8.15 System designs using DistroSaaS as the base
 
 > Q69–Q71 give the generic seven-step frame. These three go further: **today → target → migration steps**, with the findings each step fixes. In an interview, start with the generic frame (2 minutes), then say "here's how I'd actually do it on the system I work on" and use these.
 
@@ -801,7 +801,7 @@ Alert on the things that fail **silently**, ordered by how much damage they do b
 
 **Today.**
 
-| Concern | Sokrio now | Ref |
+| Concern | DistroSaaS now | Ref |
 |---|---|---|
 | Order write | Tenant MySQL, local transactions; `save()` called bare from the controller | `Order/OrderController.php:44` |
 | Duplicate orders from offline retries | No idempotency key on orders (only Task Manager has one) | `app/Support/Concerns/HandlesIdempotency.php` |
@@ -847,7 +847,7 @@ flowchart LR
 
 **Today.**
 
-| Concern | Sokrio now | Ref |
+| Concern | DistroSaaS now | Ref |
 |---|---|---|
 | Heavy summaries | Scheduler → one job per active tenant on the shared `summary` queue | `BaseCommand.php:12,50-70` |
 | Exports | One global lane for the whole platform (landlord `SequentialJob`), a dead `processing` row blocks everyone | F24, R34 |
@@ -895,7 +895,7 @@ flowchart TB
 
 **Today.**
 
-| Concern | Sokrio now | Ref |
+| Concern | DistroSaaS now | Ref |
 |---|---|---|
 | SMS send | Interface separates "never sent" from "maybe sent"; no auto-retry; manual resend with its own cap | `SMSSender.php:12-19`, `MessageResendService.php:111-198`, `config/sms.php:14-15` |
 | Push + in-app | `SendApprovalNotificationJob`: Org + arrays, per-recipient `try`, FCM push, dispatched `afterCommit` | `SendApprovalNotificationJob.php:34-68`, `ApprovalNotifier.php:67` |
@@ -934,16 +934,16 @@ flowchart LR
 
 **Trade-offs to say out loud.**
 - Inserting the dedup row **before** the send means a crash right after the insert loses that one message (at-most-once for it). For SMS that's the right side to err on; for critical alerts, write `sending` → `sent` and reconcile.
-- Sokrio's volume doesn't need Kafka here; per-message retry and delay are queue features (Q70). Kafka only appears if many services start producing notification requests.
+- DistroSaaS's volume doesn't need Kafka here; per-message retry and delay are queue features (Q70). Kafka only appears if many services start producing notification requests.
 - Step 1 and step 4 alone remove most duplicate risk; the rest is about isolation and scale.
 
 ---
 
 ### ✅ Quality check
-- [x] 25 new questions (Q82–Q106), each from a real Sokrio finding or design choice, each with the exact 5 renderer labels from `README_2.md:227-231`
+- [x] 25 new questions (Q82–Q106), each from a real DistroSaaS finding or design choice, each with the exact 5 renderer labels from `README_2.md:227-231`
 - [x] Overlaps with 08a–08d kept short and linked (Q85 → Q78, Q95 → Q73, Q100 → 08c Q57, Q101 → D9/D11)
 - [x] Unproven items stay `[INFERENCE]` (F7 in Q84, F19 in Q93, F24 in Q94) and are flagged as labs, not facts
 - [x] STAR story built from verified git history (commit hashes and dates read with `git log`, read only); metrics left as placeholders, no invented numbers; ends with the honest "what I'd do next" (F5, RF=1)
-- [x] Three Sokrio designs (order pipeline, multi-tenant reporting, notifications) each give today → target (Mermaid) → reversible migration steps mapped to finding ids, and don't repeat the generic Q69–Q71 frame
+- [x] Three DistroSaaS designs (order pipeline, multi-tenant reporting, notifications) each give today → target (Mermaid) → reversible migration steps mapped to finding ids, and don't repeat the generic Q69–Q71 frame
 - [x] `### Q<n>.` headings kept for the T11 renderer; STAR and designs use non-Q `###` headings; no literal bold labels in this list
 - [x] No secrets: env var names only, no hosts or IPs

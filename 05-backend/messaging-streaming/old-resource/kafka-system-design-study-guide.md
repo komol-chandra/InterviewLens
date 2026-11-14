@@ -1,6 +1,6 @@
 ---
 id: be-messaging-streaming-old-resource-kafka-system-design-study-guide
-title: "Kafka at Sokrio — System Design & DevOps Study Guide"
+title: "Kafka at DistroSaaS — System Design & DevOps Study Guide"
 track: backend
 type: topic
 status: draft
@@ -10,12 +10,12 @@ tags: [backend, messaging-streaming]
 updated: 2026-10-26
 ---
 
-# Kafka at Sokrio — System Design & DevOps Study Guide
+# Kafka at DistroSaaS — System Design & DevOps Study Guide
 
-> For new devs joining `sokrio-server`. This is not Kafka-in-general theory —
+> For new devs joining `api-server`. This is not Kafka-in-general theory —
 > it's how *we* use it, why it looks the way it does, and the real production
 > incidents that shaped it. Written 2026-09-08, reconstructed entirely from
-> `git log` on `sokrio-server` (branch history, not GitHub PR metadata — `gh`
+> `git log` on `api-server` (branch history, not GitHub PR metadata — `gh`
 > CLI isn't available in this environment and the GitHub API needs a token we
 > don't have here; every commit hash below is checkable with
 > `git show <hash>`).
@@ -24,7 +24,7 @@ updated: 2026-10-26
 
 ## 1. Why Kafka exists in this codebase at all
 
-Sokrio is a multi-tenant Laravel monolith. Most things happen synchronously
+DistroSaaS is a multi-tenant Laravel monolith. Most things happen synchronously
 inside an HTTP request or a scheduled batch job (`app/Console/Kernel.php` is
 full of `dailyAt()`/`hourlyAt()` cron entries dispatching queue jobs). That's
 fine for CRUD, but it breaks down for two kinds of work:
@@ -60,7 +60,7 @@ calls are still commented out. Don't assume "it's in `TopicRegistry`" means
 | **Partition key** | We publish with `key = tenant_id` (`KafkaProducer::publish()`, defaults `partitionKey ?? (string)$tenantId`). Same key → same partition → **all of one tenant's events arrive in order**. This is the whole reason tenant-scoped ordering works without a global lock. |
 | **Producer** | Whatever writes an event — usually a request-time Controller or a model Observer. Synchronous, short timeouts (1s), never blocks the response on a broker outage (see §5). |
 | **Consumer** | A long-running `php artisan kafka:consume {topic}` process (one per topic), supervised, not a queue worker — it's not backed by Redis/DB queue tables, it's backed by the broker's own offset tracking. |
-| **Consumer group** | All consumer processes reading the same topic with the same `group_id` (`KAFKA_GROUP`, default `sokrio-group`) share the partitions between them and get a *rebalance* when one joins/leaves. We currently run `numprocs=1` per topic (see §7), so rebalancing mostly matters for restarts, not horizontal scale-out — but the group membership plumbing (§4.5) had to be got right regardless. |
+| **Consumer group** | All consumer processes reading the same topic with the same `group_id` (`KAFKA_GROUP`, default `app-group`) share the partitions between them and get a *rebalance* when one joins/leaves. We currently run `numprocs=1` per topic (see §7), so rebalancing mostly matters for restarts, not horizontal scale-out — but the group membership plumbing (§4.5) had to be got right regardless. |
 | **Offset** | Per-partition read cursor. Committing an offset says "everything up to here is done" — on restart the consumer resumes from the last committed offset, not from zero. |
 | **Delivery semantics** | We commit offsets *after* the handler runs on a flush, but the handler is written to **never throw** — a tenant that fails 3x is logged and the batch still commits. Net effect: **at-most-once** for the failing subset, not at-least-once, despite manual offset control. This is a deliberate trade-off (see §4.4) — know it before you build a handler that assumes "if it's in Kafka, it will eventually land." |
 
@@ -407,12 +407,12 @@ switching DB connections per tenant-group inside each flush.
 Kafka consumers here aren't queue workers (no Redis/DB-backed queue table)
 and they aren't request-driven — they're **standalone long-running
 processes** you deploy and supervise like a small, single-purpose service,
-even though the code lives inside `sokrio-server`.
+even though the code lives inside `api-server`.
 
 ### 7.1 Supervisor (the actual production process model)
 
 ```ini
-[program:sokrio-kafka-consumer-tracking]
+[program:kafka-consumer-tracking]
 command=php /var/www/html/artisan kafka:consume tracking
 autostart=true
 autorestart=true
@@ -460,8 +460,8 @@ longer for a healthy round-trip):
 | Var | Default | Role |
 |---|---|---|
 | `KAFKA_BROKERS` | `localhost:9092` | Bootstrap servers |
-| `KAFKA_GROUP` | `sokrio-group` | Consumer group id — same group across all consumer processes that should share partition ownership |
-| `KAFKA_PRODUCER_CLIENT_ID` / `KAFKA_CONSUMER_CLIENT_ID` | `sokrio-producer` / `sokrio-consumer` | Distinct so broker-side metrics/quotas separate the two roles |
+| `KAFKA_GROUP` | `app-group` | Consumer group id — same group across all consumer processes that should share partition ownership |
+| `KAFKA_PRODUCER_CLIENT_ID` / `KAFKA_CONSUMER_CLIENT_ID` | `app-producer` / `app-consumer` | Distinct so broker-side metrics/quotas separate the two roles |
 | `KAFKA_PRODUCER_*_TIMEOUT` | 1.0s each | Fail fast — this runs inside an HTTP request |
 | `KAFKA_PRODUCE_RETRY` / `KAFKA_MAX_WRITE_ATTEMPTS` | 0 / 1 (lib-level) — `KafkaProducer` itself retries up to 3x on top (`MAX_PUBLISH_ATTEMPTS`) | Publish resilience |
 | `KAFKA_CONSUMER_*_TIMEOUT` | 3-5s | More headroom — a slow coordinator round-trip shouldn't look like a dead socket |
@@ -482,7 +482,7 @@ php artisan kafka:consume tracking
 
 # in another shell, trigger a publish by hitting the tracking endpoint
 # (TrackingController::store already calls the producer)
-curl -X POST https://<tenant>.sokrio-server.test/api/trackings ...
+curl -X POST https://<tenant>.api-server.test/api/trackings ...
 
 # watch it land
 tail -f storage/logs/kafka.log

@@ -27,9 +27,9 @@ updated: 2026-10-29
 - Study mode prompts: `Quiz me on T2`, `Explain <topic> simpler` (see README.md).
 
 ## Things to remember
-- **Code snapshot:** refs are pinned to `d14c0ebb2`. Read drifted files with `git show d14c0ebb2:<path>`. **Don't switch branches** in `sokrio-server`.
+- **Code snapshot:** refs are pinned to `d14c0ebb2`. Read drifted files with `git show d14c0ebb2:<path>`. **Don't switch branches** in `api-server`.
 - The local `grep` is ugrep: use `grep -F` / `grep -e`.
-- Reading `sokrio-server/.env` is blocked.
+- Reading `api-server/.env` is blocked.
 - Mermaid rules: no `;` in sequence messages or notes; quote labels that contain `()`, `{}` or `[]`; write `:` inside stateDiagram labels as `#58;`; dotted cross edge is `-.-x`.
 - Re-verify the page: `python3 -m http.server 8765` in the RnD root, then a Playwright script with Node 22 (`~/.nvm/versions/node/v22.23.4/bin/node`). Rendered diagrams are `.mermaid-wrap svg`; failures are `.mermaid-err`.
 - Don't edit the inputs (`README.md`, `README_2.md`, `interview-questions.md`, `old-resource/`).

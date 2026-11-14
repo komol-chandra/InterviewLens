@@ -22,7 +22,7 @@ JD-তে স্পষ্ট লেখা "exposed via REST API" এবং "trou
 
 `PUT` পুরো resource replace করে, বারবার একই request পাঠালে একই ফলাফল (idempotent)। `PATCH` partial update — যদি তুমি `{"count": count + 1}` টাইপ delta পাঠাও তাহলে idempotent না, কিন্তু পুরো নতুন ভ্যালু পাঠালে (`{"status": "assigned"}`) idempotent হতে পারে। `GET`, `PUT`, `DELETE`, `HEAD`, `OPTIONS` idempotent; `POST` না।
 
-🔗 Sokrio link: S5 — payment webhook idempotency-র সাথে একই চিন্তা (duplicate call safe রাখা)।
+🔗 DistroSaaS link: S5 — payment webhook idempotency-র সাথে একই চিন্তা (duplicate call safe রাখা)।
 
 ---
 
@@ -35,7 +35,7 @@ POST /work-orders
 Idempotency-Key: 8f14e45f-...
 ```
 
-🔗 Sokrio link: S5 — "প্রতিটা payment request idempotency key বহন করে, তাই duplicate callback ডাবল-চার্জ করতে পারে না।"
+🔗 DistroSaaS link: S5 — "প্রতিটা payment request idempotency key বহন করে, তাই duplicate callback ডাবল-চার্জ করতে পারে না।"
 
 ---
 
@@ -46,7 +46,7 @@ Idempotency-Key: 8f14e45f-...
 - Delivery fail হলে **exponential backoff + retry**, একটা নির্দিষ্ট সংখ্যার পর disable + replay UI/endpoint।
 - **Ordering** guarantee করা কঠিন (retry-তে অর্ডার এলোমেলো হতে পারে), তাই প্রতিটা event-এ timestamp/version পাঠাও, client নিজে stale event বাতিল করতে পারে।
 
-🔗 Sokrio link: S5 — HMAC signature verification + idempotency key, প্রোডাকশনে zero failed transaction।
+🔗 DistroSaaS link: S5 — HMAC signature verification + idempotency key, প্রোডাকশনে zero failed transaction।
 
 ---
 
@@ -60,7 +60,7 @@ SELECT * FROM work_orders WHERE id > :last_id ORDER BY id LIMIT 20;
 
 এখানে ইনডেক্স সরাসরি সঠিক জায়গা থেকে স্ক্যান শুরু করে, offset-এর কনস্ট্যান্ট-টাইম cost নেই।
 
-🔗 Sokrio link: সরাসরি অভিজ্ঞতা নেই — এভাবে বলো: "Report API-তে large dataset-এর জন্য cursor-based pattern পছন্দ করি; Sokrio-র বড় রিপোর্টগুলো MongoDB aggregation দিয়ে পেজিনেট করা হয় (S2)।"
+🔗 DistroSaaS link: সরাসরি অভিজ্ঞতা নেই — এভাবে বলো: "Report API-তে large dataset-এর জন্য cursor-based pattern পছন্দ করি; DistroSaaS-এর বড় রিপোর্টগুলো MongoDB aggregation দিয়ে পেজিনেট করা হয় (S2)।"
 
 ---
 
@@ -71,7 +71,7 @@ SELECT * FROM work_orders WHERE id > :last_id ORDER BY id LIMIT 20;
 - **400 Bad Request** — request-এর syntax/format ভুল (malformed JSON)
 - **422 Unprocessable Entity** — syntax ঠিক কিন্তু validation ভুল (business rule ভেঙেছে, যেমন required field খালি)
 
-🔗 Sokrio link: S3 — territory-scoped RBAC-এ 403 আর tenant-resolve-না-হওয়া 401-এর পার্থক্য এভাবেই হ্যান্ডল হয়।
+🔗 DistroSaaS link: S3 — territory-scoped RBAC-এ 403 আর tenant-resolve-না-হওয়া 401-এর পার্থক্য এভাবেই হ্যান্ডল হয়।
 
 ---
 
@@ -79,7 +79,7 @@ SELECT * FROM work_orders WHERE id > :last_id ORDER BY id LIMIT 20;
 
 Noun-based, verb না: `/work-orders/{id}/assignments` ঠিক, `/assignWorkOrder` ভুল। Nested resource-এর গভীরতা ২ লেভেলের বেশি না রাখা ভালো। Action যেটা pure CRUD না (যেমন "accept") সেটা sub-resource বা verb-endpoint হিসেবে গ্রহণযোগ্য: `POST /work-orders/{id}/accept`।
 
-🔗 Sokrio link: S7 — REST + SOAP উভয় ধরনের client integration-এর অভিজ্ঞতা।
+🔗 DistroSaaS link: S7 — REST + SOAP উভয় ধরনের client integration-এর অভিজ্ঞতা।
 
 ---
 
@@ -90,7 +90,7 @@ Noun-based, verb না: `/work-orders/{id}/assignments` ঠিক, `/assignWork
 
 Public API-তে URL versioning বেশি প্রচলিত (client ইন্টিগ্রেশনের জন্য সহজ বোঝা যায়)।
 
-🔗 Sokrio link: S7 — legacy enterprise client-এর জন্য আলাদা SOAP endpoint বজায় রাখা, অনেকটা versioning-এর মতোই সমস্যা।
+🔗 DistroSaaS link: S7 — legacy enterprise client-এর জন্য আলাদা SOAP endpoint বজায় রাখা, অনেকটা versioning-এর মতোই সমস্যা।
 
 ---
 
@@ -98,7 +98,7 @@ Public API-তে URL versioning বেশি প্রচলিত (client ই�
 
 `429 Too Many Requests` + `Retry-After` header। অ্যালগরিদম: token bucket (burst allow করে) বা sliding window (smooth). Redis-এ counter রাখা যায় (`INCR` + `EXPIRE`), key-তে client/API-key স্কোপ করতে হবে।
 
-🔗 Sokrio link: সরাসরি অভিজ্ঞতা নেই — এভাবে বলো: "Rate limiting সরাসরি ইমপ্লিমেন্ট করিনি, কিন্তু cache key সবসময় tenant-scoped রাখার একই নীতিতে per-client key ডিজাইন করব।"
+🔗 DistroSaaS link: সরাসরি অভিজ্ঞতা নেই — এভাবে বলো: "Rate limiting সরাসরি ইমপ্লিমেন্ট করিনি, কিন্তু cache key সবসময় tenant-scoped রাখার একই নীতিতে per-client key ডিজাইন করব।"
 
 ---
 
@@ -110,7 +110,7 @@ RFC 7807 (`application/problem+json`)-এর মতো একটা consistent s
 ```
 ক্লায়েন্ট predictable ভাবে parse করতে পারে, প্রতিটা endpoint আলাদা shape দিলে integration ভঙ্গুর হয়ে যায়।
 
-🔗 Sokrio link: S7 — client integration-এর সময় error consistency-ই সবচেয়ে বেশি জিজ্ঞেস করা সমস্যা।
+🔗 DistroSaaS link: S7 — client integration-এর সময় error consistency-ই সবচেয়ে বেশি জিজ্ঞেস করা সমস্যা।
 
 ---
 
@@ -120,7 +120,7 @@ RFC 7807 (`application/problem+json`)-এর মতো একটা consistent s
 - **HTTPS/TLS** — সব production traffic-এ বাধ্যতামূলক, credential/token plaintext-এ যাবে না
 - **ETag/Cache-Control** — GET response cache করতে, client `If-None-Match` পাঠালে ৩০৪ ফেরত দেওয়া যায় (bandwidth বাঁচে)
 
-🔗 Sokrio link: সরাসরি অভিজ্ঞতা নেই।
+🔗 DistroSaaS link: সরাসরি অভিজ্ঞতা নেই।
 
 ---
 

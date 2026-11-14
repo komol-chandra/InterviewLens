@@ -1,6 +1,6 @@
 ---
-id: be-messaging-streaming-sections-02-kafka-in-sokrio
-title: "02 · Kafka in Sokrio — Deep Dive"
+id: be-messaging-streaming-sections-02-kafka-in-DistroSaaS
+title: "02 · Kafka in DistroSaaS — Deep Dive"
 track: backend
 type: topic
 status: draft
@@ -10,10 +10,10 @@ tags: [backend, messaging-streaming]
 updated: 2026-10-26
 ---
 
-# 02 · Kafka in Sokrio — Deep Dive
+# 02 · Kafka in DistroSaaS — Deep Dive
 
-> **Snapshot:** `sokrio-server` @ `master` · HEAD `d14c0ebb2` · written 2026-10-26.
-> Paths are relative to `sokrio-server/`. Library paths are shortened to `phpkafka/…` = `vendor/longlang/phpkafka/src/…` (v1.2.5).
+> **Snapshot:** `api-server` @ `master` · HEAD `d14c0ebb2` · written 2026-10-26.
+> Paths are relative to `api-server/`. Library paths are shortened to `phpkafka/…` = `vendor/longlang/phpkafka/src/…` (v1.2.5).
 > Tags: `[CODE]` verified in app code · `[LIB]` verified in the vendored client · `[NOTES]` from my blog/PR notes · `[GENERAL]` industry knowledge · `[INFERENCE]` reasoned from code + Kafka protocol, needs a lab to prove · `[ASSUMPTION]` best guess plus how to verify.
 > Builds on `00-inventory.md` and `01-architecture-overview.md`. Facts proven there are reused, not re-proven.
 
@@ -25,7 +25,7 @@ T2 started by settling A1/A2 in the client library. The answers changed several 
 
 | # | Finding | Proof | Impact |
 |---|---|---|---|
-| F5 | **The producer runs with `acks = 0`.** Sokrio never calls `setAcks()`, and the library default is 0. With acks=0 the client writes to the socket and **does not wait for any broker response** | `phpkafka/Producer/ProducerConfig.php:36`; `phpkafka/Producer/Producer.php:159-163`; `grep setAcks app config` → no hits | "Publish succeeded" only means "bytes left our socket". A broker-side rejection (not leader, topic missing, message too large, disk full) is invisible. The 202 can be returned for an event that never landed. The tracking fallback only covers *transport* failures |
+| F5 | **The producer runs with `acks = 0`.** DistroSaaS never calls `setAcks()`, and the library default is 0. With acks=0 the client writes to the socket and **does not wait for any broker response** | `phpkafka/Producer/ProducerConfig.php:36`; `phpkafka/Producer/Producer.php:159-163`; `grep setAcks app config` → no hits | "Publish succeeded" only means "bytes left our socket". A broker-side rejection (not leader, topic missing, message too large, disk full) is invisible. The 202 can be returned for an event that never landed. The tracking fallback only covers *transport* failures |
 | F6 | **No `auto.offset.reset` setting exists.** A group with no committed offset starts at offset **0** (effectively *earliest*). An out-of-range offset (data aged out by retention) jumps to **latest − 1** | `phpkafka/Consumer/OffsetManager.php:107` (`max(committed, 0)`), `:140,150` (ListOffsets timestamp −1 → `offset - 1`); `phpkafka/Consumer/Consumer.php:345,364` | A renamed group replays the whole topic (that is why `tracking` is grandfathered, `config/kafka.php:9-16`). A consumer that is down longer than retention silently skips everything it missed |
 | F7 | **The client counts messages instead of reading record offsets.** `RecordBatch::$baseOffset` is never read by the consumer; the cursor is `+1` per delivered message | `phpkafka/Consumer/Consumer.php:321,351-353`; `app/Services/Kafka/KafkaConsumer.php:282` | `[INFERENCE]` A Kafka broker returns *whole* record batches. If the committed offset lands mid-batch (a v2 bulk publish is one batch, see §2.1), a restart re-delivers the head of that batch **and** over-advances the cursor, skipping the same number of later records. Needs a lab (T9) |
 | F8 | **A8 confirmed: Department events fire inside an open transaction.** `DepartmentBulkDataUpdateController` updates each department with `->update()` between `DB::beginTransaction()` and `DB::commit()` | `app/Http/Controllers/DepartmentBulkDataUpdateController.php:41-52` | On rollback, Mongo already received `territory_id`/`supplier_id` changes that never happened. While the broker is down, each row also pays the publish retry budget (§2.2) inside the request |
@@ -41,12 +41,12 @@ T2 started by settling A1/A2 in the client library. The answers changed several 
 
 | Setting | Value | Source | Comment |
 |---|---|---|---|
-| `acks` | **0** (library default) | `ProducerConfig.php:36` | F5. Not configured anywhere in Sokrio |
+| `acks` | **0** (library default) | `ProducerConfig.php:36` | F5. Not configured anywhere in DistroSaaS |
 | connect / send / recv timeout | 1.0 s each | `config/kafka.php:25-27`, set at `KafkaProducer.php:41-43` | Short on purpose: the publish runs inside the HTTP request |
-| library `produceRetry` | 0 | `config/kafka.php:28` | The library's own retry is off; Sokrio retries itself |
+| library `produceRetry` | 0 | `config/kafka.php:28` | The library's own retry is off; DistroSaaS retries itself |
 | library `maxWriteAttempts` | 1 | `config/kafka.php:30` | |
-| Sokrio publish attempts | 3, with 0.25 s sleep and a socket reset between them | `KafkaProducer.php:26,115-142`, `config/kafka.php:36` | Only on `SocketException`/`ConnectionException`/`NoAliveBrokerException` |
-| partitioner | `crc32(key) % N` | `DefaultPartitioner.php:48-53` | Keyless messages would be round-robin; Sokrio always sets a key |
+| DistroSaaS publish attempts | 3, with 0.25 s sleep and a socket reset between them | `KafkaProducer.php:26,115-142`, `config/kafka.php:36` | Only on `SocketException`/`ConnectionException`/`NoAliveBrokerException` |
+| partitioner | `crc32(key) % N` | `DefaultPartitioner.php:48-53` | Keyless messages would be round-robin; DistroSaaS always sets a key |
 | compression | none | `Producer.php` (no attributes set) | `[GENERAL]` GPS JSON compresses ~5–10×; worth it at volume |
 | idempotent producer / transactions | none (`producerId = -1`) | `ProducerConfig.php:41-46` | No broker-side dedup |
 | socket | `InterruptResilientStreamSocket` | `KafkaProducer.php:51`, `Socket/InterruptResilientStreamSocket.php:36-83` | Retries `stream_select()` on EINTR from Datadog's profiler signals |
@@ -58,7 +58,7 @@ T2 started by settling A1/A2 in the client library. The answers changed several 
 | Tracking v1 | `user_id` | `Tracking/TrackingController.php:62-68` | Breadcrumbs are ordered per rep; one rep never spans partitions | Adding partitions remaps `crc32 % N`, so in-flight keys move (§2.5) |
 | Tracking v2 (bulk) | `user_id`, all points in **one** `sendBatch` | `V2/Tracking/TrackingController.php:52-58`, `KafkaProducer.php:70-91` | One request = one partition = one record batch (`Producer.php` builds one `RecordBatch` per partition) | F7: the one-batch shape is what makes mid-batch commits possible |
 | Departments | `department_id` | `DepartmentChangeObserver.php:131-138` | Last-write-wins per outlet only needs per-outlet order | A hot tenant cannot hot-spot a partition, which is good |
-| Default | `tenant_id` | `KafkaProducer.php:58,76` | Fallback only | `[GENERAL]` Keying by tenant would make one big tenant a hot partition. Sokrio's overrides avoid that (D4) |
+| Default | `tenant_id` | `KafkaProducer.php:58,76` | Fallback only | `[GENERAL]` Keying by tenant would make one big tenant a hot partition. DistroSaaS's overrides avoid that (D4) |
 
 ### Envelope
 
@@ -124,7 +124,7 @@ sequenceDiagram
     Note over DB,M: MySQL = old territory · Mongo = new territory · nothing reconciles automatically
 ```
 
-### Proposal: transactional outbox (sized for Sokrio)
+### Proposal: transactional outbox (sized for DistroSaaS)
 
 1. New tenant table `outbox_events(id, topic, key, event_type, payload JSON, created_at, published_at NULL)`, index `(published_at, id)`.
 2. The observer writes an outbox row **in the same DB transaction** as the department save (`DB::afterCommit` is not needed, because the row commits or rolls back with the save). `Department::upsert` callers write outbox rows explicitly, which also closes F2.
@@ -132,7 +132,7 @@ sequenceDiagram
 4. Delivery becomes at-least-once from the producer side; the consumer is already idempotent for departments (§2.7).
 
 - Cheaper alternative today: `Department::observe(...)` with `$afterCommit = true` on the observer (`[GENERAL]` Laravel 9 supports `public $afterCommit = true;` on observers). This kills phantom events (F8) but not lost events.
-- `[GENERAL]` A CDC tool (Debezium on the MySQL binlog) is the "zero app change" version, but one binlog per tenant DB makes it heavy for Sokrio's DB-per-tenant model.
+- `[GENERAL]` A CDC tool (Debezium on the MySQL binlog) is the "zero app change" version, but one binlog per tenant DB makes it heavy for DistroSaaS's DB-per-tenant model.
 
 ---
 
@@ -143,14 +143,14 @@ sequenceDiagram
 | Aspect | How | Proof |
 |---|---|---|
 | Entry | `php artisan kafka:consume {tracking|departments}` | `Console/Commands/Kafka/ConsumeCommand.php:18,27-30` |
-| Supervisor | `sokrio-kafka-consumer-tracking`, `-departments`; numprocs=1, stopwaitsecs=35, `DD_PROFILING_ENABLED=false`/`DD_TRACE_CLI_ENABLED=false` | `README.md:178-212` |
+| Supervisor | `kafka-consumer-tracking`, `-departments`; numprocs=1, stopwaitsecs=35, `DD_PROFILING_ENABLED=false`/`DD_TRACE_CLI_ENABLED=false` | `README.md:178-212` |
 | Group id | tracking → bare `KAFKA_GROUP` (legacy); others → `{KAFKA_GROUP}-{topic}` | `ConsumeCommand.php:97-107`, `config/kafka.php:16` |
 | Membership | **static**, `group.instance.id = ""` (D1) | `KafkaConsumer.php:79-95` |
 | Assignment | `RangeAssignor` (library default) | `phpkafka/Consumer/ConsumerConfig.php:115` |
 | Recycle | flush, commit and exit 0 after 6 h | `config/kafka.php:70`, `KafkaConsumer.php:123,229-231,256-258` |
 | No time limit | `set_time_limit(0)` | `ConsumeCommand.php:45-46` |
 
-`[CODE]` With numprocs=1 and 3 partitions, **one PHP process owns all three partitions** of its topic. Scaling out means numprocs=2–3. With static membership, each process then needs a **distinct** `group.instance.id` (for example `%(process_num)s`), which Sokrio can't do today because the id is hard-coded to `""`. Two processes with `""` fence each other (the FENCED_INSTANCE_ID ping-pong in the comment at `KafkaConsumer.php:92-94`).
+`[CODE]` With numprocs=1 and 3 partitions, **one PHP process owns all three partitions** of its topic. Scaling out means numprocs=2–3. With static membership, each process then needs a **distinct** `group.instance.id` (for example `%(process_num)s`), which DistroSaaS can't do today because the id is hard-coded to `""`. Two processes with `""` fence each other (the FENCED_INSTANCE_ID ping-pong in the comment at `KafkaConsumer.php:92-94`).
 
 ### The poll loop
 
@@ -280,7 +280,7 @@ flowchart LR
 4. **Alerting**: DLQ depth > 0 → Slack (via a scheduled check, keeping the `kafka` log channel quiet as designed).
 5. **Schedule `DepartmentSync`** nightly as a safety net until the outbox exists (closes F1), with `->onOneServer()`.
 
-`[GENERAL]` Retry topics with delays (`.retry.5m`, `.retry.1h`) are the "Uber pattern". They are overkill at Sokrio's volume; a single DLQ + manual replay covers it.
+`[GENERAL]` Retry topics with delays (`.retry.5m`, `.retry.1h`) are the "Uber pattern". They are overkill at DistroSaaS's volume; a single DLQ + manual replay covers it.
 
 ---
 

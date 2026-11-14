@@ -1,5 +1,5 @@
 <?php
-// Minimal Laravel 9.52 console on Sokrio's vendor (mounted read-only at /srv/vendor). Lab only.
+// Minimal Laravel 9.52 console on DistroSaaS's vendor (mounted read-only at /srv/vendor). Lab only.
 require '/srv/vendor/autoload.php';
 require __DIR__ . '/jobs.php';
 $app = new Illuminate\Foundation\Application(__DIR__);

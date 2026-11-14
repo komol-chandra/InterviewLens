@@ -1,6 +1,6 @@
 ---
 id: be-messaging-streaming-sections-00-inventory
-title: "00 · Inventory — Every Messaging Moving Part in Sokrio"
+title: "00 · Inventory — Every Messaging Moving Part in DistroSaaS"
 track: backend
 type: topic
 status: draft
@@ -10,10 +10,10 @@ tags: [backend, messaging-streaming]
 updated: 2026-10-29
 ---
 
-# 00 · Inventory — Every Messaging Moving Part in Sokrio
+# 00 · Inventory — Every Messaging Moving Part in DistroSaaS
 
-> **Snapshot:** `sokrio-server` @ `master` · HEAD `d14c0ebb2` (PR #5654) · surveyed 2026-10-26.
-> All paths are relative to `sokrio-server/` unless prefixed with another repo.
+> **Snapshot:** `api-server` @ `master` · HEAD `d14c0ebb2` (PR #5654) · surveyed 2026-10-26.
+> All paths are relative to `api-server/` unless prefixed with another repo.
 > **Master drift (T12, 2026-10-29):** `master` is now `75c787a2c`. No Kafka file changed. Line refs still match the snapshot, but **F13 is fixed** and **F12 is partly mitigated** on master. See §0.14.
 > Tags: `[CODE]` verified in code · `[NOTES]` from my blog/PR notes only · `[GENERAL]` industry knowledge · `[ASSUMPTION]` best guess + how to verify.
 
@@ -21,7 +21,7 @@ updated: 2026-10-29
 
 ## 0.1 The one-paragraph answer
 
-`[CODE]` Sokrio uses three messaging mechanisms, and **no RabbitMQ**:
+`[CODE]` DistroSaaS uses three messaging mechanisms, and **no RabbitMQ**:
 
 1. **Kafka**, via the pure-PHP client `longlang/phpkafka` v1.2.5. Two topics have live producer → consumer pipelines: `tracking` (GPS breadcrumbs) and `departments` (outlet master-data sync to Mongo). Two more (`order_summaries`, `delivery_summaries`) are registered, but their publish calls are commented out and they have no consumer.
 2. **Laravel queues on Redis.** This is the workhorse: 127 queued Jobs, 19 queued Listeners and 13 queued Mailables, spread over the `summary`, `default`, `feature-tracking`, `order-approved` and `sequential` queues. They are fed largely by the ~40-entry scheduler in `app/Console/Kernel.php`.
@@ -37,10 +37,10 @@ Deployment is plain EC2 VMs. GitHub Actions SSHes in and runs a server-side `pip
 flowchart LR
     subgraph Clients
         MOB[Mobile app<br/>field reps]
-        WEB[sokrio-app-frontend<br/>React]
+        WEB[app-frontend<br/>React]
     end
 
-    subgraph API["sokrio-server (php-fpm, EC2 'prod')"]
+    subgraph API["api-server (php-fpm, EC2 'prod')"]
         TC1["POST trackings<br/>Tracking/TrackingController"]
         TC2["POST v2 trackings bulk<br/>V2/Tracking/TrackingController"]
         DEP["Department model save<br/>DepartmentChangeObserver"]
@@ -108,9 +108,9 @@ flowchart LR
 
 `[CODE]` Not present: `laravel/horizon`, `laravel/octane`, `php-amqplib`, `vladimir-yuldashev/laravel-queue-rabbitmq`, `mateusjunges/laravel-kafka`, `ext-rdkafka`.
 
-`[CODE]` Frontend: `sokrio-app-frontend` depends on `laravel-echo ^1.17.1` and `pusher-js ^8.4.0-rc2`, with the client in `sokrio-app-frontend/src/lib/echo.ts`. `sokrio-admin-frontend` has no realtime client.
+`[CODE]` Frontend: `app-frontend` depends on `laravel-echo ^1.17.1` and `pusher-js ^8.4.0-rc2`, with the client in `app-frontend/src/lib/echo.ts`. `admin-frontend` has no realtime client.
 
-> ⚠️ **Notes vs code:** the workspace `.claude/CLAUDE.md` says "Laravel 10". The lock file says **9.52.22**, and `sokrio-server/CLAUDE.md` correctly says Laravel 9.
+> ⚠️ **Notes vs code:** the workspace `.claude/CLAUDE.md` says "Laravel 10". The lock file says **9.52.22**, and `api-server/CLAUDE.md` correctly says Laravel 9.
 
 ---
 
@@ -137,8 +137,8 @@ The producer engine is `app/Services/Kafka/KafkaProducer.php`:
 
 | # | Command | Handler | Group id | Persists to | Run by | Ref |
 |---|---|---|---|---|---|---|
-| C1 | `php artisan kafka:consume tracking` | `TrackingMessageHandler` | `KAFKA_GROUP` (bare, "grandfathered") | tenant MySQL `trackings` + Mongo `TrackingReport` | Supervisor `sokrio-kafka-consumer-tracking`, numprocs=1 | `app/Console/Commands/Kafka/ConsumeCommand.php:27-30`, `app/Services/Kafka/Handlers/TrackingMessageHandler.php` |
-| C2 | `php artisan kafka:consume departments` | `DepartmentMessageHandler` | `{KAFKA_GROUP}-departments` | Mongo `departments` (bulkWrite upsert on `department_id`) | Supervisor `sokrio-kafka-consumer-departments`, numprocs=1 | `app/Services/Kafka/Handlers/DepartmentMessageHandler.php:66-122` |
+| C1 | `php artisan kafka:consume tracking` | `TrackingMessageHandler` | `KAFKA_GROUP` (bare, "grandfathered") | tenant MySQL `trackings` + Mongo `TrackingReport` | Supervisor `kafka-consumer-tracking`, numprocs=1 | `app/Console/Commands/Kafka/ConsumeCommand.php:27-30`, `app/Services/Kafka/Handlers/TrackingMessageHandler.php` |
+| C2 | `php artisan kafka:consume departments` | `DepartmentMessageHandler` | `{KAFKA_GROUP}-departments` | Mongo `departments` (bulkWrite upsert on `department_id`) | Supervisor `kafka-consumer-departments`, numprocs=1 | `app/Services/Kafka/Handlers/DepartmentMessageHandler.php:66-122` |
 
 The consumer engine is `app/Services/Kafka/KafkaConsumer.php`:
 
@@ -248,13 +248,13 @@ The consumer engine is `app/Services/Kafka/KafkaConsumer.php`:
 | Thing | Found | Ref |
 |---|---|---|
 | CI tests | GitHub Actions, PHP 8.3 + mongo:6 service, ParaTest. **No Kafka or Redis service in CI** (tests fake them) | `.github/workflows/tests.yml` |
-| Prod app deploy | push `master` → SSH (`AWS_VM_HOST` secret) → `/home/sokrio/sokrio-prod/post-deploy/pipeline.sh` | `.github/workflows/ci-cd.yml` |
-| Queue worker box | push `prod-queue` → SSH (`AWS_QUEUE_VM_*`) → `/home/sokrio/sokrio-queue/post-deploy/pipeline.sh` | `.github/workflows/queue-worker-deploy.yml` |
+| Prod app deploy | push `master` → SSH (`AWS_VM_HOST` secret) → `/home/deploy/app-prod/post-deploy/pipeline.sh` | `.github/workflows/ci-cd.yml` |
+| Queue worker box | push `prod-queue` → SSH (`AWS_QUEUE_VM_*`) → `/home/deploy/app-queue/post-deploy/pipeline.sh` | `.github/workflows/queue-worker-deploy.yml` |
 | Report server | push `prod-report` → SSH (`AWS_REPORT_VM_*`) | `.github/workflows/prod-report-deploy.yml` |
 | PVM tenant box | push `pvm/master` | `.github/workflows/pvm-ci-cd.yml` |
 | Staging | push `staging` → SSH (`AWS_DEV_*`) | `.github/workflows/stg.yml` |
 | Supervisor configs | **Only documented in `README.md:178-212`**. Not in any repo | `README.md` |
-| Docker (server) | `.docker/php/` only (image bits). No compose file in `sokrio-server` | — |
+| Docker (server) | `.docker/php/` only (image bits). No compose file in `api-server` | — |
 | IaC (Terraform/CFN/CDK/Helm/K8s/ECS) | **Not found** | — |
 | Monitoring | Sentry (`SENTRY_LARAVEL_DSN`), Datadog APM + profiler (README), Telescope (dev), Slack log channels | `config/logging.php`, `README.md:214-238` |
 
@@ -304,7 +304,7 @@ Verify by checking the host names behind `KAFKA_BROKERS` and `REDIS_HOST` in the
 | `rdkafka`, `RdKafka`, `librdkafka`, `mateusjunges/laravel-kafka` | Not found in `composer.json` or `app/`. The client is `longlang/phpkafka` |
 | `acks`, `enable.idempotence`, `compression`, `linger`, `transactional` in Kafka code | Not configured. Library defaults apply |
 | `auto.offset.reset` | Not set in code. Library default (see Phase 2) |
-| `amqp`, `php-amqplib`, `rabbitmq`, `exchange`, `basic_publish`, `x-dead-letter-exchange` | **Not found anywhere**. No RabbitMQ in Sokrio |
+| `amqp`, `php-amqplib`, `rabbitmq`, `exchange`, `basic_publish`, `x-dead-letter-exchange` | **Not found anywhere**. No RabbitMQ in DistroSaaS |
 | `horizon`, `config/horizon.php` | Not found. Plain `queue:work` under Supervisor |
 | `Redis::publish`, `Redis::subscribe`, `xadd`, `XREADGROUP` | Not found |
 | `afterCommit`, `after_commit` | Not found (risk: jobs dispatched inside transactions) |
@@ -312,10 +312,10 @@ Verify by checking the host names behind `KAFKA_BROKERS` and `REDIS_HOST` in the
 | `outbox`, `processed_messages`, consumer-side `event_id` dedup | Not found. `event_id` is generated but never checked |
 | DLQ / retry topics (`.dlq`, `.retry`) | Not found |
 | MSK / Amazon MQ / ElastiCache / MemoryDB / SQS / SNS / EventBridge / Kinesis usage | Not found in code (only S3 via Flysystem; `sqs` connection stub unused) |
-| Terraform / CloudFormation / CDK / Helm / K8s / ECS task defs | Not found in any repo under `/home/kiri2ka/code/sokrio/` |
+| Terraform / CloudFormation / CDK / Helm / K8s / ECS task defs | Not found in any repo under `~/code/work/` |
 | Supervisor `.conf` files | Not in any repo. Only README examples. Live configs are on the servers |
-| `docker-compose` for `sokrio-server` | Not found (only for `sokrio-benchmark*`) |
-| Redis/Kafka in `sokrio-benchmark-python` requirements | Not found in requirements |
+| `docker-compose` for `api-server` | Not found (only for `benchmark-legacy*`) |
+| Redis/Kafka in `benchmark-python` requirements | Not found in requirements |
 | Kafka/Redis services in CI | Not found. Tests fake them |
 
 ## 0.14 Master drift since the snapshot (T12 check, 2026-10-29)
@@ -336,12 +336,12 @@ Verify by checking the host names behind `KAFKA_BROKERS` and `REDIS_HOST` in the
 | `Requests/PrimaryOrder/OrderRequest.php` | Indent type, discount rules, `withValidator` | Still dispatches `approveAfter` with no txn (§5 afterCommit table) | — |
 | New: `Jobs/PrimaryOrder/SyncPrimaryOrderToSap.php`, `config/sap.php` | SAP sync job | Not reviewed in this knowledge base. Check its queue and `afterCommit` if it matters | — |
 
-Re-check command: `git -C sokrio-server diff --stat d14c0ebb2 master -- app/Services/Kafka app/Console/Commands/Kafka app/Observers config app/Jobs app/Http/Middleware app/Support/Tenant`.
+Re-check command: `git -C api-server diff --stat d14c0ebb2 master -- app/Services/Kafka app/Console/Commands/Kafka app/Observers config app/Jobs app/Http/Middleware app/Support/Tenant`.
 
 ---
 
 ### ✅ Phase 0 quality check
-- [x] Every Sokrio claim has a `file:line` or a tag
+- [x] Every DistroSaaS claim has a `file:line` or a tag
 - [x] No secrets: env var names only, IPs/hosts not copied
 - [x] Landscape Mermaid diagram
 - [x] "Not found" list with what was searched

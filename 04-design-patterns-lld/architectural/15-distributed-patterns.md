@@ -10,7 +10,7 @@ tags: [lld, architectural]
 updated: 2026-11-14
 ---
 
-> Tracker ID: DP-15 · Generated: 2026-10-15 · Answers: **DP-Q15** (TRK-02 Phase 10) · Source: Richardson *Microservices Patterns* (Saga, Outbox, CQRS), Nygard *Release It!* (Circuit Breaker) + sokrio-server (`Observers/Concerns/PublishesKafkaMessage`, `config/database.php` `read`, Mongo summaries) + sokrio-benchmark-python (`app/common/tenant_fanout.py`) · Runnable: `04-design-patterns-lld/code/distributed-patterns.ts` (✅ ran + strict tsc 2026-10-15) · Status: 🟡 generated
+> Tracker ID: DP-15 · Generated: 2026-10-15 · Answers: **DP-Q15** (TRK-02 Phase 10) · Source: Richardson *Microservices Patterns* (Saga, Outbox, CQRS), Nygard *Release It!* (Circuit Breaker) + api-server (`Observers/Concerns/PublishesKafkaMessage`, `config/database.php` `read`, Mongo summaries) + benchmark-python (`app/common/tenant_fanout.py`) · Runnable: `04-design-patterns-lld/code/distributed-patterns.ts` (✅ ran + strict tsc 2026-10-15) · Status: 🟡 generated
 
 # DP-Q15: Explain CQRS, Saga, Outbox and Circuit Breaker. When would you use each one?
 
@@ -171,7 +171,7 @@ CQRS:    read model { '2026-10-15': { orders: 2, amount: 800 } }
 > **CQRS** separates the write model from read models shaped for the screens, updated from events, at the cost of eventual consistency.
 > **Circuit breaker** stops calling a dependency that keeps failing, returns a fallback immediately, and lets a single trial call through after a cool-down, so one slow provider doesn't take down everything else."
 
-**Sokrio উদাহরণ (সৎভাবে, কোনটা আছে কোনটা নেই):**
+**DistroSaaS উদাহরণ (সৎভাবে, কোনটা আছে কোনটা নেই):**
 > "We use a light form of CQRS: reports read from pre-aggregated Mongo summaries and a read connection, not the transactional tables. In the benchmark service I built a bounded fan-out across tenants, with a per-tenant timeout and a total budget, and degraded results are never cached. That's the same goal as a circuit breaker, failing fast and isolating a slow tenant, though not a full breaker with open and half-open states. We don't have an outbox: our order observers publish to Kafka directly and log a warning if it fails, so an event can be lost. If those events started driving inventory or payments, an outbox is the first thing I'd add."
 
 ---
@@ -189,10 +189,10 @@ CQRS:    read model { '2026-10-15': { orders: 2, amount: 800 } }
 
 ---
 
-🔗 **Sokrio link:** (কোডে যাচাই করা, Truth Audit-এর জন্য গুরুত্বপূর্ণ)
+🔗 **DistroSaaS link:** (কোডে যাচাই করা, Truth Audit-এর জন্য গুরুত্বপূর্ণ)
 - **Outbox: নেই।** `app/Observers/Concerns/PublishesKafkaMessage.php` (sihab): `$this->producer->publish($topic, $eventType, $tenantId, $payload, $partitionKey)` `try/catch`-এ, ব্যর্থ হলে শুধু `Log::channel('kafka')->warning(...)`। observer-এ `afterCommit` নেই। অর্থাৎ best-effort: Kafka down থাকলে event হারায়, আর rollback হওয়া change-এর event চলে যেতে পারে। `outbox` শব্দ কোডে কোথাও নেই। "We use an outbox" **বলবে না**। উপরের "improvement" লাইনটা বলো।
 - **CQRS-lite: আছে।** MySQL write + MongoDB `order_summaries`/`delivery_summaries` read model (SD-Q15); `config/database.php` `read` connection, ২৭টা report job `reconnect('read')` (SD-Q04)।
-- ⭐ **Circuit-breaker-এর কাছাকাছি (তোমার):** `sokrio-benchmark-python/app/common/tenant_fanout.py` → `gather_tenants(..., wall_budget_s=30)`: প্রতিটা tenant `asyncio.wait_for(fn(org), timeout=per_query_s)`, পুরোটা `wait_for(gather(...), timeout=wall_budget_s)`, `_adaptive_concurrency(n_orgs)`; Mongo `maxTimeMS` server-side cancel। degraded ফল cache হয় না (`should_cache`)। একমাত্র লেখক Komol। **আসল circuit breaker (open/half-open state) কোডে নেই** (`circuit`/`breaker` grep: শূন্য)। তাই বলো "bounded fan-out with timeouts", "I built a circuit breaker" না।
+- ⭐ **Circuit-breaker-এর কাছাকাছি (তোমার):** `benchmark-python/app/common/tenant_fanout.py` → `gather_tenants(..., wall_budget_s=30)`: প্রতিটা tenant `asyncio.wait_for(fn(org), timeout=per_query_s)`, পুরোটা `wait_for(gather(...), timeout=wall_budget_s)`, `_adaptive_concurrency(n_orgs)`; Mongo `maxTimeMS` server-side cancel। degraded ফল cache হয় না (`should_cache`)। একমাত্র লেখক Komol। **আসল circuit breaker (open/half-open state) কোডে নেই** (`circuit`/`breaker` grep: শূন্য)। তাই বলো "bounded fan-out with timeouts", "I built a circuit breaker" না।
 - **Compensation-এর ছোট উদাহরণ (তোমার):** `ResendFailedSmsBatch::failed()` → `releaseUnfinished()`: job মরে গেলে claim করা message row-গুলো ছেড়ে দেয় যাতে আটকে না থাকে। Saga না, কিন্তু "on failure, undo what you claimed" একই ধারণা।
 - **Saga: নেই** (সব একটা monolith + tenant DB-তে, DB transaction দিয়ে)। সৎভাবে: *"We haven't needed sagas because our core flows run in one service with local transactions."*
 - ⚠️ S1 (RabbitMQ microservices) আর S5 (payment webhook) এর সত্যতা Truth Audit-এ যাচাই না হওয়া পর্যন্ত এই প্রশ্নে ওগুলো উদাহরণ হিসেবে **ব্যবহার করবে না**।

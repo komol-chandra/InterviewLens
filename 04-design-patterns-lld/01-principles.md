@@ -10,7 +10,7 @@ tags: [lld]
 updated: 2026-11-14
 ---
 
-> Tracker ID: DP-01 · Generated: 2026-10-15 · Answers: **DP-Q01** (TRK-02 Phase 1) · Source: GoF + SOLID general knowledge + `04-design-patterns-lld/02-sokrio-pattern-map.md` (DP-02, code-verified) · Status: ✅ generated
+> Tracker ID: DP-01 · Generated: 2026-10-15 · Answers: **DP-Q01** (TRK-02 Phase 1) · Source: GoF + SOLID general knowledge + `04-design-patterns-lld/02-distrosaas-pattern-map.md` (DP-02, code-verified) · Status: ✅ generated
 
 # DP-Q01: What is a design pattern? When does using one make code worse?
 
@@ -120,7 +120,7 @@ class ShippingStrategyFactory {
 
 ---
 
-🔗 **Sokrio link:** `04-design-patterns-lld/02-sokrio-pattern-map.md` (DP-02, কোডে যাচাই করা):
+🔗 **DistroSaaS link:** `04-design-patterns-lld/02-distrosaas-pattern-map.md` (DP-02, কোডে যাচাই করা):
 - **ভালো ব্যবহার:** `NotificationSender` → `FCM` / `LogFCM` (টিমের লেখা Strategy, আসল দুটো variant আছে) · তোমার নিজের **Template Method** `ScenarioSeeder` (QA Test Lab, A6), যেটা এখন ২টা মডিউল (MemoTarget, VisitTarget) ব্যবহার করে। base class কি আগে বানিয়েছিলে, নাকি প্রথম মডিউলের পরে বের করেছিলে? `[Komol পূরণ করবে]`। পরেরটা হলে এটা "refactor to a pattern"-এর নিখুঁত গল্প।
 - **ইচ্ছাকৃত ভাবে না-বসানো:** আলাদা Repository layer নেই (`app/Repositories/` নেই) → "pattern যখন লাভ দেয় না" প্রশ্নের সেরা প্রমাণ।
 - ⚠️ সৎ থাকো: Strategy/Pipeline/Kafka observer **টিমের লেখা** → বলো "our codebase uses"; Template Method + journal/undo **তোমার** → বলো "I built"।

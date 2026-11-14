@@ -1,6 +1,6 @@
 <?php
 // F7 probe: phpkafka counts messages instead of reading record offsets.
-// Mirrors Sokrio: autoCommit=false, groupInstanceId '', addFetchOffset(p, 1) per message, saveOffsets on flush.
+// Mirrors DistroSaaS: autoCommit=false, groupInstanceId '', addFetchOffset(p, 1) per message, saveOffsets on flush.
 require '/srv/vendor/autoload.php';
 use longlang\phpkafka\Producer\{Producer, ProducerConfig, ProduceMessage};
 use longlang\phpkafka\Consumer\{Consumer, ConsumerConfig};
@@ -22,10 +22,10 @@ function take(Consumer $c, int $max, int $emptyPolls = 3): array {
     while (count($seen) < $max && $empty < $emptyPolls) {
         $m = $c->consume();
         if ($m === null) { $empty++; continue; }
-        $c->getOffsetManager(T)->addFetchOffset($m->getPartition(), 1); // = Sokrio advanceCursor
+        $c->getOffsetManager(T)->addFetchOffset($m->getPartition(), 1); // = DistroSaaS advanceCursor
         $seen[] = $m->getValue();
     }
-    $c->getOffsetManager(T)->saveOffsets(0, 3);                        // = Sokrio flush commit
+    $c->getOffsetManager(T)->saveOffsets(0, 3);                        // = DistroSaaS flush commit
     return $seen;
 }
 $cursor = fn (Consumer $c) => $c->getOffsetManager(T)->getFetchOffset(0);

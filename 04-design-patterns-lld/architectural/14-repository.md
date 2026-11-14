@@ -10,7 +10,7 @@ tags: [lld, architectural]
 updated: 2026-11-14
 ---
 
-> Tracker ID: DP-14 · Generated: 2026-10-15 · Answers: **DP-Q14** (TRK-02 Phase 9) · Source: Fowler PoEAA (Repository, Active Record, Service Layer) + sokrio-server structure (`app/Repositories/` নেই, `app/Services/`, `app/DTOs/`, `app/Actions/`) · Runnable: `04-design-patterns-lld/code/repository.ts` (✅ ran + strict tsc 2026-10-15) · Status: 🟡 generated
+> Tracker ID: DP-14 · Generated: 2026-10-15 · Answers: **DP-Q14** (TRK-02 Phase 9) · Source: Fowler PoEAA (Repository, Active Record, Service Layer) + api-server structure (`app/Repositories/` নেই, `app/Services/`, `app/DTOs/`, `app/Actions/`) · Runnable: `04-design-patterns-lld/code/repository.ts` (✅ ran + strict tsc 2026-10-15) · Status: 🟡 generated
 
 # DP-Q14: Is the Repository pattern useful on top of Eloquent? Argue both sides.
 
@@ -138,7 +138,7 @@ interface OrderRepository {
 **মূল উত্তর (৬০ সেকেন্ড, দুই পক্ষ + অবস্থান):**
 > "It depends on what you're hiding. Eloquent is already an Active Record data layer, so a generic repository with `find`, `all`, `create` and `update` mostly duplicates it, and it usually leaks anyway because it returns Eloquent models that callers query further. That's extra files without real abstraction. On the other side, a repository earns its place when there is something to hide: data from more than one store, like MySQL for writes and Mongo summaries for reads, a complex query that many places need, or business rules I want to unit-test without a database. So my default is query scopes on the model, business logic in service or action classes, and a repository with domain-specific methods only where one of those reasons applies."
 
-**Sokrio উদাহরণ (সৎভাবে):**
+**DistroSaaS উদাহরণ (সৎভাবে):**
 > "We don't have a repository layer. Services use Eloquent directly, and controllers stay thin by delegating to services, which is a team convention. Where it bites is testing: our feature tests need a real database. If I had to make one area easier to test, I'd start with an interface for the read side of reports, since those combine MySQL and Mongo."
 
 ---
@@ -155,10 +155,10 @@ interface OrderRepository {
 
 ---
 
-🔗 **Sokrio link:** (কোডে যাচাই করা)
+🔗 **DistroSaaS link:** (কোডে যাচাই করা)
 - **আলাদা Repository layer নেই:** `app/Repositories/` ফোল্ডার নেই (যাচাই করা)। পরিবর্তে `app/Services/` (Allowance, Export, Kafka, Notification, Report, SMS, VanSales…), `app/DTOs/`, `app/Actions/`। CLAUDE.md-এর নিয়ম: "query logic > ~10 লাইন হলে service-এ", "controller-এ query না"। এটা **টিম কনভেনশন**, তোমার সিদ্ধান্ত না: "we chose", "I decided" বলবে না।
 - **দুই storage (repository-র পক্ষের যুক্তির আসল উদাহরণ):** MySQL (orders) + MongoDB summary (`order_summaries`, `delivery_summaries`) + read connection (`config/database.php`-এ `read`, ২৭টা report job `reconnect('read')`)। SD-Q04, SD-Q05, SD-Q15 দেখো।
-- **টেস্ট:** sokrio-server phpunit docker-এ আসল DB দিয়ে চলে (তোমার মেমরি নোট: `sokrio-server:local` + throwaway mongo)। "Without repositories, tests need a DB" এর সৎ প্রমাণ।
+- **টেস্ট:** api-server phpunit docker-এ আসল DB দিয়ে চলে (তোমার মেমরি নোট: `api-server:local` + throwaway mongo)। "Without repositories, tests need a DB" এর সৎ প্রমাণ।
 - `[Komol পূরণ করবে]`: তুমি কি কখনো repository যোগ করার কথা টিমে তুলেছ বা কারো সাথে এ নিয়ে তর্ক হয়েছে? হলে এটা S10 (disagreement)-এর প্রার্থী।
 
-📚 আরো: `05-backend/09-laravel-backend/` · সম্পর্কিত: [01-principles.md](../01-principles.md) (YAGNI) · [02-sokrio-pattern-map.md](../02-sokrio-pattern-map.md) ("কেন Repository নেই")
+📚 আরো: `05-backend/09-laravel-backend/` · সম্পর্কিত: [01-principles.md](../01-principles.md) (YAGNI) · [02-distrosaas-pattern-map.md](../02-distrosaas-pattern-map.md) ("কেন Repository নেই")

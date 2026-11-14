@@ -10,7 +10,7 @@ tags: [lld, creational]
 updated: 2026-11-14
 ---
 
-> Tracker ID: DP-04 · Generated: 2026-10-15 · Answers: **DP-Q04** (TRK-02 Phase 3) · Source: GoF + sokrio-server code (`Support/Traits/ReportableJobService`, `Contracts/Kafka/ConsumerFactoryInterface`, `Models/Order/TargetAchiever`, `SMSServiceProvider` + `FCMServiceProvider`) · Runnable: `04-design-patterns-lld/code/factory.ts` (✅ ran + strict tsc 2026-10-15) · Status: 🟡 generated
+> Tracker ID: DP-04 · Generated: 2026-10-15 · Answers: **DP-Q04** (TRK-02 Phase 3) · Source: GoF + api-server code (`Support/Traits/ReportableJobService`, `Contracts/Kafka/ConsumerFactoryInterface`, `Models/Order/TargetAchiever`, `SMSServiceProvider` + `FCMServiceProvider`) · Runnable: `04-design-patterns-lld/code/factory.ts` (✅ ran + strict tsc 2026-10-15) · Status: 🟡 generated
 
 # DP-Q04: Factory Method vs Abstract Factory. What is the difference? When do you use each?
 
@@ -98,7 +98,7 @@ notifyOrderApproved(kit, phone, userId); // never mixes real SMS with fake push
 ### Laravel-এ
 Laravel-এ বেশিরভাগ factory-র কাজ করে **service container** (একটা বড় factory):
 ```php
-// SMSServiceProvider (Sokrio-তে আসলেই আছে)
+// SMSServiceProvider (DistroSaaS-এে আসলেই আছে)
 $this->app->bind(SMSSender::class, function ($app) {
     if ($app->environment('production') && config('sms.enabled') == true) {
         return new SMSGateway();
@@ -110,7 +110,7 @@ $this->app->bind(SMSSender::class, function ($app) {
 
 **Static factory method** (named constructor):
 ```php
-// TargetAchiever::on($model), Sokrio-তে আছে
+// TargetAchiever::on($model), DistroSaaS-এে আছে
 public static function on(Model $model)
 {
     $instance = new static;   // late static binding: যে subclass ডাকে, সেটাই তৈরি হয়
@@ -146,7 +146,7 @@ ProductTargetAchiever::on($order);
 **মূল উত্তর (৪৫ সেকেন্ড):**
 > "Both hide which concrete class gets created. Factory Method is a single method in a base class that subclasses override: the base class runs the workflow and asks the subclass 'which object do I use?'. Abstract Factory is an object with several create methods that produce a family of related objects, so they always match. For example, a production kit gives you the real SMS and real push senders, and a test kit gives you logging versions of both, so you can't accidentally mix a real SMS sender with a fake push sender. In Laravel, the service container does most of this for you through bindings."
 
-**Sokrio উদাহরণ:**
+**DistroSaaS উদাহরণ:**
 > "Our report export jobs share one trait that runs the whole export: chunking, temp files, progress. Each job only names its report service class, and `createReportService()` builds it and checks it implements `ReportServiceInterface`. That's a factory method. And our SMS and push senders are bound in service providers: real gateways in production, logging ones everywhere else."
 
 ---
@@ -163,11 +163,11 @@ ProductTargetAchiever::on($order);
 
 ---
 
-🔗 **Sokrio link:** (কোডে যাচাই করা, সব **টিমের লেখা** → "our codebase uses" বলো)
+🔗 **DistroSaaS link:** (কোডে যাচাই করা, সব **টিমের লেখা** → "our codebase uses" বলো)
 - **Factory Method:** `app/Support/Traits/ReportableJobService.php` → `createReportService()`: `$this->reportServiceClass` থেকে instance বানায়, `ReportServiceInterface` না মানলে exception, তারপর `applyTenantCustomizations($org)`। লেখক মূলত sihab।
 - **Abstract Factory / Factory interface:** `app/Contracts/Kafka/ConsumerFactoryInterface::make(ConsumerConfig, callable)` → `DefaultConsumerFactory`, `KafkaServiceProvider`-এ singleton হিসেবে বাঁধা; `KafkaConsumer` শুধু interface জানে (টেস্টে fake factory দেওয়া যায়)। লেখক sihab।
 - **Static factory:** `app/Models/Order/TargetAchiever::on(Model)` → `new static` → Product/Invoice/Delivery/Visit TargetAchiever। লেখক Tanmay, sumaisa।
 - **Container factory:** `app/Providers/SMSServiceProvider.php` → production + `sms.enabled` হলে `SMSGateway`, নাহলে `LogSMSGateway`। একই ধাঁচ `FCMServiceProvider` (`FCM` / `LogFCM`)।
 - **তোমার নিজের:** সরাসরি factory class লেখোনি (যাচাই করা যায়নি)। এভাবে বলো: *"I've added report services that plug into our export factory method."* `[Komol পূরণ করবে: কোন report service তুমি যোগ করেছ, যদি করে থাকো]`
 
-📚 আরো: `04-design-patterns-lld/oop/` · সম্পর্কিত: [03-strategy.md](../behavioral/03-strategy.md) · [05-builder.md](05-builder.md) · Sokrio ম্যাপ: [02-sokrio-pattern-map.md](../02-sokrio-pattern-map.md)
+📚 আরো: `04-design-patterns-lld/oop/` · সম্পর্কিত: [03-strategy.md](../behavioral/03-strategy.md) · [05-builder.md](05-builder.md) · DistroSaaS ম্যাপ: [02-distrosaas-pattern-map.md](../02-distrosaas-pattern-map.md)

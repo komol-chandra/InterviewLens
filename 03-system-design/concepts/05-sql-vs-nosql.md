@@ -10,7 +10,7 @@ tags: [system-design, concepts]
 updated: 2026-11-14
 ---
 
-> Tracker ID: SD-05 · Generated: 2026-10-15 · Answers: **SD-Q05** (TRK-02 Phase 2) · Source: general SD knowledge + `99-archive/fieldnation-2026-10/0-now/hm-qbank.md` A2, A5, B2 + sokrio-server `app/Models/MongoDB/` · Status: ✅ generated
+> Tracker ID: SD-05 · Generated: 2026-10-15 · Answers: **SD-Q05** (TRK-02 Phase 2) · Source: general SD knowledge + `99-archive/fieldnation-2026-10/0-now/hm-qbank.md` A2, A5, B2 + api-server `app/Models/MongoDB/` · Status: ✅ generated
 
 # SD-Q05: SQL or NoSQL? When do you choose each?
 
@@ -97,8 +97,8 @@ type OrderDoc = {
 **মূল উত্তর (৬০ সেকেন্ড):**
 > "I start from the data and its access patterns, not the technology. If the data is relational, needs multi-row transactions, like orders and stock, or I don't know all future queries yet, I default to SQL. I'd pick a document store when the shape varies, access is mostly 'fetch the whole thing by key', or I need high write volume and horizontal scale. In practice I often use both: SQL as the source of truth, and a NoSQL store for pre-computed read models, cache or logs."
 
-**Sokrio উদাহরণ (সবচেয়ে শক্তিশালী অংশ):**
-> "In Sokrio, orders and stock live in MySQL because they need transactions. Reports read from pre-aggregated summaries in MongoDB, because each report reads a whole summary document and the shape differs per report. And when I built Task Manager, I deliberately chose MySQL even though similar modules like claims were in Mongo, because tasks are low-volume and need heavy joins with users, departments and territories."
+**DistroSaaS উদাহরণ (সবচেয়ে শক্তিশালী অংশ):**
+> "In DistroSaaS, orders and stock live in MySQL because they need transactions. Reports read from pre-aggregated summaries in MongoDB, because each report reads a whole summary document and the shape differs per report. And when I built Task Manager, I deliberately chose MySQL even though similar modules like claims were in Mongo, because tasks are low-volume and need heavy joins with users, departments and territories."
 
 **Trade-off বাক্য:**
 > "Using both MySQL and MongoDB costs us two systems to operate and a sync lag on summaries, which is acceptable because reports can be slightly stale but orders can't be wrong."
@@ -117,7 +117,7 @@ type OrderDoc = {
 
 ---
 
-🔗 **Sokrio link:**
+🔗 **DistroSaaS link:**
 - **Polyglot (S2, A2, B2):** MySQL = orders/users/stock (transaction); MongoDB = pre-aggregated `order_summaries`, `DeliverySummary`, `order_rollups_monthly` (রিপোর্ট দ্রুত); Redis = cache/session। `app/Models/MongoDB/`-এ Claim, Complaint, CheckIn, DailyAttendance ইত্যাদি document model।
 - **তোমার নিজের বিচার (A5, সবচেয়ে ভালো প্রমাণ):** Task Manager-এ Mongo-র precedent থাকা সত্ত্বেও **MySQL** বেছে নেওয়া: কম ভলিউম + `users`/`departments`/`territories`-এর সাথে ভারী join। এটা দেখায় তুমি টেকনোলজি না, ডেটা দেখে সিদ্ধান্ত নাও।
 - **Sync কৌশল (A2 L3):** rollup **scheduled job**, event-driven না, যাতে Laravel আর Python benchmark সার্ভিস কাপল না হয়।

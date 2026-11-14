@@ -104,7 +104,7 @@ updated: 2026-10-15
 
 **৬টা Key Point:**
 1. Relational data + ACID transaction + ad-hoc query = SQL; টাকা, অর্ডার, স্টক — সবসময় SQL
-2. Document DB (MongoDB): flexible schema, nested data, aggregation pipeline — event/summary/log data-তে ভালো (Sokrio-তে delivery/order summary MongoDB-তে রাখি)
+2. Document DB (MongoDB): flexible schema, nested data, aggregation pipeline — event/summary/log data-তে ভালো (DistroSaaS-এে delivery/order summary MongoDB-তে রাখি)
 3. Key-value (Redis): cache, session, counter, queue — durability-critical data-র primary store নয়
 4. NoSQL-এ "schema-less" মানে schema নেই তা নয় — schema app code-এ সরে যায়; সেটাও মেইনটেন করতে হয়
 5. Polyglot বাস্তবতা: MySQL (transaction) + MongoDB (analytics/summary) + Redis (cache) একসাথে চলে — এক DB-তে সব জোর করা ভুল

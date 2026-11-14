@@ -1,6 +1,6 @@
 ---
 id: be-messaging-streaming-sections-05-laravel-implementation
-title: "05 · The Laravel Implementation Layer — Building It the Sokrio Way"
+title: "05 · The Laravel Implementation Layer — Building It the DistroSaaS Way"
 track: backend
 type: topic
 status: draft
@@ -10,10 +10,10 @@ tags: [backend, messaging-streaming]
 updated: 2026-10-28
 ---
 
-# 05 · The Laravel Implementation Layer — Building It the Sokrio Way
+# 05 · The Laravel Implementation Layer — Building It the DistroSaaS Way
 
-> **Snapshot:** `sokrio-server` @ `master` · HEAD `d14c0ebb2` · written 2026-10-26. `master` is now `bf223a126` (2 commits ahead, neither touches a messaging file), so every ref below is still valid on `master`. The local working tree had been switched to `survey-question-image-stg`, so the code was read from `git archive d14c0ebb2`, not from the checkout.
-> Paths are relative to `sokrio-server/`. Tags: `[CODE]` verified in app code · `[LIB]` verified in `vendor/` (Laravel 9.52.22) · `[LAB]` reproduced in a throwaway sandbox · `[GENERAL]` industry knowledge · `[INFERENCE]` follows from code but not observed in prod · `[ASSUMPTION]` best guess plus how to verify.
+> **Snapshot:** `api-server` @ `master` · HEAD `d14c0ebb2` · written 2026-10-26. `master` is now `bf223a126` (2 commits ahead, neither touches a messaging file), so every ref below is still valid on `master`. The local working tree had been switched to `survey-question-image-stg`, so the code was read from `git archive d14c0ebb2`, not from the checkout.
+> Paths are relative to `api-server/`. Tags: `[CODE]` verified in app code · `[LIB]` verified in `vendor/` (Laravel 9.52.22) · `[LAB]` reproduced in a throwaway sandbox · `[GENERAL]` industry knowledge · `[INFERENCE]` follows from code but not observed in prod · `[ASSUMPTION]` best guess plus how to verify.
 > Question bank links: Q8 (idempotent consumer), Q10 (dual write / outbox), Q11 (poison message), Q63 (multi-tenancy), Q64–Q65 (Laravel queues, `retry_after`), Q67 (PHP Kafka consumer), Q68 (`afterCommit`), Q77 (duplicate emails).
 
 ## 5.0 What changed our understanding (read this first)
@@ -143,7 +143,7 @@ Rules the two existing handlers follow, with refs:
 
 ---
 
-## 5.3 Recipe B — add a queued job the Sokrio way
+## 5.3 Recipe B — add a queued job the DistroSaaS way
 
 ### The house idiom (what 119 of 127 jobs do)
 - `[CODE]` 127 classes in `app/Jobs` implement `ShouldQueue`. 119 call `TenantManager::tenant(...)`, and 77 hold an `Org` property. The pattern is: **constructor takes the landlord `Org` plus plain ids and arrays; the first line of `handle()` reconnects.** `Org` is safe to serialize because its connection is fixed to `landlord` (`app/Models/Core/Org.php:29`).
@@ -321,7 +321,7 @@ sequenceDiagram
 - Kafka: `KAFKA_BROKERS`, `KAFKA_GROUP`, `KAFKA_GROUP_LEGACY_TOPICS`, `KAFKA_CONSUMER_BATCH_SIZE`, `KAFKA_CONSUMER_BATCH_INTERVAL`, `KAFKA_CONSUMER_MAX_RUNTIME`, `KAFKA_LOG_LEVEL`, `KAFKA_AUTO_CREATE_PARTITIONS`, `KAFKA_AUTO_CREATE_REPLICATION_FACTOR`, plus the `KAFKA_PRODUCER_*` / `KAFKA_CONSUMER_*` timeouts
 - Pusher: `PUSHER_APP_*`
 
-**A minimal sandbox** `[GENERAL]`. This is a proposal, not repo code. Keep it outside `sokrio-server`, e.g. in the T9 lab folder:
+**A minimal sandbox** `[GENERAL]`. This is a proposal, not repo code. Keep it outside `api-server`, e.g. in the T9 lab folder:
 ```yaml
 services:
   kafka:
@@ -373,7 +373,7 @@ kafka-consumer-groups.sh --bootstrap-server localhost:9092 --describe --group "$
 ### ✅ Quality check
 - [x] Task-card items covered:
   - add topic + consumer, using real classes, corrected checklist (§5.1–5.2)
-  - queued job the Sokrio way (§5.3)
+  - queued job the DistroSaaS way (§5.3)
   - where `afterCommit` is missing (§5.4)
   - tenant context in jobs and consumers (§5.5)
   - testing patterns from the Kafka test files (§5.6: 13, not 12; 11 core + 2 tracking feature tests)

@@ -10,7 +10,7 @@ tags: [lld, structural]
 updated: 2026-11-14
 ---
 
-> Tracker ID: DP-07 · Generated: 2026-10-15 · Answers: **DP-Q07** (TRK-02 Phase 5) · Source: GoF + sokrio-server code (`Services/SMSSender`, `BaseSMSGateway`, `SMSGateway`, `LogSMSGateway`, `Retail/RetailerSMSGateway`, `Providers/SMSServiceProvider`) · Runnable: `04-design-patterns-lld/code/adapter.ts` (✅ ran + strict tsc 2026-10-15) · Status: 🟡 generated
+> Tracker ID: DP-07 · Generated: 2026-10-15 · Answers: **DP-Q07** (TRK-02 Phase 5) · Source: GoF + api-server code (`Services/SMSSender`, `BaseSMSGateway`, `SMSGateway`, `LogSMSGateway`, `Retail/RetailerSMSGateway`, `Providers/SMSServiceProvider`) · Runnable: `04-design-patterns-lld/code/adapter.ts` (✅ ran + strict tsc 2026-10-15) · Status: 🟡 generated
 
 # DP-Q07: You must support three SMS providers with different APIs. How do you design it so switching is easy?
 
@@ -156,7 +156,7 @@ final class FailoverSmsSender implements SMSSender {
 **মূল উত্তর (৪৫ সেকেন্ড):**
 > "I'd define our own `SmsSender` interface based on what our code needs: send a body to a number and get back a normalized result, success with a message id, or a clear failure type. Then one adapter per provider translates our call into their API and their response back into our result. Business code like OTP or order notifications only sees the interface. Switching providers is a config change in the service provider, and failover is just a sender that tries a list of adapters. The one thing I'm careful about is error mapping: I only fail over when I know the first provider never received the message, otherwise the customer gets two SMS."
 
-**Sokrio উদাহরণ:**
+**DistroSaaS উদাহরণ:**
 > "Our SMS sending sits behind an `SMSSender` interface. The service provider binds the real gateway only in production with SMS enabled, and a logging gateway everywhere else, so tests and staging never send real messages. When I built bulk resend of failed SMS, I added a `resend()` method that maps the provider's failures into two typed exceptions: never connected, which is safe to retry, and connected but no answer, which we mark as delivery unknown and never resend."
 
 ---
@@ -173,10 +173,10 @@ final class FailoverSmsSender implements SMSSender {
 
 ---
 
-🔗 **Sokrio link:** (কোডে যাচাই করা)
+🔗 **DistroSaaS link:** (কোডে যাচাই করা)
 - **Target interface:** `app/Services/SMSSender.php` (`send`, `record`, `isAllowToSend`, `sendWithOutRecord`, `resend`)। `BaseSMSGateway implements SMSSender` → `SMSGateway` (আসল HTTP provider) আর `LogSMSGateway` (শুধু log)। Binding: `app/Providers/SMSServiceProvider.php` (production + `sms.enabled` → আসল, নাহলে log)। মূল লেখক টিম (Tanmay, Shihab, sihab)।
 - ⭐ **তোমার নিজের অংশ:** `SMSSender::resend()` + `SMSGateway::resend()` (commit `996fa2bc6`, Komol, ২০২৬-১০-০৫, "Add bulk resend of failed SMS"): `ConnectionException`-কে `ProviderUnavailableException` (কখনো connect হয়নি, cURL 6/7 বা connect timeout) বা `SmsDeliveryUnknownException` (connect হয়েছে, উত্তর আসেনি)-এ অনুবাদ করে; HTTP 5xx → unavailable। এটাই adapter-এর **error mapping**, আর failover নিরাপদ রাখার মূল চাবি। স্টোরি: bulk SMS resend (story-bank-এ যোগ বাকি)।
-- **সৎ ফাঁক (ভালো আলোচনার বিষয়):** Sokrio-তে আসলে **একটাই** আসল SMS provider (`config('sms.endpoint')`)। আর `app/Services/Retail/RetailerSMSGateway.php` (Rakib) একই endpoint-এ পাঠায় কিন্তু `SMSSender` **implement করে না**, নিজের timeout/record লজিক। প্রশ্ন এলে বলো: *"We have one provider today, behind an interface. One module has its own gateway class outside that interface; if we added a second provider, I'd fold it into the same adapter first."*
+- **সৎ ফাঁক (ভালো আলোচনার বিষয়):** DistroSaaS-এে আসলে **একটাই** আসল SMS provider (`config('sms.endpoint')`)। আর `app/Services/Retail/RetailerSMSGateway.php` (Rakib) একই endpoint-এ পাঠায় কিন্তু `SMSSender` **implement করে না**, নিজের timeout/record লজিক। প্রশ্ন এলে বলো: *"We have one provider today, behind an interface. One module has its own gateway class outside that interface; if we added a second provider, I'd fold it into the same adapter first."*
 - "তিনটা provider সাপোর্ট করেছি" **বলবে না**, সত্যি না।
 
 📚 আরো: `04-design-patterns-lld/oop/` · সম্পর্কিত: [08-decorator-proxy.md](08-decorator-proxy.md) · `03-system-design/cases/10-notification.md` (provider fallback, duplicate আটকানো)

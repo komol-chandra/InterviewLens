@@ -23,7 +23,7 @@ updated: 2026-10-15
 
 Every answer is stronger if you speak Field Nation's language. Learn this model before anything else.
 
-| Concept | What it means | Sokrio parallel you can mention |
+| Concept | What it means | DistroSaaS parallel you can mention |
 |---|---|---|
 | **Buyer / Client** | A company that needs on-site work done (IT, POS, networking, telecom installs) | Enterprise tenant |
 | **Provider / Technician** | A freelance field tech who takes work orders | Field-force user / sales rep |
@@ -40,7 +40,7 @@ Every answer is stronger if you speak Field Nation's language. Learn this model 
 
 **Stack from the post:** PHP + MySQL (legacy core) → **Node.js microservices** (the migration target), REST APIs, React/Redux, Docker + **Kubernetes** on **AWS**, **SLI/SLO observability**, RabbitMQ/Kafka (plus).
 
-> 🎯 Your one-line pitch: *"At Sokrio I built a multi-tenant field-force and order platform (check-ins, GPS, tasks, payments, integrations) and led its move from a monolith to event-driven microservices. That is the same shape of problem Field Nation is solving."*
+> 🎯 Your one-line pitch: *"At DistroSaaS I built a multi-tenant field-force and order platform (check-ins, GPS, tasks, payments, integrations) and led its move from a monolith to event-driven microservices. That is the same shape of problem Field Nation is solving."*
 
 ---
 
@@ -213,7 +213,7 @@ Know three solutions:
 - [ ] Cache stampede / thundering herd: locking, jittered TTL, stale-while-revalidate
 - [ ] Redis data structures: strings, hashes, sets, sorted sets (leaderboards, rate limits), **GEO** (nearby technicians)
 - [ ] Redis for **distributed locks** (SET NX PX, the Redlock caveats), **rate limiting** (token bucket / sliding window), sessions, queues
-- [ ] Cache key design with scoping. Your Sokrio rule: *always include the tenant or territory in the key*
+- [ ] Cache key design with scoping. Your DistroSaaS rule: *always include the tenant or territory in the key*
 - [ ] Redis persistence (RDB/AOF), eviction policies (allkeys-lru)
 
 **Field Nation context:** cache a provider's profile and rating; use `GEOADD`/`GEOSEARCH` to find providers within 50 km of a WO.
@@ -431,7 +431,7 @@ Do one per day. Draw it, talk it through out loud for 35–45 min, then write do
 *Buyer funds → platform fee → provider payout (weekly or instant).*
 - Double-entry ledger table, **idempotency keys**, reconciliation job, webhooks from the payment provider
 - Why you never use floats for money; handling currency
-- Your Sokrio story: HMAC, idempotency, auto-reconciliation, zero failed transactions
+- Your DistroSaaS story: HMAC, idempotency, auto-reconciliation, zero failed transactions
 
 #### Case 5: Public API + Webhooks Platform for Integrations
 *Buyers' ServiceNow/Salesforce-style tools create WOs and receive status updates.*

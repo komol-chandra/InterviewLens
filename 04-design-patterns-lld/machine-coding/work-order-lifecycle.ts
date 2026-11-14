@@ -166,6 +166,6 @@ loaded.cancel(buyer);
 assert(loaded.status === 'cancelled' && loaded.techId === null, 'cancel an assigned order releases the tech');
 
 // Follow-ups: persistence (status column + work_order_status_history table, like
-// Sokrio's order_statuses), concurrency (two techs accept at once -> optimistic
+// DistroSaaS's order_statuses), concurrency (two techs accept at once -> optimistic
 // version check or a conditional UPDATE), timeouts (system job moves assigned ->
 // published if no check-in within N hours), events to notification service.

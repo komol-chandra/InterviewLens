@@ -10,7 +10,7 @@ tags: [system-design, cases]
 updated: 2026-11-14
 ---
 
-> Tracker ID: SD-30 · Generated: 2026-10-15 · Answers: **SD-Q13** (TRK-02 Phase 10) · Source: **পূর্ণ ৭-ধাপ ডিজাইন আগে থেকেই আছে → `03-system-design/cases/fn-01-work-order-dispatch.md` (FN-14)**; এই ফাইল শুধু ইন্টারভিউ কার্ড + FN-14-এ যা নেই (state machine, geo index তুলনা, real-time, location ingest) + কোডে যাচাই করা Sokrio link · Status: ✅ generated
+> Tracker ID: SD-30 · Generated: 2026-10-15 · Answers: **SD-Q13** (TRK-02 Phase 10) · Source: **পূর্ণ ৭-ধাপ ডিজাইন আগে থেকেই আছে → `03-system-design/cases/fn-01-work-order-dispatch.md` (FN-14)**; এই ফাইল শুধু ইন্টারভিউ কার্ড + FN-14-এ যা নেই (state machine, geo index তুলনা, real-time, location ingest) + কোডে যাচাই করা DistroSaaS link · Status: ✅ generated
 
 # SD-Q13: Design a work-order dispatch system that matches jobs to nearby technicians
 
@@ -102,8 +102,8 @@ WebSocket সার্ভার stateful → connection-এর জন্য আ�
 **Trade-off:**
 > "Broadcasting offers fills jobs fastest but frustrates technicians who lose the race. Tiered offers are fairer but slower. I'd pick based on job urgency, maybe broadcast for same-day jobs and tiered for scheduled ones."
 
-**Sokrio সেতু:**
-> "I haven't built geo-matching at this scale, but the lifecycle side is familiar. I built Task Manager in Sokrio, where supervisors plan tasks for field staff, approve them and lock achievements, a one-way state flow very similar to a work order. Sokrio is a field-force platform, so GPS-based attendance and tracking are core. The mock-location checks and the Kafka tracking pipeline were built by teammates, and I worked alongside them."
+**DistroSaaS সেতু:**
+> "I haven't built geo-matching at this scale, but the lifecycle side is familiar. I built Task Manager in DistroSaaS, where supervisors plan tasks for field staff, approve them and lock achievements, a one-way state flow very similar to a work order. DistroSaaS is a field-force platform, so GPS-based attendance and tracking are core. The mock-location checks and the Kafka tracking pipeline were built by teammates, and I worked alongside them."
 
 ## ফলো-আপ প্রশ্ন
 
@@ -116,10 +116,10 @@ WebSocket সার্ভার stateful → connection-এর জন্য আ�
 
 ---
 
-🔗 **Sokrio link:** (কোডে যাচাই করা, 2026-10-15)
+🔗 **DistroSaaS link:** (কোডে যাচাই করা, 2026-10-15)
 - ⭐ **তোমার নিজের:** Task Manager (A5, S9): plan → approve → one-way `achievement_locked_at` lock = work-order lifecycle-এর ছোট রূপ; MySQL বেছে নেওয়া, `user_supervisors` টেবিলের আগে কোডবেস অডিট।
 - **Tracking (টিমের):** `app/Actions/Tracking/WriteTrackingActions.php`, `WriteBulkTrackingActions.php` (লেখক sihab) + Kafka layer (sihab/Rakib) → লোকেশন ingest-এর বাস্তব উদাহরণ, কিন্তু "I worked with it" বলো।
-- ⚠️ **S9 "GPS-spoofing detection" সাবধান:** কোডে পাওয়া mock-location চেক আছে মোবাইল অ্যাপে (`sokrio-app-mobile/lib/utils/validators/location_validator/location_validator.dart`, `isMocked`), লেখক মোবাইল টিম (Himel, Meshkat-Shadik), আর তার একটা অংশ comment করা। তোমার নিজের ভূমিকা কী ছিল (server-side নিয়ম? রিপোর্ট? ডিজাইন?) `[Komol পূরণ করবে]`, Truth Audit-এ নিশ্চিত করো।
+- ⚠️ **S9 "GPS-spoofing detection" সাবধান:** কোডে পাওয়া mock-location চেক আছে মোবাইল অ্যাপে (`app-app-mobile/lib/utils/validators/location_validator/location_validator.dart`, `isMocked`), লেখক মোবাইল টিম (Himel, Meshkat-Shadik), আর তার একটা অংশ comment করা। তোমার নিজের ভূমিকা কী ছিল (server-side নিয়ম? রিপোর্ট? ডিজাইন?) `[Komol পূরণ করবে]`, Truth Audit-এ নিশ্চিত করো।
 - ⚠️ FN-14-এর শেষ টেবিল "Event-driven, RabbitMQ ✅ S1" আর "Webhook HMAC ✅ S5" বলে। দুটোই এখনো কোডে যাচাই হয়নি (SD-Q07, SD-Q11 দেখো)। Truth Audit-এর পর FN-14-এর টেবিলটা ঠিক করো।
 
 📚 পূর্ণ ডিজাইন: `03-system-design/cases/fn-01-work-order-dispatch.md` · আগে: [12-order-inventory.md](12-order-inventory.md) · সম্পর্কিত: DP-Q12 State

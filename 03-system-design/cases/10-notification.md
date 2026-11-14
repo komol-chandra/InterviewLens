@@ -10,7 +10,7 @@ tags: [system-design, cases]
 updated: 2026-10-15
 ---
 
-> Tracker ID: SD-22 · Generated: 2026-10-15 · Answers: **SD-Q10** (TRK-02 Phase 7) · Source: general SD knowledge + sokrio-server code (`app/Services/SMS/`, `app/Jobs/SMS/ResendFailedSmsBatch.php`, `app/Services/SMSGateway.php`, `SMSServiceProvider`, `FCMServiceProvider`, `git log`) · Format: 7-ধাপ · Status: ✅ generated
+> Tracker ID: SD-22 · Generated: 2026-10-15 · Answers: **SD-Q10** (TRK-02 Phase 7) · Source: general SD knowledge + api-server code (`app/Services/SMS/`, `app/Jobs/SMS/ResendFailedSmsBatch.php`, `app/Services/SMSGateway.php`, `SMSServiceProvider`, `FCMServiceProvider`, `git log`) · Format: 7-ধাপ · Status: ✅ generated
 
 # SD-Q10: Design a notification service (SMS, email, push)
 
@@ -119,7 +119,7 @@ flowchart LR
 > "The hard part is never sending twice. Workers claim a delivery with a conditional status update, so a redelivered message does nothing. The subtle case is a crash or timeout during the provider call. If we never connected, it's safe to retry. If we connected but got no answer, the SMS may have gone out, so I mark it 'delivery unknown' instead of retrying automatically."
 
 **নিজের গল্প (তোমার লেখা, সবচেয়ে শক্তিশালী):**
-> "I built exactly this for failed SMS in Sokrio: bulk resend for up to fifty thousand failed messages. The rows carry the state: failed to pending when claimed, processing right before the provider call. A double click gets a 409 because the rows are already pending. The claim runs under a per-tenant lock and checks the SMS balance minus what other resends have reserved, so two admins can't overspend. If the provider is down, the rest of the batch isn't attempted, so an outage costs one timeout per batch, not per message. And the gateway separates 'never connected' from 'connected but no answer', so we never silently send the same SMS twice."
+> "I built exactly this for failed SMS in DistroSaaS: bulk resend for up to fifty thousand failed messages. The rows carry the state: failed to pending when claimed, processing right before the provider call. A double click gets a 409 because the rows are already pending. The claim runs under a per-tenant lock and checks the SMS balance minus what other resends have reserved, so two admins can't overspend. If the provider is down, the rest of the batch isn't attempted, so an outage costs one timeout per batch, not per message. And the gateway separates 'never connected' from 'connected but no answer', so we never silently send the same SMS twice."
 
 ## ফলো-আপ প্রশ্ন
 
@@ -132,7 +132,7 @@ flowchart LR
 
 ---
 
-🔗 **Sokrio link:** (কোডে যাচাই করা, 2026-10-15)
+🔗 **DistroSaaS link:** (কোডে যাচাই করা, 2026-10-15)
 - ⭐ **তোমার নিজের, সরাসরি এই কেস:** bulk resend of failed SMS (Komol, 2026-10-05 → 08):
   - `app/Services/SMS/MessageResendService.php`: `failedIds()` (সর্বোচ্চ `max_select` ৫০,০০০), `balanceCheck()` (দেখানোর জন্য), `startResend()` → `claim()` (per-tenant `Cache::lock` + `DB::transaction` + `lockForUpdate`, reserved SMS বাদ দিয়ে ব্যালান্স চেক), `dispatch()` (queue না পেলে claim ফেরত)
   - `app/Jobs/SMS/ResendFailedSmsBatch.php`: ১০০-র ব্যাচ, আলাদা `sms-resend` queue, `$tries = 1` + নিজের `retry_count` (max ৫), provider ডাউন হলে বাকি ব্যাচ skip, `failed()`-এ release (`pending → failed`, `processing → failed "Delivery unknown"`)

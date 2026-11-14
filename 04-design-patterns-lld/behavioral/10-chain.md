@@ -10,7 +10,7 @@ tags: [lld, behavioral]
 updated: 2026-11-14
 ---
 
-> Tracker ID: DP-10 · Generated: 2026-10-15 · Answers: **DP-Q10** (TRK-02 Phase 6) · Source: GoF + Laravel `Illuminate\Pipeline\Pipeline` + sokrio-server code (`Http/Kernel.php`, `Middleware/EnsureTenantAccess`, `ScopeCacheToTenant`, `app/Filters/` + `vendor/tanmaymishu/laravel-funnel`, `RouteServiceProvider` rate limiters) · Runnable: `04-design-patterns-lld/code/chain.ts` (✅ ran + strict tsc 2026-10-15) · Status: 🟡 generated
+> Tracker ID: DP-10 · Generated: 2026-10-15 · Answers: **DP-Q10** (TRK-02 Phase 6) · Source: GoF + Laravel `Illuminate\Pipeline\Pipeline` + api-server code (`Http/Kernel.php`, `Middleware/EnsureTenantAccess`, `ScopeCacheToTenant`, `app/Filters/` + `vendor/tanmaymishu/laravel-funnel`, `RouteServiceProvider` rate limiters) · Runnable: `04-design-patterns-lld/code/chain.ts` (✅ ran + strict tsc 2026-10-15) · Status: 🟡 generated
 
 # DP-Q10: How do Laravel middleware work? Which pattern is it?
 
@@ -61,9 +61,9 @@ flowchart LR
 | জায়গা | উদাহরণ |
 |---|---|
 | **Global** (`$middleware`) | `TrustProxies`, `TrimStrings`, CORS |
-| **Group** (`$middlewareGroups`) | `api`, `web`; Sokrio-তে van-sales group: `tenant` → `module.assigned:van_sales_module` → `van.db` |
+| **Group** (`$middlewareGroups`) | `api`, `web`; DistroSaaS-এে van-sales group: `tenant` → `module.assigned:van_sales_module` → `van.db` |
 | **Route alias** (`$routeMiddleware` / `$middlewareAliases`) | `'tenant' => EnsureTenantAccess`, `'landlord'`, `'permission:...'`, `throttle:...` |
-| **Controller constructor** | `$this->middleware('permission:' . Permission::VIEW_X)` (Sokrio রিপোর্ট কন্ট্রোলারে) |
+| **Controller constructor** | `$this->middleware('permission:' . Permission::VIEW_X)` (DistroSaaS রিপোর্ট কন্ট্রোলারে) |
 | **Terminable** | `terminate($request, $response)`: response পাঠানোর **পরে** চলে (log flush) |
 
 ## ২. ভেতরে কী আছে: Pipeline
@@ -99,7 +99,7 @@ const app = pipeline([timing, auth, tenant, permission('VIEW_ORDER')], handler);
 আউটপুট: সঠিক request → 200; খারাপ token → 401; অজানা subdomain → 404; permission নেই → 403। Express/Koa/NestJS middleware একই জিনিস।
 চালাও: `npx -y tsx 04-design-patterns-lld/code/chain.ts`
 
-### একই pattern, query filter-এ (Sokrio-তে আসলে আছে)
+### একই pattern, query filter-এ (DistroSaaS-এে আসলে আছে)
 ```php
 // laravel-funnel: Filter::handle($passable, Closure $next)
 public function handle($passable, \Closure $next)
@@ -136,7 +136,7 @@ app(Pipeline::class)->send($query)->through((new static)->filters)->thenReturn()
 |---|---|
 | cross-cutting কাজ (auth, tenant, CORS, throttle, logging) controller থেকে আলাদা | **ক্রম ভুল** হলে নিরাপত্তা ভাঙে: tenant switch-এর আগে permission চেক করলে ভুল DB-তে দেখে |
 | প্রতিটা ছোট, আলাদা টেস্টযোগ্য | middleware-এ ভারী DB query → প্রতিটা request ধীর |
-| route ধরে চালু/বন্ধ | long-running worker-এ middleware চলে না: queue job-এ tenant switch নিজে করতে হয় (Sokrio-তে `JobProcessing` event দিয়ে) |
+| route ধরে চালু/বন্ধ | long-running worker-এ middleware চলে না: queue job-এ tenant switch নিজে করতে হয় (DistroSaaS-এে `JobProcessing` event দিয়ে) |
 | | middleware-এ business logic ঢোকানো → লুকানো আচরণ |
 
 ---
@@ -146,7 +146,7 @@ app(Pipeline::class)->send($query)->through((new static)->filters)->thenReturn()
 **মূল উত্তর (৪৫ সেকেন্ড):**
 > "It's Chain of Responsibility in pipeline form. Each middleware gets the request and a `$next` closure. It can stop the chain by returning a response, like a 401 or 403, or call `$next` to pass the request on. Code after `$next` runs on the way back, so it's an onion: the first middleware is the outermost layer. Internally Laravel's `Pipeline` class folds the middleware list around the router, from the last one to the first. Order matters a lot. In our multi-tenant app, the tenant middleware has to resolve the tenant and switch the database before the permission middleware runs, or the permission check would look at the wrong database."
 
-**Sokrio উদাহরণ:**
+**DistroSaaS উদাহরণ:**
 > "Every tenant route goes through `EnsureTenantAccess`, which resolves the org from the subdomain, rejects inactive tenants with a 403, and reconnects the tenant database. Module groups then chain a module check, like `module.assigned:van_sales_module`, and a database middleware. We use the same pipeline idea for list filters: around 200 small filter classes, each adding one `where` if its query parameter is present."
 
 ---
@@ -163,7 +163,7 @@ app(Pipeline::class)->send($query)->through((new static)->filters)->thenReturn()
 
 ---
 
-🔗 **Sokrio link:** (কোডে যাচাই করা)
+🔗 **DistroSaaS link:** (কোডে যাচাই করা)
 - **Tenant middleware:** `app/Http/Middleware/EnsureTenantAccess.php`: `Org::findByDomain($request->account)` → inactive হলে 403 → `app()->instance('tenant', $tenant)` → `TenantManager::tenant($tenant)->reconnect()`; tenant DB না থাকলে (MySQL error 1049) আলাদা হ্যান্ডলিং। লেখক টিম (sihab মূল, Tanmay)। Kernel alias: `'tenant' => EnsureTenantAccess`, `'landlord'`, `'guest.access'`, `'admin.permission'`; group-এ `tenant` → `module.assigned:...` → `van.db` / `task_manager.db`। (S3)
 - **Cache scoping middleware:** `ScopeCacheToTenant` (sihab) prefix `tenant_{id}` বসায়।
 - **Query filter pipeline:** `app/Filters/` (১৯৬টা Filter class) → `vendor/tanmaymishu/laravel-funnel` (`Filter::handle($passable, $next)`, `HasFilters` → `Pipeline::send($query)->through($filters)->thenReturn()`)। প্যাকেজ Tanmay-র।

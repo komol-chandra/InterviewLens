@@ -31,7 +31,13 @@ SKIP_DIRS = {".git", "node_modules", ".kilo", "vendor", "__pycache__", ".venv"}
 # Not study content: no README / frontmatter / leak rules inside these.
 EXEMPT_TOP = {".claude", "99-archive", "scripts", "tools"}
 # Root files that legitimately mention the local checkout path.
-LEAK_EXEMPT_FILES = {"CLAUDE.md", "MASTER-PLAN.md", "00-start/health-report.md"}
+LEAK_EXEMPT_FILES = {"CLAUDE.md", "MASTER-PLAN.md", "00-start/health-report.md",
+                     # Real CV / cover letter / outreach email: must name the actual employer.
+                     "12-career/cv-by-role/build-cvs.js",
+                     "12-career/cv-by-role/build-cover-letter.js",
+                     "12-career/cv-by-role/build-cover-letter-short.js",
+                     "12-career/cv-by-role/build-cover-letter-story.js",
+                     "12-career/templates/email-template.txt"}
 NO_FRONTMATTER_OK = {"CLAUDE.md", "MASTER-PLAN.md"}
 TEXT_EXT = {".md", ".txt", ".html", ".php", ".py", ".ts", ".tsx", ".js", ".json",
             ".yml", ".yaml", ".sh", ".sql", ".env", ".conf", ".ini", ".toml", ".csv"}

@@ -55,14 +55,14 @@ updated: 2026-11-14
 
 **Q2 — Accept Race Condition**
 > দুইজন technician একই মিলিসেকেন্ডে একটা Work Order-এ "Accept" ক্লিক করলে কী হয়? তিনটা সমাধান বলো (conditional UPDATE + `affected_rows` চেক, `SELECT … FOR UPDATE`, version column) — সবচেয়ে সহজটা কেন সবচেয়ে ভালো এখানে সেটাও বলো।
-> 🔗 Sokrio link: S2 (MySQL/EXPLAIN গভীরতার প্রমাণ, direct race-condition experience না — সৎভাবে বলো)
+> 🔗 DistroSaaS link: S2 (MySQL/EXPLAIN গভীরতার প্রমাণ, direct race-condition experience না — সৎভাবে বলো)
 
 ---
 
 ## ৩. REST/Webhook ডিজাইন (১৫ মিনিট)
 
 > Design করো: `workorder.status_changed` webhook একটা buyer-এর ইন্টিগ্রেশনে পাঠানো — payload shape, retry policy, HMAC signature verification, replay protection। জিজ্ঞাসা করবে: webhook দুইবার এলে কী হয়, gateway ডাউন থাকলে কী হয়।
-> 🔗 Sokrio link: S5 (payment webhook HMAC + idempotency — একদম সরাসরি প্রাসঙ্গিক)
+> 🔗 DistroSaaS link: S5 (payment webhook HMAC + idempotency — একদম সরাসরি প্রাসঙ্গিক)
 
 ---
 

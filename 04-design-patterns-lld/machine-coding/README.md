@@ -49,7 +49,7 @@ updated: 2026-11-14
 > "I need O(1) lookup and O(1) reordering, so a hash map from key to node, plus a doubly linked list ordered by recency. On get, I move the node to the front. On put, if it's full I remove the node before the tail sentinel and delete it from the map. Sentinels mean I never null-check the ends."
 
 **ফলো-আপ:** TTL (node-এ `expiresAt`, get-এ চেক) · thread safety (অন্য ভাষায় mutex; Node single-threaded) · distributed = Redis `maxmemory-policy allkeys-lru` · LFU কীভাবে আলাদা।
-🔗 Sokrio: Redis cache সব রিপোর্টে (S2); তুমি LRU নিজে লেখোনি, এটা DSA প্র্যাকটিস।
+🔗 DistroSaaS: Redis cache সব রিপোর্টে (S2); তুমি LRU নিজে লেখোনি, এটা DSA প্র্যাকটিস।
 
 ---
 
@@ -76,7 +76,7 @@ updated: 2026-11-14
 > "I'll keep spots, floors and the lot separate, put allocation behind a best-fit search so small vehicles don't take large spots, and pricing behind a strategy interface since that's what changes most. I inject the clock so the fee logic is testable."
 
 **ফলো-আপ:** দুটো gate একই spot নিলে → spot-এ lock, বা DB-তে `UPDATE spots SET vehicle=? WHERE id=? AND vehicle IS NULL` (SD-Q12-এর মতো conditional update) · EV charging · display board = Observer (DP-Q09) · payment আলাদা সার্ভিস।
-🔗 Sokrio: সরাসরি অভিজ্ঞতা নেই, এটা classic LLD। Strategy/conditional update-এর যুক্তি Sokrio থেকে (DP-Q03, SD-Q12)।
+🔗 DistroSaaS: সরাসরি অভিজ্ঞতা নেই, এটা classic LLD। Strategy/conditional update-এর যুক্তি DistroSaaS থেকে (DP-Q03, SD-Q12)।
 
 ---
 
@@ -98,7 +98,7 @@ updated: 2026-11-14
 > "I'd use a token bucket: it allows short bursts but keeps the average rate. I refill lazily on each call from the elapsed time, so there's no timer per key. The key includes the tenant, because user ids repeat across tenants. For multiple servers the same logic moves into Redis with a Lua script so all servers share one counter."
 
 **ফলো-আপ:** distributed (Redis Lua / `INCR`+`EXPIRE` fixed window) · idle key মেমরি (LRU, MC-1) · Redis down হলে fail open নাকি closed · cost > 1 (ভারী endpoint)।
-🔗 Sokrio ⭐: তোমার SMS resend named limiters (`RouteServiceProvider::configureSmsResendRateLimiting`, key = `name|host|user`, ৫–১০/মিনিট, 429 `ERR_RATE_LIMIT`)। System-লেভেল ডিজাইন: `03-system-design/cases/09-rate-limiter.md`।
+🔗 DistroSaaS ⭐: তোমার SMS resend named limiters (`RouteServiceProvider::configureSmsResendRateLimiting`, key = `name|host|user`, ৫–১০/মিনিট, 429 `ERR_RATE_LIMIT`)। System-লেভেল ডিজাইন: `03-system-design/cases/09-rate-limiter.md`।
 
 ---
 
@@ -134,7 +134,7 @@ stateDiagram-v2
 > "Each status is a class, and every action is forbidden by default, so a new action can't accidentally be allowed in the wrong state. Role and assignment checks live inside the transitions. Every transition goes through one `moveTo` that writes history, bumps a version for optimistic locking, and emits an event, which the notification service can listen to."
 
 **ফলো-আপ:** দুই tech একসাথে accept → version check বা conditional update · N ঘণ্টায় check-in না হলে system job assigned → published · "after check-in cancel" এর আলাদা flow (partial payment) · history থেকে রিপোর্ট (প্রতিটা state-এ কত সময়)।
-🔗 Sokrio: order-এর `order_statuses` history আর guard methods (DP-Q12); field-force ডোমেইন (S9)। ডোমেইন: `99-archive/fieldnation-2026-10/tropic/01-work-order-domain.md` · system-লেভেল: `03-system-design/cases/13-dispatch.md`।
+🔗 DistroSaaS: order-এর `order_statuses` history আর guard methods (DP-Q12); field-force ডোমেইন (S9)। ডোমেইন: `99-archive/fieldnation-2026-10/tropic/01-work-order-domain.md` · system-লেভেল: `03-system-design/cases/13-dispatch.md`।
 
 ---
 

@@ -22,7 +22,7 @@ JD-তে "strong TypeScript/ES6" আর React লিস্টেড — লা�
 
 React প্রতিটা রেন্ডারে পুরনো ও নতুন virtual DOM tree তুলনা করে (diffing) নূন্যতম DOM আপডেট বের করে — এটাই reconciliation। লিস্টে `key` না দিলে বা index দিলে, item পুনর্বিন্যাস/insert/delete হলে React ভুল element-কে re-use করে ফেলতে পারে (state bug, animation glitch)। `key` হতে হবে stable, unique, list-এর ভেতর — data-র id ব্যবহার করো, index না।
 
-🔗 Sokrio link: S6 — Vue থেকে React রিরাইটের সময় এই ধরনের list-rendering bug সবচেয়ে বেশি ধরা পড়ে।
+🔗 DistroSaaS link: S6 — Vue থেকে React রিরাইটের সময় এই ধরনের list-rendering bug সবচেয়ে বেশি ধরা পড়ে।
 
 ---
 
@@ -34,7 +34,7 @@ React প্রতিটা রেন্ডারে পুরনো ও নত�
 
 **সতর্কতা:** এগুলো premature optimization হতে পারে — শুধু profiler দিয়ে প্রমাণিত bottleneck-এ ব্যবহার করো, সব জায়গায় না (extra memoization নিজেই ওভারহেড)।
 
-🔗 Sokrio link: S6 — component standard সেট করার সময় টিমকে কখন memoize করতে হবে তার guideline দেওয়া।
+🔗 DistroSaaS link: S6 — component standard সেট করার সময় টিমকে কখন memoize করতে হবে তার guideline দেওয়া।
 
 ---
 
@@ -42,7 +42,7 @@ React প্রতিটা রেন্ডারে পুরনো ও নত�
 
 Logic reuse-এর জন্য (state + effect + subscription একসাথে বান্ডল করে)। নিয়ম: নামের শুরুতে `use`, hook rules মেনে চলে (top-level-এ কল, condition-এর ভেতরে না)। উদাহরণ: `useWorkOrders(filters)` — internally RTK Query hook wrap করে, loading/error/data রিটার্ন করে, component-কে raw API call থেকে আলাদা রাখে।
 
-🔗 Sokrio link: S6 — folder structure ও component standard সেট করার গল্পে custom hook pattern প্রাসঙ্গিক।
+🔗 DistroSaaS link: S6 — folder structure ও component standard সেট করার গল্পে custom hook pattern প্রাসঙ্গিক।
 
 ---
 
@@ -68,7 +68,7 @@ const workOrderApi = createApi({
 
 `providesTags`/`invalidatesTags` দিয়ে automatic re-fetch হয় — mutation সফল হলে সংশ্লিষ্ট query নিজে থেকেই stale হয়ে refetch হয়, manual cache management লাগে না।
 
-🔗 Sokrio link: S6 — Redux Toolkit-এ রিরাইটের সরাসরি প্রমাণ CV-তে আছে, RTK Query-র নির্দিষ্ট প্রোডাকশন উদাহরণ `[Komol পূরণ করবে]`।
+🔗 DistroSaaS link: S6 — Redux Toolkit-এ রিরাইটের সরাসরি প্রমাণ CV-তে আছে, RTK Query-র নির্দিষ্ট প্রোডাকশন উদাহরণ `[Komol পূরণ করবে]`।
 
 ---
 
@@ -92,7 +92,7 @@ function useDebounced<T>(value: T, delayMs: number): T {
 
 Generic hook দিয়ে যেকোনো টাইপের ভ্যালু re-use করা যায় (উদাহরণ: search input debounce)।
 
-🔗 Sokrio link: S6 — TypeScript রিরাইটের মূল কাজ ছিল সব component/hook-এ typed props চালু করা।
+🔗 DistroSaaS link: S6 — TypeScript রিরাইটের মূল কাজ ছিল সব component/hook-এ typed props চালু করা।
 
 ---
 
@@ -110,7 +110,7 @@ Generic hook দিয়ে যেকোনো টাইপের ভ্যা�
 
 **Done when:** টাইপ এরর ছাড়া কম্পাইল হয়, filter বদলালে RTK Query নিজে থেকে re-fetch করে।
 
-🔗 Sokrio link: S6 — ঠিক এই ধরনের filterable list Sokrio-র React রিরাইটে বহুবার বানানো হয়েছে।
+🔗 DistroSaaS link: S6 — ঠিক এই ধরনের filterable list DistroSaaS-এর React রিরাইটে বহুবার বানানো হয়েছে।
 
 ---
 

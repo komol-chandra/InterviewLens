@@ -12,8 +12,8 @@ updated: 2026-10-26
 
 # PR #5094 Breakdown — Kafka Implementation for Order Summary
 
-**Repo:** sokrio/sokrio-server
-**PR URL:** https://github.com/sokrio/sokrio-server/pull/5094
+**Repo:** DistroSaaS/api-server
+**PR URL:** https://github.com/DistroSaaS/api-server/pull/5094
 **Branch:** `kafka-implementation-for-order-summary`
 **Author:** Shihab (commits under `sihab` / `shihab-143` / `Shihab Uddin`)
 **Base:** `master` @ `d586de76a` (PR #5084 merge, 2026-08-12)
@@ -38,7 +38,7 @@ updated: 2026-10-26
 
 ## 1. Summary
 
-This PR adds a **generic Kafka consumer framework** to sokrio-server
+This PR adds a **generic Kafka consumer framework** to api-server
 (command, service, handler contract) and wires up the **first end-to-end
 producer → consumer pilot**, but that pilot is for the **Tracking** topic,
 not Order Summary.
@@ -98,9 +98,9 @@ than the actual feature — that merge just catches the branch up to
 | `app/Providers/KafkaProducerServiceProvider.php` → `app/Providers/KafkaServiceProvider.php` | **Renamed.** Now also binds `MessageConsumerInterface → KafkaConsumer` (singleton) alongside the existing producer and topic-registry bindings. `config/app.php`'s providers list is updated to match. |
 | `app/Services/Kafka/KafkaProducer.php` | Trivial cleanup — removed an unused `RuntimeException` import and a dead commented-out `throw`. |
 | `.env.example` | Adds `KAFKA_GROUP`, plus already-referenced-elsewhere `KAFKA_PRODUCE_RETRY`, `KAFKA_PRODUCE_RETRY_SLEEP`, `KAFKA_MAX_WRITE_ATTEMPTS`. |
-| `config/kafka.php` | Adds `'group_id' => env('KAFKA_GROUP', 'sokrio-group')`, consumed by `KafkaConsumer`. |
+| `config/kafka.php` | Adds `'group_id' => env('KAFKA_GROUP', 'app-group')`, consumed by `KafkaConsumer`. |
 | `composer.json` / `composer.lock` | Adds `ext-pcntl` as a required PHP extension (needed for the consumer's signal handling) — content-hash and platform-api-version bumped accordingly. |
-| `README.md` | Documents a new Supervisor program block (`sokrio-kafka-consumer-tracking`, `php artisan kafka:consume tracking`) to run alongside the existing feature-tracking worker. |
+| `README.md` | Documents a new Supervisor program block (`kafka-consumer-tracking`, `php artisan kafka:consume tracking`) to run alongside the existing feature-tracking worker. |
 
 ---
 

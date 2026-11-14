@@ -10,7 +10,7 @@ tags: [system-design, concepts]
 updated: 2026-11-14
 ---
 
-> Tracker ID: SD-02 · Generated: 2026-10-15 · Answers: **SD-Q02** (TRK-02 Phase 1) · Source: general SD knowledge + sokrio-server code (`ScopeCacheToTenant`, `app/Jobs/`) · Status: ✅ generated
+> Tracker ID: SD-02 · Generated: 2026-10-15 · Answers: **SD-Q02** (TRK-02 Phase 1) · Source: general SD knowledge + api-server code (`ScopeCacheToTenant`, `app/Jobs/`) · Status: ✅ generated
 
 # SD-Q02: How would you scale a web app from 1,000 to 1 million users?
 
@@ -121,11 +121,11 @@ Laravel-এ: `.env`-এ `SESSION_DRIVER=redis`, `CACHE_DRIVER=redis`, ফাই�
 
 ---
 
-🔗 **Sokrio link:**
-- **Stateless app tier (কোডে যাচাই করা):** `app/Http/Middleware/ScopeCacheToTenant.php` cache **আর session** দুটোকেই Redis-এ রাখে, প্রতিটা টেন্যান্টের আলাদা key prefix দিয়ে (`tenant_{id}`)। তাই app সার্ভার নিজে কোনো session রাখে না, যেকোনো সার্ভার যেকোনো request নিতে পারে। বলো: *"In Sokrio, sessions and cache live in Redis with a per-tenant prefix, so the API servers are stateless."*
-- **Queue + workers:** sokrio-server-এ `app/Jobs/`-এ ১৩২টা job ফাইল, সাবফোল্ডার সহ (report export ইত্যাদি) → ধাপ ৫-এর বাস্তব উদাহরণ (S2, A2)।
+🔗 **DistroSaaS link:**
+- **Stateless app tier (কোডে যাচাই করা):** `app/Http/Middleware/ScopeCacheToTenant.php` cache **আর session** দুটোকেই Redis-এ রাখে, প্রতিটা টেন্যান্টের আলাদা key prefix দিয়ে (`tenant_{id}`)। তাই app সার্ভার নিজে কোনো session রাখে না, যেকোনো সার্ভার যেকোনো request নিতে পারে। বলো: *"In DistroSaaS, sessions and cache live in Redis with a per-tenant prefix, so the API servers are stateless."*
+- **Queue + workers:** api-server-এ `app/Jobs/`-এ ১৩২টা job ফাইল, সাবফোল্ডার সহ (report export ইত্যাদি) → ধাপ ৫-এর বাস্তব উদাহরণ (S2, A2)।
 - **Data split:** প্রতি টেন্যান্টে আলাদা DB (S3, A1) = এক ধরনের horizontal data partitioning; এক টেন্যান্টের লোড অন্যকে কম ছোঁয়। বিস্তারিত → `03-system-design/cases/23-multi-tenant-saas.md`।
 - **আলাদা read-heavy সার্ভিস:** benchmark-এর cross-tenant read Python সার্ভিসে সরানো (A2, B3) = ভারী read কাজ মূল API থেকে আলাদা করে স্কেল করা।
-- ⚠️ **সৎ থাকো:** Sokrio-র production-এ load balancer, কয়টা app সার্ভার, auto-scaling, read replica আছে কি না, কে সেটআপ করেছে: `[Komol পূরণ করবে]`। নিজে না করে থাকলে বলো *"Our infra team/lead handled the load balancer; my part was keeping the app stateless and moving heavy work to queues."*
+- ⚠️ **সৎ থাকো:** DistroSaaS-এর production-এ load balancer, কয়টা app সার্ভার, auto-scaling, read replica আছে কি না, কে সেটআপ করেছে: `[Komol পূরণ করবে]`। নিজে না করে থাকলে বলো *"Our infra team/lead handled the load balancer; my part was keeping the app stateless and moving heavy work to queues."*
 
 📚 আরো: `03-system-design/00-notes.md` · পরের প্রশ্ন: SD-Q03 caching → [03-caching.md](03-caching.md) · SD-Q04 DB scaling

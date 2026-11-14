@@ -12,10 +12,10 @@ updated: 2026-10-26
 
 # Dev Plan — Primary Order & Delivery Summary via Kafka
 
-> Status: **Draft — awaiting approval** (per `/sokrio-planning` protocol, Phase 1 code
+> Status: **Draft — awaiting approval** (per `/app-planning` protocol, Phase 1 code
 > should not start until this is signed off).
 > Written: 2026-09-08
-> Repo: `sokrio-server` (branch at time of writing: `bulk-upload-error-visualization` —
+> Repo: `api-server` (branch at time of writing: `bulk-upload-error-visualization` —
 > this work should start from a fresh branch, e.g. `kafka-primary-order-delivery`)
 > Related: `_sprintSep/Kafka/order_summary/PR-5094-breakdown.md` (the Kafka
 > infra + Tracking pilot this plan builds on — see §1)
@@ -41,7 +41,7 @@ retry/backoff are all live today:
 
 ### 1a. Important disambiguation — "Order" ≠ "Primary Order" in this codebase
 
-There are **two unrelated order domains** in sokrio-server and the existing
+There are **two unrelated order domains** in api-server and the existing
 Kafka scaffolding targets the wrong one for this task:
 
 - **Retail / secondary order** (`App\Models\Order\Order`, `App\Models\Order\Delivery`
@@ -123,7 +123,7 @@ drift between two independently-maintained mapping implementations).
   tenant via `TenantManager`, same as `TrackingMessageHandler`).
 - Storage: MongoDB only (`primary_order_summaries`, `primary_delivery_summaries`
   — collections already exist, no new collection/migration needed).
-- Stack: sokrio-server (Laravel) only. Nothing in sokrio-benchmark-python or
+- Stack: api-server (Laravel) only. Nothing in benchmark-python or
   either frontend changes for this task.
 
 ---
@@ -245,9 +245,9 @@ for `OrderObserver`/`DeliveryObserver`):
 ## 6. Ops / deployment (Phase 3)
 
 - Two new Supervisor programs (README already documents the pattern for
-  `sokrio-kafka-consumer-tracking`):
-  - `sokrio-kafka-consumer-primary-order-summary` → `php artisan kafka:consume primary_order_summaries`
-  - `sokrio-kafka-consumer-primary-delivery-summary` → `php artisan kafka:consume primary_delivery_summaries`
+  `kafka-consumer-tracking`):
+  - `kafka-consumer-primary-order-summary` → `php artisan kafka:consume primary_order_summaries`
+  - `kafka-consumer-primary-delivery-summary` → `php artisan kafka:consume primary_delivery_summaries`
 - No new env vars needed — `config/kafka.php` consumer knobs are already
   topic-agnostic (`batch_size`, `batch_interval`, `group_id`, timeouts all
   shared).
