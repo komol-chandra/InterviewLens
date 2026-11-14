@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "enabledMcpjsonServers": ["lens-brain"],
+  "permissions": {
+    "allow": [
+      "Bash(python3 scripts/*)",
+      "Bash(python scripts/*)",
+      "Bash(uv run --directory tools/lens-brain *)",
+      "Bash(lens index*)",
+      "Bash(lens search *)",
+      "Bash(lens stats*)",
+      "Read(~/code/sokrio/**)",
+      "mcp__lens-brain__search_notes",
+      "mcp__lens-brain__get_doc",
+      "mcp__lens-brain__list_weak_areas",
+      "mcp__lens-brain__stats"
+    ],
+    "deny": [
+      "Bash(git push*)",
+      "Edit(~/code/sokrio/sokrio-*/**)",
+      "Write(~/code/sokrio/sokrio-*/**)"
+    ]
+  }
+}
