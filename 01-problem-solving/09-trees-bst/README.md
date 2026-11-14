@@ -1,26 +1,27 @@
 ---
-title: "Trees Bst"
-order: 1
+title: "Trees & BST"
+order: 9
 status: draft
-tags: [problem-solving]
+tags: [problem-solving, trees-bst]
 updated: 2026-11-14
 ---
 
-# Trees Bst
+# 09 · Trees & BST
 
-Problem Solving → Trees Bst।
+DFS (pre/in/post), BFS level order, BST property, path DP।
 
-**শুরু করো এখান থেকে:** [00-pattern-overview.md](00-pattern-overview.md)
+**শুরু করো এখান থেকে:** [00-pattern-overview.md](00-pattern-overview.md) → easy → medium → hard
+**কোন প্যাটার্ন কখন:** [../which-pattern.md](../which-pattern.md) · **লাইভ কোডিং:** [../live-coding-script.md](../live-coding-script.md)
 
 ## ফাইল
 
 | # | ফাইল | কী আছে | status | conf | tier |
 |---|---|---|---|---|---|
-| 01 | [00-pattern-overview.md](00-pattern-overview.md) | 09 — Trees & BST (15) | draft | 0 | starter |
-| 02 | [easy.md](easy.md) | 09 — Trees & BST — Easy | draft | 0 | starter |
-| 03 | [hard.md](hard.md) | 09 — Trees & BST — Hard | stub | 0 | starter |
-| 04 | [medium.md](medium.md) | 09 — Trees & BST — Medium | draft | 0 | starter |
+| 01 | [00-pattern-overview.md](00-pattern-overview.md) | theory, diagram, PHP + Python টেমপ্লেট, ফাঁদ, Q&A | draft | 0 | starter |
+| 02 | [easy.md](easy.md) | 8টা প্রবলেম | draft | 0 | starter |
+| 03 | [medium.md](medium.md) | 7টা প্রবলেম | draft | 0 | starter |
+| 04 | [hard.md](hard.md) | 5টা প্রবলেম | draft | 0 | starter |
 
 ## কী বাকি (what's missing)
 
-- [ ] এই ফোল্ডারের ফাঁকগুলো রোডম্যাপের সাথে মিলিয়ে এখানে লেখো
+- [ ] প্রতিটা ফাইলে নিজের `conf` (০–৩) দাও, সমাধান করা প্রবলেমে ✅ + সময়
