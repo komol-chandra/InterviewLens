@@ -6,6 +6,8 @@ conf: 0
 tier: mvp
 tags: [roadmap, plan, schedule]
 updated: 2026-11-14
+track: plan
+type: plan
 ---
 
 # Roadmap — MVP → Starter → Product

@@ -37,12 +37,22 @@ updated: 2026-11-14
   - ⚠️ Work 04 Step 5-এর জন্য: `health.py`-এর "sokrio" চেকে রুট `CLAUDE.md` আর `MASTER-PLAN.md`-ও বাদ দিতে হবে (এগুলোতে `~/code/sokrio` path আছে, স্টাডি কনটেন্ট না)।
 - **Work 03 সম্পূর্ণ:** `00-start/roadmap.md` — gantt, দৈনিক টেমপ্লেট + শনি মক/রবি হালকা ছন্দ, Starter লক্ষ্য, W1–W11 সপ্তাহ-ভিত্তিক ফাইল তালিকা (W1 = ২০২৬-১১-১৬ সোমবার, W11 শেষ ২০২৭-০১-৩১), ৮টা `// BUILD` প্রজেক্টের ক্রম (Order API W1–3, RAG W4–7), কোন CV কখন পাঠানো যায়, Product প্রস্তাব (SAA-C03 লক্ষ্য এপ্রিল ২০২৭), চেকপয়েন্ট।
   - অনুমান যেগুলো Komol বদলাতে পারে: আবেদন ৫–১০/সপ্তাহ, MCQ লক্ষ্য ≥ ৭৫%, ≥ ১৫০ সমাধান, Product মাসগুলো।
+- **Work 04 সম্পূর্ণ** (Steps 1–6; Step 7 = Work 05):
+  - নতুন লেআউট `00-start/` … `12-career/`, `99-archive/` (আরেকটা সেশন `git mv` দিয়ে সরিয়েছে, staged; এই সেশন যাচাই করে শেষ করেছে)।
+  - Restore: `e637690`-এ মোছা ৪৪টা ফাইলের সবগুলোর md5 এখন ট্রিতে আছে (`99-archive/restored-from-git/` + ১টা অন্য জায়গায়)। ১২টা staged delete সবই md5-identical ডুপ্লিকেট।
+  - Links: broken ০ (`99-archive/README.md` যোগ, একটা মৃত "post 01" লিংক টেক্সট করা)। README মিসিং ০, frontmatter মিসিং ০, spaces ০।
+  - `scripts/health.py` (stdlib; `parse_frontmatter`/`iter_markdown` lens-brain ইমপোর্ট করবে) → `00-start/health-report.md`। `--json` DASHBOARD-এর জন্য।
+  - `DASHBOARD.md` (frontmatter সংখ্যা, KPI, progress bar, pie/xychart/gantt, heat table, pipeline, content health) + `00-start/tracker.md`।
+  - ⚠️ **Public-safe leak: ১১০টা ফাইল** (৪টার নামেই আছে: `02-…-pattern-map.md`, `sections/02-kafka-in-…`, `03-rabbitmq-in-…`, `04-redis-in-…`; সবচেয়ে বেশি `messaging-deep-dive.html` ৫১৬ hits)। আলাদা scrub পাস লাগবে, Komol-এর সিদ্ধান্তের অপেক্ষায়।
+  - Stub ৪০টা (৩৭টা problem-solving `hard.md`/placeholder) — Starter ①-এ ভরবে।
+
 - কিছুই commit হয়নি।
 
 ## পরের সেশনে প্রথম কাজ
 
-1. **Work 04:** restore + dedupe → restructure (move-map script) → link fix → READMEs + frontmatter → `scripts/health.py` → `DASHBOARD.md`। আগে বর্তমান অবস্থা commit করতে Komol-কে মনে করাও। স্পেক MASTER-PLAN §3 Work 04-এ। `00-start/` ইতিমধ্যে আছে (roadmap.md)।
-2. তারপর Work 05 (lens-brain RAG)।
+1. Komol commit করবে (Work 01–04 চেকপয়েন্ট)।
+2. Public-safe scrub (Komol "হ্যাঁ" বললে): নাম → "DistroSaaS", ৪টা ফাইল রিনেম + লিংক ঠিক, তারপর `python3 scripts/health.py` → leak ০।
+3. Work 05 (lens-brain RAG), MASTER-PLAN §3 Work 05।
 
 ## Komol-এর কাছে অপেক্ষমাণ
 
@@ -50,4 +60,4 @@ updated: 2026-11-14
 
 - `weak-areas.md`-এর `Now` কলামে নিজের রেটিং (প্রথম `/study-start`-এ)।
 - `profile.md` / `decisions.md`-এর `[Komol পূরণ করবে]`: notice period, স্যালারি রেঞ্জ, RabbitMQ/Node CV দাবি।
-- Work 04-এর আগে বর্তমান অবস্থা commit করা (ফিরে আসার পরিষ্কার পয়েন্ট)।
+- Work 01–04 commit করা (এখন ~৪০০টা uncommitted পরিবর্তন)।

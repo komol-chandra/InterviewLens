@@ -107,8 +107,10 @@ updated: 2026-11-14
 টপিক/স্টাডি ফাইল:
 ```yaml
 ---
-id: sd-case-payment-system   # kebab-case, রিপোতে ইউনিক
+id: sd-case-payment-system   # kebab-case, রিপোতে ইউনিক; কখনো বদলাবে না (MyLens অ্যাপের progress এতে বাঁধা)
 title: Payment System
+track: system-design         # problem-solving | mcq | system-design | lld | backend | aws | ai | frontend | behavioral | career | mock | plan
+type: sd-case                # topic | problem-set | sd-case | mcq-bank | mock | company | plan | note
 status: draft                # empty | stub | draft | good | complete
 conf: 0                      # ০–৩, Komol-এর self-rating
 tier: starter                # mvp | starter | product
@@ -116,6 +118,9 @@ tags: [system-design, payments, idempotency]
 updated: 2026-11-14
 ---
 ```
+
+`track`/`type` MyLens অ্যাপের InterviewLens ট্যাবের জন্য (ফিল্টার, ড্যাশবোর্ড)। অ্যাপে `conf`/status বদলালে সেটা Supabase-এ থাকে, ফাইলে না; ফাইলের `status` = কনটেন্টের অবস্থা।
+অপশনাল: `company: <slug>` (কোনো অ্যাপ্লিকেশনের সাথে ডক জুড়তে)।
 
 `status` গাইড: `stub` < ১৫০ শব্দ · `draft` কাঠামো আছে, ফাঁক আছে · `good` ইন্টারভিউতে চলবে · `complete` + Q&A + লাইভ ড্রিল করা।
 বিদ্যমান ফাইলে frontmatter যোগ করলে body বদলাবে না।
