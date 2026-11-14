@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "lens-brain": {
+      "type": "stdio",
+      "command": "uv",
+      "args": ["run", "--quiet", "--directory", "tools/lens-brain", "lens-brain-mcp"]
+    }
+  }
+}

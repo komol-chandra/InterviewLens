@@ -1,0 +1,76 @@
+---
+type: handoff
+updated: 2026-11-14
+---
+
+# Handoff — শেষ সেশন → পরের সেশন
+
+> প্রতি সেশনের শেষে **পুরোটা ওভাররাইট** করো। History রাখার জায়গা এটা না (সেটা git)।
+
+## প্রেক্ষাপট (স্থির)
+
+- মাস্টার প্ল্যান: [`MASTER-PLAN.md`](../../MASTER-PLAN.md)। এখন **MVP টিয়ার** চলছে, Work 01 → 05 ক্রমে, প্রতিটার পরে থামো (D12)।
+- লক্ষ্য: Laravel / Node / Python / AI রোলে এখনই অ্যাপ্লাই; ২–৩ বছরে Senior/Lead।
+- Komol নিজে commit করে; Claude push বা co-author লাইন দেবে না (D13)।
+
+## ২০২৬-১১-১৪: কী হলো
+
+- MASTER-PLAN.md লেখা ও অনুমোদিত।
+- **Work 01 সম্পূর্ণ:**
+  - Claude auto-memory: `user-career-goals`, `user-skill-map`, `feedback-aws-local-first`, `feedback-public-safe-distrosaas`, `project-interviewlens-plan` + `MEMORY.md` ইনডেক্স।
+  - রিপো `.claude/memory/`: `MEMORY.md`, `profile.md`, `decisions.md` (D1–D14 + পুরনো H1–H10), `weak-areas.md` (জেনেরিক SE টপিক, ৭ গ্রুপ, Guess কলাম ভরা, `Now` খালি), `interview-log.md`, `handoff.md`।
+  - পুরনো `_Resume/1-me/` অক্ষত আছে; Work 04-এ আর্কাইভ হবে। `story-bank.md` Work 04-এ যাবে `10-behavioral-leadership/`-এ।
+- **রোল-ভিত্তিক CV (D15):** `_Resume/cv-by-role/`-এ ৩টা `.docx`: `Komol_CV_JS_FullStack`, `Komol_CV_Laravel_Backend`, `Komol_CV_Python_AI_Engineer`। ফরম্যাট বেস CV-র মতো (Noto Sans, A4, ২ পাতা)। জেনারেটর `build-cvs.js` (চালাতে একটা ফোল্ডারে `npm install docx@9.5.1` লাগে)।
+  - Python/AI CV-তে নতুন যোগ (সত্যি, কোডে আছে): FastAPI benchmark service, multi-agent Claude Code setup, personal RAG memory প্রজেক্ট।
+  - ⚠️ RabbitMQ microservices, Node.js services, payment HMAC: এই দাবিগুলো বেস CV থেকে রাখা হয়েছে, কিন্তু Truth Audit-এ কোড-প্রমাণ মেলেনি। পাঠানোর আগে Komol ঠিক করবে।
+- **CV v2 (D16):** তিনটা CV আবার লেখা, ATS-friendly। JS CV-তে PHP/Laravel নেই (শুধু "Also" লাইনে); Python+AI CV-তে Django/Flask/FastAPI + LangChain/RAG/sklearn + React/Vue। ৮টা নতুন প্রজেক্ট এখনো বানানো বাকি (`// BUILD`)।
+- **কমন কভার লেটার:** `_Resume/cv-by-role/Komol_Cover_Letter_Common.docx` (১ পাতা; জার্নি → প্রভাব → প্যাশন + এখনকার চেষ্টা → লক্ষ্য)। হলুদ অংশ প্রতি কোম্পানিতে বদলাতে হবে: তারিখ, কোম্পানি, রোল, "কেন এই কোম্পানি"। জেনারেটর `build-cover-letter.js`। শুধু যাচাই-করা দাবি আছে (RabbitMQ/payment/Node নেই)।
+- **ছোট কভার লেটার:** `Komol_Cover_Letter_Short.docx` (~২০০ শব্দ; ৪টা key point: Journey, Impact, How I work, Goal)। জেনারেটর `build-cover-letter-short.js`। লম্বাটা (`_Common`) রাখা আছে।
+- **গল্প-ভিত্তিক কভার লেটার (v3, মূল):** `Komol_Cover_Letter_Story.docx` (~৩৮০ শব্দ, বুলেট নেই; শুরু → "code is a promise" শিক্ষা → স্কেল + প্রভাব → নিজে থেকে শেখা → লক্ষ্য; পুরো জেনেরিক: তারিখ, কোম্পানি, রোল বা কেন-এই-কোম্পানি অংশ নেই, Komol এগুলো কখনো ব্যবহার করবে না)। Short ভার্সনকে Komol ৩/১০ দিয়েছে: খুব chatbot-এর মতো। জেনারেটর `build-cover-letter-story.js`।
+- **কমন CV:** `Komol_CV_Software_Engineer_Common.docx` (২ পাতা, ATS; সব স্ট্যাক + AI; শুধু আসল প্রজেক্ট, কোনো `// BUILD` নেই)। টপ কোম্পানি/জেনারেল আবেদনের জন্য। `build-cvs.js` এখন ৪টা CV বানায়।
+- **Work 02 সম্পূর্ণ:**
+  - রুট `CLAUDE.md`: session protocol, folder rules (টার্গেট লেআউট + ট্রানজিশন নোট), Answer Pattern, Honesty + Public-safe, frontmatter spec, memory, commands, Do Not। প্যারেন্ট Sokrio CLAUDE.md-এর নিয়ম এখানে প্রযোজ্য নয় বলে স্পষ্ট লেখা।
+  - `.claude/settings.json`: `enabledMcpjsonServers: ["lens-brain"]`, স্ক্রিপ্ট/lens/MCP টুলের permission, `git push` আর `~/code/sokrio/sokrio-*`-এ Edit/Write deny।
+  - `.claude/templates/`: topic, sd-case, aws-module, problem, mcq-bank, folder-readme।
+  - `.claude/commands/`: study-start, study-end, gen-topic, health-check, log-interview, ask। প্রতিটায় "এখনো নেই" অবস্থার fallback আছে (Work 04/05-এর আগে)।
+  - ⚠️ Work 05-এর জন্য: MCP সার্ভার রেজিস্ট্রেশন হবে রুট `.mcp.json`-এ (Claude Code project MCP সেখানেই থাকে); settings.json শুধু সেটা enable করে।
+  - ⚠️ Work 04 Step 5-এর জন্য: `health.py`-এর "sokrio" চেকে রুট `CLAUDE.md` আর `MASTER-PLAN.md`-ও বাদ দিতে হবে (এগুলোতে `~/code/sokrio` path আছে, স্টাডি কনটেন্ট না)।
+- **Work 03 সম্পূর্ণ:** `00-start/roadmap.md` — gantt, দৈনিক টেমপ্লেট + শনি মক/রবি হালকা ছন্দ, Starter লক্ষ্য, W1–W11 সপ্তাহ-ভিত্তিক ফাইল তালিকা (W1 = ২০২৬-১১-১৬ সোমবার, W11 শেষ ২০২৭-০১-৩১), ৮টা `// BUILD` প্রজেক্টের ক্রম (Order API W1–3, RAG W4–7), কোন CV কখন পাঠানো যায়, Product প্রস্তাব (SAA-C03 লক্ষ্য এপ্রিল ২০২৭), চেকপয়েন্ট।
+  - অনুমান যেগুলো Komol বদলাতে পারে: আবেদন ৫–১০/সপ্তাহ, MCQ লক্ষ্য ≥ ৭৫%, ≥ ১৫০ সমাধান, Product মাসগুলো।
+- **Work 04 সম্পূর্ণ** (Steps 1–6; Step 7 = Work 05):
+  - নতুন লেআউট `00-start/` … `12-career/`, `99-archive/` (আরেকটা সেশন `git mv` দিয়ে সরিয়েছে, staged; এই সেশন যাচাই করে শেষ করেছে)।
+  - Restore: `e637690`-এ মোছা ৪৪টা ফাইলের সবগুলোর md5 এখন ট্রিতে আছে (`99-archive/restored-from-git/` + ১টা অন্য জায়গায়)। ১২টা staged delete সবই md5-identical ডুপ্লিকেট।
+  - Links: broken ০ (`99-archive/README.md` যোগ, একটা মৃত "post 01" লিংক টেক্সট করা)। README মিসিং ০, frontmatter মিসিং ০, spaces ০।
+  - `scripts/health.py` (stdlib; `parse_frontmatter`/`iter_markdown` lens-brain ইমপোর্ট করবে) → `00-start/health-report.md`। `--json` DASHBOARD-এর জন্য।
+  - `DASHBOARD.md` (frontmatter সংখ্যা, KPI, progress bar, pie/xychart/gantt, heat table, pipeline, content health) + `00-start/tracker.md`।
+  - ⚠️ **Public-safe leak: ১১০টা ফাইল** (৪টার নামেই আছে: `02-…-pattern-map.md`, `sections/02-kafka-in-…`, `03-rabbitmq-in-…`, `04-redis-in-…`; সবচেয়ে বেশি `messaging-deep-dive.html` ৫১৬ hits)। আলাদা scrub পাস লাগবে, Komol-এর সিদ্ধান্তের অপেক্ষায়।
+  - Stub ৪০টা (৩৭টা problem-solving `hard.md`/placeholder) — Starter ①-এ ভরবে।
+
+- **Work 05 সম্পূর্ণ → MVP শেষ:**
+  - `tools/lens-brain/`: SQLite FTS5 + sqlite-vec + fastembed (`paraphrase-multilingual-MiniLM-L12-v2`), RRF, ফাইল-প্রতি সর্বোচ্চ ২ hit। CLI `lens index|search|doc|weak|stats|serve`, MCP (`search_notes`, `get_doc`, `list_weak_areas`, `stats`), FastAPI :8765। ৬টা test পাস (fake embedder)।
+  - রুট `.mcp.json`-এ রেজিস্টার (relative path, রুট থেকে চলে); settings.json আগেই enable করা।
+  - বাংলা FTS fix: `unicode61` কার/হসন্তে শব্দ ভাঙে → Bengali marks `tokenchars`-এ। মডেল ১২৮ token পড়ে → chunk-প্রতি ≤৮টা ~৪২০-অক্ষরের window embed।
+  - `scripts/health.py` এখন lens-brain-এর `frontmatter.py` ইমপোর্ট করে; word count বাংলা শব্দ পুরো গোনে (২৯১k → ২৫৭k), stub ৪২।
+  - Full index ~৭ মিনিট (প্রথমবার মডেল ~৪৭০ MB নামে); incremental ০.২ সে।
+  - ⚠️ বাংলা লিপিতে লেখা টেক টার্ম ("ইভেন্ট লুপ") দুর্বল মেলে; query-তে টার্ম ইংরেজিতে (README-তে লেখা)।
+  - ⚠️ ডুপ্লিকেট চোখে পড়েছে: Node.js `08-frontend-nextjs/nodejs/` আর `05-backend/10-nodejs/` দুই জায়গায়।
+  - বাদ (MVP-তে ঐচ্ছিক): Claude API দিয়ে `/ask` উত্তর তৈরি — শুধু search আছে।
+
+- Work 01–04 commit হয়েছে (`51fb37c`); Work 05 এখনো uncommitted।
+
+## পরের সেশনে প্রথম কাজ
+
+1. ✅ Work 05 commit হয়েছে (`85c4548`)।
+2. ✅ **Public-safe scrub শেষ (২০২৬-১১-১৪, uncommitted):** ১০৮টা ফাইল + ৪টা `git mv` রিনেম (`*-in-distrosaas.md`, `02-distrosaas-pattern-map.md`, id `lld-distrosaas-pattern-map`)। repo নাম → `api-server`/`app-frontend`/`admin-frontend`/`benchmark-python`; server path → `/home/deploy/`; client domain → `tenant-a.distrosaas.example`। leak ০, broken link ০, HTML rebuild, `lens index` হয়েছে।
+   - Exempt (আসল employer নাম লাগে): `12-career/cv-by-role/build-*.js`, `12-career/templates/email-template.txt` → `health.py`-এর `LEAK_EXEMPT_FILES`-এ।
+   - ⚠️ ল্যাব: `labs/bin/php.sh` এখন `APP_VENDOR=/path/to/api-server/vendor` env চায় (আগে sibling path ধরে নিত)।
+   - বাকি (এই পাসে ধরা হয়নি): টিমমেট/ক্লায়েন্টের নাম, আসল ক্লাস/ফাইল নাম + লাইন নম্বর (`FlushFeatureEventsJob.php:68`)। দরকার হলে আলাদা পাস।
+3. প্রথম `/study-start`: `weak-areas.md`-এর `Now` ভরা, তারপর **Starter ① Problem Solving** (W1 = ১১-১৬)।
+
+## Komol-এর কাছে অপেক্ষমাণ
+
+- CV-র `// BUILD` প্রজেক্টগুলো GitHub-এ বানানো (সবার আগে: JS-এ Multi-Tenant Order API, Python-এ Sales Report Q&A RAG)। Starter রোডম্যাপে (Work 03) যোগ করতে হবে।
+
+- `weak-areas.md`-এর `Now` কলামে নিজের রেটিং (প্রথম `/study-start`-এ)।
+- `profile.md` / `decisions.md`-এর `[Komol পূরণ করবে]`: notice period, স্যালারি রেঞ্জ, RabbitMQ/Node CV দাবি।
+- Work 05 commit করা।
