@@ -27,6 +27,7 @@ W1 = ২০২৬-১১-১৬ (সোম)। প্রতি সপ্তা�
 | তারিখ | ব্লক | ফাইল / প্রবলেম | ফল | conf বদল |
 |---|---|---|---|---|
 | 2026-11-14 | MVP Work 01–04 | memory, `.claude/`, roadmap, restructure, `scripts/health.py`, DASHBOARD | ✔ | — |
+| 2026-11-14 | MVP Work 05 | `tools/lens-brain/` (hybrid RAG, MCP, API, CLI), `.mcp.json`; full index 239 ফাইল | ✔ | — |
 
 ## ফাইল অগ্রগতি
 

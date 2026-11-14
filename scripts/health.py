@@ -10,8 +10,8 @@ Per top-level folder it reports: files, words, stubs (<150 words), missing READM
 missing frontmatter, broken relative links, paths with spaces, and leaks of the
 employer name outside 99-archive/ and .claude/.
 
-`parse_frontmatter()` and `iter_markdown()` are meant to be imported by
-tools/lens-brain so both tools read files the same way.
+Frontmatter parsing and word counting come from tools/lens-brain/src/lens_brain/frontmatter.py
+(stdlib only), so the report and the RAG index count files the same way.
 """
 from __future__ import annotations
 
@@ -38,38 +38,12 @@ TEXT_EXT = {".md", ".txt", ".html", ".php", ".py", ".ts", ".tsx", ".js", ".json"
 STUB_WORDS = 150
 LEAK_RE = re.compile("so" + "krio", re.I)  # split so this file does not flag itself
 LINK_RE = re.compile(r"!?\[[^\]]*\]\(([^)\s]+)(?:\s+\"[^\"]*\")?\)")
-FENCE_RE = re.compile(r"```.*?```", re.S)
-FM_RE = re.compile(r"\A---\s*\n(.*?)\n---\s*(?:\n|\Z)", re.S)
 
 
 # ---------------------------------------------------------------- shared parser
-def parse_frontmatter(text: str) -> tuple[dict, str]:
-    """Return (meta, body). Handles the flat YAML subset this repo uses:
-    `key: value`, `key: [a, b]`, quoted strings, ints, trailing `# comments`."""
-    m = FM_RE.match(text)
-    if not m:
-        return {}, text
-    meta: dict = {}
-    for line in m.group(1).splitlines():
-        if not line.strip() or line.lstrip().startswith("#") or ":" not in line:
-            continue
-        key, _, val = line.partition(":")
-        val = val.strip()
-        if val and val[0] not in "\"'":
-            val = re.sub(r"\s+#.*$", "", val)
-        if val.startswith("[") and val.endswith("]"):
-            meta[key.strip()] = [v.strip().strip("\"'") for v in val[1:-1].split(",") if v.strip()]
-        elif len(val) >= 2 and val[0] == val[-1] and val[0] in "\"'":
-            meta[key.strip()] = val[1:-1]
-        elif re.fullmatch(r"-?\d+", val):
-            meta[key.strip()] = int(val)
-        else:
-            meta[key.strip()] = val
-    return meta, text[m.end():]
-
-
-def word_count(body: str) -> int:
-    return len(re.findall(r"\w+", FENCE_RE.sub(" ", body)))
+# One parser for both tools: lens-brain's frontmatter module is stdlib-only, so import it by path.
+sys.path.insert(0, str(ROOT / "tools" / "lens-brain" / "src"))
+from lens_brain.frontmatter import FENCE_RE, parse_frontmatter, word_count  # noqa: E402
 
 
 def iter_files(root: Path = ROOT):

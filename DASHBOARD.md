@@ -21,14 +21,14 @@ ai_modules: 0
 applications: 0
 interviews: 0
 mocks: 0
-mvp_pct: 80
+mvp_pct: 100
 starter_pct: 0
 product_pct: 0
 ---
 
 # 📊 Dashboard
 
-> শুরু: ২০২৬-১১-১৪ · এখন: **MVP** (Work 05 বাকি) · পরের ফেজ: **Starter ① Problem Solving**, W1 = ২০২৬-১১-১৬
+> শুরু: ২০২৬-১১-১৪ · **MVP সম্পূর্ণ** · এখন: **Starter ① Problem Solving**, W1 = ২০২৬-১১-১৬
 > সংখ্যার উৎস: [`00-start/tracker.md`](00-start/tracker.md) · কনটেন্ট-হেলথ: [`00-start/health-report.md`](00-start/health-report.md) · প্ল্যান: [`00-start/roadmap.md`](00-start/roadmap.md)
 
 ## KPI
@@ -41,7 +41,7 @@ product_pct: 0
 
 | টিয়ার | অগ্রগতি | % | কী গোনা হয় |
 |---|---|--:|---|
-| MVP | `████████░░` | 80 | Work 01–05 (০৪ শেষ, ০৫ বাকি) |
+| MVP | `██████████` | 100 | Work 01–05 সম্পূর্ণ |
 | Starter | `░░░░░░░░░░` | 0 | roadmap §৩-এর লক্ষ্য, W1–W11 |
 | Product | `░░░░░░░░░░` | 0 | ফেব্রুয়ারি ২০২৭ থেকে |
 
@@ -98,7 +98,7 @@ gantt
   axisFormat %d %b
   section MVP
   Work 01–04                 :done,   m1, 2026-11-14, 1d
-  Work 05 lens-brain RAG     :active, m2, 2026-11-15, 2d
+  Work 05 lens-brain RAG     :done,   m2, 2026-11-14, 1d
   section Starter
   ① Problem Solving          :        s1, 2026-11-16, 21d
   ①b MCQ 600                 :        s1b, 2026-11-16, 28d
@@ -136,22 +136,23 @@ gantt
 
 ## Content health
 
-[`00-start/health-report.md`](00-start/health-report.md) থেকে (`python3 scripts/health.py`, ২০২৬-১১-১৪)।
+[`00-start/health-report.md`](00-start/health-report.md) থেকে (`python3 scripts/health.py`, ২০২৬-১১-১৪; word count এখন বাংলা শব্দ পুরো গোনে)।
+RAG index: 239 ফাইল · 1,037 chunks · 5,757 vectors (`lens stats`)।
 
 | ফোল্ডার | md | words | stubs | leak files |
 |---|--:|--:|--:|--:|
-| 01-problem-solving | 77 | 15,950 | 37 | 0 |
-| 02-cs-fundamentals-mcq | 2 | 1,195 | 0 | 0 |
-| 03-system-design | 23 | 31,198 | 0 | 20 |
-| 04-design-patterns-lld | 25 | 26,382 | 0 | 23 |
-| 05-backend | 61 | 166,417 | 0 | 47 |
-| 06-aws-devops | 4 | 4,848 | 0 | 2 |
-| 07-ai-engineering | 1 | 52 | 0 | 0 |
-| 08-frontend-nextjs | 12 | 8,839 | 0 | 6 |
-| 09-real-world-cases | 1 | 58 | 0 | 0 |
-| 10-behavioral-leadership | 5 | 5,431 | 0 | 3 |
-| 11-mocks | 8 | 18,583 | 2 | 5 |
-| 12-career | 6 | 1,861 | 1 | 4 |
-| **মোট** (root + 00-start সহ) | **230** | **287,559** | **40** | **110** |
+| 01-problem-solving | 77 | 14,500 | 37 | 0 |
+| 02-cs-fundamentals-mcq | 2 | 1,174 | 0 | 0 |
+| 03-system-design | 23 | 23,889 | 0 | 20 |
+| 04-design-patterns-lld | 25 | 20,205 | 0 | 23 |
+| 05-backend | 61 | 156,930 | 0 | 47 |
+| 06-aws-devops | 4 | 3,014 | 0 | 2 |
+| 07-ai-engineering | 1 | 42 | 0 | 0 |
+| 08-frontend-nextjs | 12 | 6,002 | 0 | 6 |
+| 09-real-world-cases | 1 | 46 | 0 | 0 |
+| 10-behavioral-leadership | 5 | 3,264 | 0 | 3 |
+| 11-mocks | 8 | 18,051 | 2 | 5 |
+| 12-career | 6 | 1,155 | 2 | 4 |
+| **মোট** (root + 00-start সহ) | **233** | **257,071** | **42** | **110** |
 
 Broken links 0 · missing README 0 · missing frontmatter 0 · paths with spaces 0।

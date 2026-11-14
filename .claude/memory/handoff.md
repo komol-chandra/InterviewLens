@@ -46,13 +46,23 @@ updated: 2026-11-14
   - ⚠️ **Public-safe leak: ১১০টা ফাইল** (৪টার নামেই আছে: `02-…-pattern-map.md`, `sections/02-kafka-in-…`, `03-rabbitmq-in-…`, `04-redis-in-…`; সবচেয়ে বেশি `messaging-deep-dive.html` ৫১৬ hits)। আলাদা scrub পাস লাগবে, Komol-এর সিদ্ধান্তের অপেক্ষায়।
   - Stub ৪০টা (৩৭টা problem-solving `hard.md`/placeholder) — Starter ①-এ ভরবে।
 
-- কিছুই commit হয়নি।
+- **Work 05 সম্পূর্ণ → MVP শেষ:**
+  - `tools/lens-brain/`: SQLite FTS5 + sqlite-vec + fastembed (`paraphrase-multilingual-MiniLM-L12-v2`), RRF, ফাইল-প্রতি সর্বোচ্চ ২ hit। CLI `lens index|search|doc|weak|stats|serve`, MCP (`search_notes`, `get_doc`, `list_weak_areas`, `stats`), FastAPI :8765। ৬টা test পাস (fake embedder)।
+  - রুট `.mcp.json`-এ রেজিস্টার (relative path, রুট থেকে চলে); settings.json আগেই enable করা।
+  - বাংলা FTS fix: `unicode61` কার/হসন্তে শব্দ ভাঙে → Bengali marks `tokenchars`-এ। মডেল ১২৮ token পড়ে → chunk-প্রতি ≤৮টা ~৪২০-অক্ষরের window embed।
+  - `scripts/health.py` এখন lens-brain-এর `frontmatter.py` ইমপোর্ট করে; word count বাংলা শব্দ পুরো গোনে (২৯১k → ২৫৭k), stub ৪২।
+  - Full index ~৭ মিনিট (প্রথমবার মডেল ~৪৭০ MB নামে); incremental ০.২ সে।
+  - ⚠️ বাংলা লিপিতে লেখা টেক টার্ম ("ইভেন্ট লুপ") দুর্বল মেলে; query-তে টার্ম ইংরেজিতে (README-তে লেখা)।
+  - ⚠️ ডুপ্লিকেট চোখে পড়েছে: Node.js `08-frontend-nextjs/nodejs/` আর `05-backend/10-nodejs/` দুই জায়গায়।
+  - বাদ (MVP-তে ঐচ্ছিক): Claude API দিয়ে `/ask` উত্তর তৈরি — শুধু search আছে।
+
+- Work 01–04 commit হয়েছে (`51fb37c`); Work 05 এখনো uncommitted।
 
 ## পরের সেশনে প্রথম কাজ
 
-1. Komol commit করবে (Work 01–04 চেকপয়েন্ট)।
-2. Public-safe scrub (Komol "হ্যাঁ" বললে): নাম → "DistroSaaS", ৪টা ফাইল রিনেম + লিংক ঠিক, তারপর `python3 scripts/health.py` → leak ০।
-3. Work 05 (lens-brain RAG), MASTER-PLAN §3 Work 05।
+1. Komol commit করবে (Work 05)। নতুন Claude Code সেশনে `lens-brain` MCP অনুমোদন চাইবে।
+2. Public-safe scrub (Komol "হ্যাঁ" বললে): ১১০টা ফাইল, ৪টা রিনেম + লিংক → `python3 scripts/health.py` leak ০ → `lens index`।
+3. প্রথম `/study-start`: `weak-areas.md`-এর `Now` ভরা, তারপর **Starter ① Problem Solving** (W1 = ১১-১৬)।
 
 ## Komol-এর কাছে অপেক্ষমাণ
 
@@ -60,4 +70,4 @@ updated: 2026-11-14
 
 - `weak-areas.md`-এর `Now` কলামে নিজের রেটিং (প্রথম `/study-start`-এ)।
 - `profile.md` / `decisions.md`-এর `[Komol পূরণ করবে]`: notice period, স্যালারি রেঞ্জ, RabbitMQ/Node CV দাবি।
-- Work 01–04 commit করা (এখন ~৪০০টা uncommitted পরিবর্তন)।
+- Work 05 commit করা।

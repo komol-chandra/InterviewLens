@@ -6,8 +6,8 @@ type: note
 status: good
 updated: 2026-11-14
 files: 233
-words: 291347
-stubs: 40
+words: 257103
+stubs: 42
 no_readme: 0
 no_frontmatter: 0
 broken_links: 0
@@ -24,21 +24,21 @@ leak_files: 110
 
 | Folder | md | words | stubs | no README | no FM | broken links | spaces | leak files | assets |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| (root) | 4 | 4,779 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| 00-start | 4 | 5,754 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| 01-problem-solving | 77 | 15,950 | **37** | 0 | 0 | 0 | 0 | 0 | 7 |
-| 02-cs-fundamentals-mcq | 2 | 1,195 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| 03-system-design | 23 | 31,198 | 0 | 0 | 0 | 0 | 0 | **20** | 0 |
-| 04-design-patterns-lld | 25 | 26,382 | 0 | 0 | 0 | 0 | 0 | **23** | 17 |
-| 05-backend | 61 | 166,417 | 0 | 0 | 0 | 0 | 0 | **47** | 31 |
-| 06-aws-devops | 4 | 4,848 | 0 | 0 | 0 | 0 | 0 | **2** | 0 |
-| 07-ai-engineering | 1 | 52 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| 08-frontend-nextjs | 12 | 8,839 | 0 | 0 | 0 | 0 | 0 | **6** | 0 |
-| 09-real-world-cases | 1 | 58 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| 10-behavioral-leadership | 5 | 5,431 | 0 | 0 | 0 | 0 | 0 | **3** | 0 |
-| 11-mocks | 8 | 18,583 | **2** | 0 | 0 | 0 | 0 | **5** | 0 |
-| 12-career | 6 | 1,861 | **1** | 0 | 0 | 0 | 0 | **4** | 18 |
-| **Total** | **233** | **291,347** | **40** | **0** | **0** | **0** | **0** | **110** | **73** |
+| (root) | 4 | 3,948 | 0 | 0 | 0 | 0 | 0 | 0 | 1 |
+| 00-start | 4 | 4,883 | **1** | 0 | 0 | 0 | 0 | 0 | 0 |
+| 01-problem-solving | 77 | 14,500 | **37** | 0 | 0 | 0 | 0 | 0 | 7 |
+| 02-cs-fundamentals-mcq | 2 | 1,174 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| 03-system-design | 23 | 23,889 | 0 | 0 | 0 | 0 | 0 | **20** | 0 |
+| 04-design-patterns-lld | 25 | 20,205 | 0 | 0 | 0 | 0 | 0 | **23** | 17 |
+| 05-backend | 61 | 156,930 | 0 | 0 | 0 | 0 | 0 | **47** | 31 |
+| 06-aws-devops | 4 | 3,014 | 0 | 0 | 0 | 0 | 0 | **2** | 0 |
+| 07-ai-engineering | 1 | 42 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| 08-frontend-nextjs | 12 | 6,002 | 0 | 0 | 0 | 0 | 0 | **6** | 0 |
+| 09-real-world-cases | 1 | 46 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| 10-behavioral-leadership | 5 | 3,264 | 0 | 0 | 0 | 0 | 0 | **3** | 0 |
+| 11-mocks | 8 | 18,051 | **2** | 0 | 0 | 0 | 0 | **5** | 0 |
+| 12-career | 6 | 1,155 | **2** | 0 | 0 | 0 | 0 | **4** | 18 |
+| **Total** | **233** | **257,103** | **42** | **0** | **0** | **0** | **0** | **110** | **74** |
 
 ## Public-safe leaks (employer name) (110)
 
@@ -169,8 +169,9 @@ leak_files: 110
 
 ✅ কিছু নেই।
 
-## Stubs (< 150 words) (40)
+## Stubs (< 150 words) (42)
 
+- [00-start/tracker.md](../00-start/tracker.md) — 133 words
 - [01-problem-solving/01-arrays/easy.md](../01-problem-solving/01-arrays/easy.md) — 120 words
 - [01-problem-solving/01-arrays/hard.md](../01-problem-solving/01-arrays/hard.md) — 88 words
 - [01-problem-solving/01-arrays/medium.md](../01-problem-solving/01-arrays/medium.md) — 131 words
@@ -210,4 +211,5 @@ leak_files: 110
 - [01-problem-solving/14-sql/medium.md](../01-problem-solving/14-sql/medium.md) — 100 words
 - [11-mocks/mock-03-fullstack.md](../11-mocks/mock-03-fullstack.md) — 139 words
 - [11-mocks/mock-05-rapid-fire.md](../11-mocks/mock-05-rapid-fire.md) — 120 words
-- [12-career/applications.md](../12-career/applications.md) — 68 words
+- [12-career/applications.md](../12-career/applications.md) — 37 words
+- [12-career/templates/FOLDER_STRUCTURE.md](../12-career/templates/FOLDER_STRUCTURE.md) — 107 words
